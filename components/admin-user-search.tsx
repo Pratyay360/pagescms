@@ -11,11 +11,7 @@ import {
   InputGroupText,
 } from "@/components/ui/input-group";
 
-export function AdminUserSearch({
-  initialQuery,
-}: {
-  initialQuery: string;
-}) {
+export function AdminUserSearch({ initialQuery }: { initialQuery: string }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();

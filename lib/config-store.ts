@@ -15,15 +15,15 @@ const getConfigFromDb = async (
   branch: string,
 ): Promise<Config | null> => {
   if (!owner || !repo || !branch) throw new Error(`Owner, repo, and branch must all be provided.`);
-  
+
   const config = await db.query.configTable.findFirst({
     where: and(
       sql`lower(${configTable.owner}) = lower(${owner})`,
       sql`lower(${configTable.repo}) = lower(${repo})`,
       eq(configTable.branch, branch),
-    )
+    ),
   });
-  
+
   if (!config) return null;
 
   const parsedConfig = {
@@ -39,63 +39,64 @@ const getConfigFromDb = async (
   return parsedConfig;
 };
 
-const saveConfig = async (
-  config: Config,
-): Promise<Config> => {
-  await db.insert(configTable).values({
-    owner: config.owner,
-    repo: config.repo,
-    branch: config.branch,
-    sha: config.sha,
-    version: config.version,
-    object: JSON.stringify(config.object),
-    lastCheckedAt: new Date(),
-  }).onConflictDoUpdate({
-    target: [configTable.owner, configTable.repo, configTable.branch],
-    set: {
+const saveConfig = async (config: Config): Promise<Config> => {
+  await db
+    .insert(configTable)
+    .values({
+      owner: config.owner,
+      repo: config.repo,
+      branch: config.branch,
       sha: config.sha,
       version: config.version,
       object: JSON.stringify(config.object),
       lastCheckedAt: new Date(),
-    },
-  });
+    })
+    .onConflictDoUpdate({
+      target: [configTable.owner, configTable.repo, configTable.branch],
+      set: {
+        sha: config.sha,
+        version: config.version,
+        object: JSON.stringify(config.object),
+        lastCheckedAt: new Date(),
+      },
+    });
 
   return config;
-}
+};
 
-const updateConfig = async (
-  config: Config,
-): Promise<Config> => {
-  await db.update(configTable).set({
-    sha: config.sha,
-    version: config.version,
-    object: JSON.stringify(config.object),
-    lastCheckedAt: new Date(),
-  }).where(
-    and(
-      sql`lower(${configTable.owner}) = lower(${config.owner})`,
-      sql`lower(${configTable.repo}) = lower(${config.repo})`,
-      eq(configTable.branch, config.branch)
-    )
-  );
+const updateConfig = async (config: Config): Promise<Config> => {
+  await db
+    .update(configTable)
+    .set({
+      sha: config.sha,
+      version: config.version,
+      object: JSON.stringify(config.object),
+      lastCheckedAt: new Date(),
+    })
+    .where(
+      and(
+        sql`lower(${configTable.owner}) = lower(${config.owner})`,
+        sql`lower(${configTable.repo}) = lower(${config.repo})`,
+        eq(configTable.branch, config.branch),
+      ),
+    );
 
   return config;
-}
+};
 
-const touchConfigCheck = async (
-  owner: string,
-  repo: string,
-  branch: string,
-) => {
-  await db.update(configTable).set({
-    lastCheckedAt: new Date(),
-  }).where(
-    and(
-      sql`lower(${configTable.owner}) = lower(${owner})`,
-      sql`lower(${configTable.repo}) = lower(${repo})`,
-      eq(configTable.branch, branch),
-    ),
-  );
+const touchConfigCheck = async (owner: string, repo: string, branch: string) => {
+  await db
+    .update(configTable)
+    .set({
+      lastCheckedAt: new Date(),
+    })
+    .where(
+      and(
+        sql`lower(${configTable.owner}) = lower(${owner})`,
+        sql`lower(${configTable.repo}) = lower(${repo})`,
+        eq(configTable.branch, branch),
+      ),
+    );
 };
 
 type GetConfigOptions = {
@@ -106,13 +107,16 @@ type GetConfigOptions = {
   backgroundRefreshWhenStale?: boolean;
 };
 
-const DEFAULT_CONFIG_CHECK_TTL_MS = parseInt(
-  process.env.CONFIG_CHECK_MIN ||
-    process.env.CFG_CHECK_MIN ||
-    process.env.CONFIG_CHECK_TTL ||
-    "5",
-  10,
-) * 60 * 1000;
+const DEFAULT_CONFIG_CHECK_TTL_MS =
+  parseInt(
+    process.env.CONFIG_CHECK_MIN ||
+      process.env.CFG_CHECK_MIN ||
+      process.env.CONFIG_CHECK_TTL ||
+      "5",
+    10,
+  ) *
+  60 *
+  1000;
 
 const isConfigCheckDue = (lastCheckedAt?: Date, ttlMs = DEFAULT_CONFIG_CHECK_TTL_MS) => {
   if (!lastCheckedAt) return true;
@@ -216,11 +220,7 @@ const getConfig = async (
       return cachedConfig;
     }
 
-    if (
-      cachedConfig &&
-      cachedConfig.version === configVersion &&
-      backgroundRefreshWhenStale
-    ) {
+    if (cachedConfig && cachedConfig.version === configVersion && backgroundRefreshWhenStale) {
       // Return stale cache immediately and refresh async to reduce branch-layout blocking.
       void (async () => {
         try {
@@ -228,13 +228,15 @@ const getConfig = async (
           if (!token) return;
           const latest = await fetchConfigFromGithub(owner, repo, branch, token);
           if (!latest) {
-            await db.delete(configTable).where(
-              and(
-                sql`lower(${configTable.owner}) = lower(${normalizedOwner})`,
-                sql`lower(${configTable.repo}) = lower(${normalizedRepo})`,
-                eq(configTable.branch, branch),
-              ),
-            );
+            await db
+              .delete(configTable)
+              .where(
+                and(
+                  sql`lower(${configTable.owner}) = lower(${normalizedOwner})`,
+                  sql`lower(${configTable.repo}) = lower(${normalizedRepo})`,
+                  eq(configTable.branch, branch),
+                ),
+              );
             return;
           }
           if (cachedConfig.sha === latest.sha) {
@@ -264,13 +266,15 @@ const getConfig = async (
     const latest = await fetchConfigFromGithub(owner, repo, branch, token);
     if (!latest) {
       if (cachedConfig) {
-        await db.delete(configTable).where(
-          and(
-            sql`lower(${configTable.owner}) = lower(${normalizedOwner})`,
-            sql`lower(${configTable.repo}) = lower(${normalizedRepo})`,
-            eq(configTable.branch, branch),
-          ),
-        );
+        await db
+          .delete(configTable)
+          .where(
+            and(
+              sql`lower(${configTable.owner}) = lower(${normalizedOwner})`,
+              sql`lower(${configTable.repo}) = lower(${normalizedRepo})`,
+              eq(configTable.branch, branch),
+            ),
+          );
       }
       return null;
     }

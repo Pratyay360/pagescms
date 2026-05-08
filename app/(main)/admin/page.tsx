@@ -21,11 +21,7 @@ import { AdminUserSearch } from "@/components/admin-user-search";
 import { AdminUserRowActions } from "@/components/admin-user-row-actions";
 import { logoutAllUsers, logoutUserSessions, resetGlobalCache } from "@/lib/actions/admin";
 import { buttonVariants } from "@/components/ui/button";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Card,
   CardAction,
@@ -61,10 +57,7 @@ const formatDateTime = (value: Date | string | null | undefined) => {
   return date.toLocaleString();
 };
 
-const formatTimeAgoLabel = (
-  value: Date | string | null | undefined,
-  nowMs: number,
-) => {
+const formatTimeAgoLabel = (value: Date | string | null | undefined, nowMs: number) => {
   if (!value) return "-";
   const date = value instanceof Date ? value : new Date(value);
   if (Number.isNaN(date.getTime())) return "-";
@@ -120,24 +113,24 @@ export default async function Page({
       )
     : undefined;
 
-  const usersQuery = db.select({
-    id: userTable.id,
-    name: userTable.name,
-    email: userTable.email,
-    emailVerified: userTable.emailVerified,
-    githubUsername: userTable.githubUsername,
-    createdAt: userTable.createdAt,
-    updatedAt: userTable.updatedAt,
-    githubLinked: sql<boolean>`exists (
+  const usersQuery = db
+    .select({
+      id: userTable.id,
+      name: userTable.name,
+      email: userTable.email,
+      emailVerified: userTable.emailVerified,
+      githubUsername: userTable.githubUsername,
+      createdAt: userTable.createdAt,
+      updatedAt: userTable.updatedAt,
+      githubLinked: sql<boolean>`exists (
       select 1 from ${accountTable}
       where ${accountTable.userId} = ${userTable.id}
         and ${accountTable.providerId} = 'github'
     )`,
-  }).from(userTable);
+    })
+    .from(userTable);
 
-  const filteredUsersQuery = userSearchFilter
-    ? usersQuery.where(userSearchFilter)
-    : usersQuery;
+  const filteredUsersQuery = userSearchFilter ? usersQuery.where(userSearchFilter) : usersQuery;
 
   const [
     [userCount],
@@ -153,16 +146,29 @@ export default async function Page({
     users,
   ] = await Promise.all([
     db.select({ count: sql<number>`count(*)::int` }).from(userTable),
-    db.select({ count: sql<number>`count(*)::int` }).from(userTable).where(eq(userTable.emailVerified, true)),
-    db.select({ count: sql<number>`count(*)::int` }).from(accountTable).where(eq(accountTable.providerId, "github")),
+    db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(userTable)
+      .where(eq(userTable.emailVerified, true)),
+    db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(accountTable)
+      .where(eq(accountTable.providerId, "github")),
     db.select({ count: sql<number>`count(*)::int` }).from(githubInstallationTokenTable),
-    db.select({ count: sql<number>`count(distinct (${configTable.owner}, ${configTable.repo}))::int` }).from(configTable),
+    db
+      .select({
+        count: sql<number>`count(distinct (${configTable.owner}, ${configTable.repo}))::int`,
+      })
+      .from(configTable),
     db.select({ count: sql<number>`count(*)::int` }).from(collaboratorTable),
     db.select({ count: sql<number>`count(*)::int` }).from(cacheFileTable),
     db.select({ count: sql<number>`count(*)::int` }).from(cacheFileMetaTable),
     db.select({ count: sql<number>`count(*)::int` }).from(cachePermissionTable),
     userSearchFilter
-      ? db.select({ count: sql<number>`count(*)::int` }).from(userTable).where(userSearchFilter)
+      ? db
+          .select({ count: sql<number>`count(*)::int` })
+          .from(userTable)
+          .where(userSearchFilter)
       : db.select({ count: sql<number>`count(*)::int` }).from(userTable),
     filteredUsersQuery
       .orderBy(desc(userTable.createdAt))
@@ -178,10 +184,7 @@ export default async function Page({
       <DocumentTitle title="Admin" />
       <div className="max-w-screen-lg mx-auto p-4 md:p-6 space-y-6">
         <Link
-          className={cn(
-            buttonVariants({ variant: "outline", size: "xs" }),
-            "inline-flex",
-          )}
+          className={cn(buttonVariants({ variant: "outline", size: "xs" }), "inline-flex")}
           href="/"
         >
           <ArrowLeft />
@@ -189,9 +192,7 @@ export default async function Page({
         </Link>
 
         <header>
-          <h1 className="font-semibold tracking-tight text-lg md:text-2xl">
-            Admin
-          </h1>
+          <h1 className="font-semibold tracking-tight text-lg md:text-2xl">Admin</h1>
         </header>
 
         <div className="space-y-6">
@@ -204,19 +205,27 @@ export default async function Page({
               <div className="grid gap-4 md:grid-cols-4">
                 <div className="md:pr-4 md:border-r">
                   <div className="mb-1.5 text-sm text-muted-foreground">Users</div>
-                  <div className="text-3xl font-semibold tracking-tight">{formatCompactNumber(userCount?.count ?? 0)}</div>
+                  <div className="text-3xl font-semibold tracking-tight">
+                    {formatCompactNumber(userCount?.count ?? 0)}
+                  </div>
                 </div>
                 <div className="md:px-4 md:border-r">
                   <div className="mb-1.5 text-sm text-muted-foreground">Installs</div>
-                  <div className="text-3xl font-semibold tracking-tight">{formatCompactNumber(installCount?.count ?? 0)}</div>
+                  <div className="text-3xl font-semibold tracking-tight">
+                    {formatCompactNumber(installCount?.count ?? 0)}
+                  </div>
                 </div>
                 <div className="md:px-4 md:border-r">
                   <div className="mb-1.5 text-sm text-muted-foreground">Configured repos</div>
-                  <div className="text-3xl font-semibold tracking-tight">{formatCompactNumber(repoCount?.count ?? 0)}</div>
+                  <div className="text-3xl font-semibold tracking-tight">
+                    {formatCompactNumber(repoCount?.count ?? 0)}
+                  </div>
                 </div>
                 <div className="md:pl-4">
                   <div className="mb-1.5 text-sm text-muted-foreground">Cached files</div>
-                  <div className="text-3xl font-semibold tracking-tight">{formatCompactNumber(cacheFileCount?.count ?? 0)}</div>
+                  <div className="text-3xl font-semibold tracking-tight">
+                    {formatCompactNumber(cacheFileCount?.count ?? 0)}
+                  </div>
                 </div>
               </div>
             </CardContent>
@@ -289,7 +298,9 @@ export default async function Page({
                             >
                               @{user.githubUsername}
                             </Link>
-                          ) : "-"}
+                          ) : (
+                            "-"
+                          )}
                         </TableCell>
                         <TableCell className="w-24 min-w-24">
                           <AdminTimeAgo
@@ -344,7 +355,9 @@ export default async function Page({
                         href={buildAdminUrl(query, Math.min(totalUserPages, safeCurrentPage + 1))}
                         iconOnly
                         aria-disabled={safeCurrentPage >= totalUserPages}
-                        className={safeCurrentPage >= totalUserPages ? "pointer-events-none opacity-50" : ""}
+                        className={
+                          safeCurrentPage >= totalUserPages ? "pointer-events-none opacity-50" : ""
+                        }
                       />
                     </PaginationItem>
                   </PaginationContent>

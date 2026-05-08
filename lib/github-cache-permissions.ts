@@ -34,7 +34,8 @@ const checkRepoAccess = async (
     const response = await octokit.rest.repos.get({ owner, repo });
 
     if (response.status === 200) {
-      await db.insert(cachePermissionTable)
+      await db
+        .insert(cachePermissionTable)
         .values({
           githubId,
           owner: owner.toLowerCase(),
@@ -58,11 +59,7 @@ const checkRepoAccess = async (
   }
 };
 
-const clearPermissionCache = async (
-  owner: string,
-  repo?: string,
-  githubId?: number,
-) => {
+const clearPermissionCache = async (owner: string, repo?: string, githubId?: number) => {
   const conditions = [];
   conditions.push(eq(cachePermissionTable.owner, owner.toLowerCase()));
   if (repo) conditions.push(eq(cachePermissionTable.repo, repo.toLowerCase()));

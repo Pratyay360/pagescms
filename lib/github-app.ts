@@ -1,4 +1,3 @@
-
 /**
  * Fetch GitHub App installations, installation repositories, and settings URLs.
  */
@@ -12,11 +11,7 @@ type InstallationAccount = {
 };
 
 // Get all GitHub App installations for the authenticated user.
-const getInstallations = async (
-  token: string,
-  owners?: string[],
-  filterById: boolean = false
-) => {
+const getInstallations = async (token: string, owners?: string[], filterById: boolean = false) => {
   let installations: any[] = [];
   const matchedInstallations: any[] = [];
 
@@ -29,7 +24,7 @@ const getInstallations = async (
   while (hasMore) {
     const response = await octokit.rest.apps.listInstallationsForAuthenticatedUser({
       page,
-      per_page: perPage
+      per_page: perPage,
     });
 
     if (response.data.installations.length === 0) break;
@@ -53,8 +48,8 @@ const getInstallations = async (
         return matchedInstallations;
       }
     }
-    
-    hasMore = (page * perPage <= response.data.total_count);
+
+    hasMore = page * perPage <= response.data.total_count;
     page++;
   }
 
@@ -66,7 +61,7 @@ const getInstallationRepos = async (
   token: string,
   installationId: number,
   repos?: string[],
-  filterById: boolean = false
+  filterById: boolean = false,
 ) => {
   let allRepos: any[] = [];
   const matchedRepos: any[] = [];
@@ -81,7 +76,7 @@ const getInstallationRepos = async (
     const response = await octokit.rest.apps.listInstallationReposForAuthenticatedUser({
       installation_id: installationId,
       per_page: perPage,
-      page
+      page,
     });
 
     if (response.data.repositories.length === 0) break;
@@ -105,8 +100,8 @@ const getInstallationRepos = async (
         return matchedRepos;
       }
     }
-    
-    hasMore = (page * perPage <= response.data.total_count);
+
+    hasMore = page * perPage <= response.data.total_count;
     page++;
   }
 

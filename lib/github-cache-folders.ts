@@ -23,7 +23,10 @@ const BRANCH_CACHE_SCOPE: CacheScope = {
 const getCacheFileMetaKey = (owner: string, repo: string, branch: string) =>
   `${owner.toLowerCase()}::${repo.toLowerCase()}::${branch}`;
 
-const getFolderScope = (context: Exclude<CacheScopeContext, "branch">, folderPath: string): CacheScope => ({
+const getFolderScope = (
+  context: Exclude<CacheScopeContext, "branch">,
+  folderPath: string,
+): CacheScope => ({
   path: folderPath,
   context,
 });
@@ -40,11 +43,12 @@ const upsertScopedMeta = (
     error?: string | null;
     lastCheckedAt?: Date;
   } = {},
-) => upsertCacheFileMeta(owner, repo, branch, {
-  ...values,
-  path: scope.path,
-  context: scope.context,
-});
+) =>
+  upsertCacheFileMeta(owner, repo, branch, {
+    ...values,
+    path: scope.path,
+    context: scope.context,
+  });
 
 const waitForScopeAndBranchMeta = async (
   owner: string,
@@ -76,13 +80,16 @@ const waitForScopeAndBranchMeta = async (
       ),
     });
 
-    let scopeMeta: typeof metas[number] | undefined;
-    let branchMeta: typeof metas[number] | undefined;
+    let scopeMeta: (typeof metas)[number] | undefined;
+    let branchMeta: (typeof metas)[number] | undefined;
 
     for (const meta of metas) {
       if (meta.path === scope.path && meta.context === scope.context) {
         scopeMeta = meta;
-      } else if (meta.path === BRANCH_CACHE_SCOPE.path && meta.context === BRANCH_CACHE_SCOPE.context) {
+      } else if (
+        meta.path === BRANCH_CACHE_SCOPE.path &&
+        meta.context === BRANCH_CACHE_SCOPE.context
+      ) {
         branchMeta = meta;
       }
     }
@@ -249,7 +256,9 @@ const fetchCollectionDirectoryEntries = async (
   }
 
   if (!Array.isArray(tree.entries)) {
-    throw new Error(`Expected directory entries for "${dirPath}" but GitHub returned an invalid tree response.`);
+    throw new Error(
+      `Expected directory entries for "${dirPath}" but GitHub returned an invalid tree response.`,
+    );
   }
 
   return tree.entries;
@@ -291,66 +300,73 @@ const replaceFolderCache = async (
   repo: string,
   branch: string,
   scope: CacheScope,
-  entries: typeof cacheFileTable.$inferInsert[],
+  entries: (typeof cacheFileTable.$inferInsert)[],
   commit?: { sha: string; timestamp: number },
 ) => {
   const now = new Date();
   const lowerOwner = owner.toLowerCase();
   const lowerRepo = repo.toLowerCase();
   const locked = await withFolderCacheLock(owner, repo, branch, scope, async (tx) => {
-    await tx.delete(cacheFileTable).where(
-      and(
-        eq(cacheFileTable.owner, lowerOwner),
-        eq(cacheFileTable.repo, lowerRepo),
-        eq(cacheFileTable.branch, branch),
-        eq(cacheFileTable.parentPath, scope.path),
-      ),
-    );
+    await tx
+      .delete(cacheFileTable)
+      .where(
+        and(
+          eq(cacheFileTable.owner, lowerOwner),
+          eq(cacheFileTable.repo, lowerRepo),
+          eq(cacheFileTable.branch, branch),
+          eq(cacheFileTable.parentPath, scope.path),
+        ),
+      );
 
     if (entries.length > 0) {
       await tx.insert(cacheFileTable).values(entries);
 
-      await tx.insert(cacheFileMetaTable).values({
-        owner: lowerOwner,
-        repo: lowerRepo,
-        branch,
-        path: scope.path,
-        context: scope.context,
-        commitSha: commit?.sha ?? null,
-        commitTimestamp: commit?.timestamp ? new Date(commit.timestamp) : null,
-        status: "ok",
-        error: null,
-        updatedAt: now,
-        lastCheckedAt: now,
-      }).onConflictDoUpdate({
-        target: [
-          cacheFileMetaTable.owner,
-          cacheFileMetaTable.repo,
-          cacheFileMetaTable.branch,
-          cacheFileMetaTable.path,
-          cacheFileMetaTable.context,
-        ],
-        set: {
+      await tx
+        .insert(cacheFileMetaTable)
+        .values({
+          owner: lowerOwner,
+          repo: lowerRepo,
+          branch,
+          path: scope.path,
+          context: scope.context,
           commitSha: commit?.sha ?? null,
           commitTimestamp: commit?.timestamp ? new Date(commit.timestamp) : null,
           status: "ok",
           error: null,
           updatedAt: now,
           lastCheckedAt: now,
-        },
-      });
+        })
+        .onConflictDoUpdate({
+          target: [
+            cacheFileMetaTable.owner,
+            cacheFileMetaTable.repo,
+            cacheFileMetaTable.branch,
+            cacheFileMetaTable.path,
+            cacheFileMetaTable.context,
+          ],
+          set: {
+            commitSha: commit?.sha ?? null,
+            commitTimestamp: commit?.timestamp ? new Date(commit.timestamp) : null,
+            status: "ok",
+            error: null,
+            updatedAt: now,
+            lastCheckedAt: now,
+          },
+        });
       return;
     }
 
-    await tx.delete(cacheFileMetaTable).where(
-      and(
-        eq(cacheFileMetaTable.owner, lowerOwner),
-        eq(cacheFileMetaTable.repo, lowerRepo),
-        eq(cacheFileMetaTable.branch, branch),
-        eq(cacheFileMetaTable.path, scope.path),
-        eq(cacheFileMetaTable.context, scope.context),
-      ),
-    );
+    await tx
+      .delete(cacheFileMetaTable)
+      .where(
+        and(
+          eq(cacheFileMetaTable.owner, lowerOwner),
+          eq(cacheFileMetaTable.repo, lowerRepo),
+          eq(cacheFileMetaTable.branch, branch),
+          eq(cacheFileMetaTable.path, scope.path),
+          eq(cacheFileMetaTable.context, scope.context),
+        ),
+      );
   });
   if (!locked.acquired) return false;
   return true;

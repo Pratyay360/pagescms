@@ -4,8 +4,8 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRepo } from "@/contexts/repo-context";
 import { useConfig } from "@/contexts/config-context";
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { requireApiSuccess } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
 import { Check, Loader } from "lucide-react";
@@ -20,9 +20,7 @@ export function RepoBranches() {
 
   useEffect(() => {
     setFilteredBranches(
-      branches?.filter((branch) =>
-        branch.toLowerCase().includes(search.toLowerCase())
-      )
+      branches?.filter((branch) => branch.toLowerCase().includes(search.toLowerCase())),
     );
   }, [search, branches]);
 
@@ -40,13 +38,16 @@ export function RepoBranches() {
         try {
           const newBranch = search;
 
-          const response = await fetch(`/api/${config.owner}/${config.repo}/${encodeURIComponent(config.branch)}/branches`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              name: newBranch
-            }),
-          });
+          const response = await fetch(
+            `/api/${config.owner}/${config.repo}/${encodeURIComponent(config.branch)}/branches`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                name: newBranch,
+              }),
+            },
+          );
           await requireApiSuccess<any>(response, "Failed to create branch");
 
           if (branches) {
@@ -77,22 +78,23 @@ export function RepoBranches() {
           onChange={(e) => setSearch(e.target.value)}
         />
         <Button
-          disabled={!search || !isValidBranchName(search) || branches.includes(search) || isSubmitting}
-          onClick={handleCreateBranch}>
+          disabled={
+            !search || !isValidBranchName(search) || branches.includes(search) || isSubmitting
+          }
+          onClick={handleCreateBranch}
+        >
           Create
-          {isSubmitting && (<Loader className="ml-2 h-4 w-4 animate-spin" />)}
+          {isSubmitting && <Loader className="ml-2 h-4 w-4 animate-spin" />}
         </Button>
       </header>
       <main className="flex flex-col gap-y-1 overflow-auto max-h-[calc(100vh-9rem)] scrollbar text-sm">
-        {filteredBranches && filteredBranches.length > 0
-          ? filteredBranches.map(branch => (
+        {filteredBranches && filteredBranches.length > 0 ? (
+          filteredBranches.map((branch) => (
             <Link
               key={branch}
               className={cn(
-                branch === config?.branch
-                  ? "bg-accent cursor-default"
-                  : "hover:bg-accent",
-                "inline-flex items-center rounded-lg px-3 py-2 transition-all ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                branch === config?.branch ? "bg-accent cursor-default" : "hover:bg-accent",
+                "inline-flex items-center rounded-lg px-3 py-2 transition-all ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
               )}
               href={`/${owner}/${repo}/${encodeURIComponent(branch)}`}
             >
@@ -100,9 +102,10 @@ export function RepoBranches() {
               {branch === config?.branch && <Check className="h-4 w-4 ml-auto opacity-50" />}
             </Link>
           ))
-          : <div className="text-muted-foreground py-6 text-center">No branches found.</div>
-        }
+        ) : (
+          <div className="text-muted-foreground py-6 text-center">No branches found.</div>
+        )}
       </main>
     </div>
-  )
+  );
 }

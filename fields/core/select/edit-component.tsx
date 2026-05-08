@@ -37,15 +37,11 @@ const EditComponent = (props: any) => {
   const { value, field, onChange } = props;
   const isReadonly = Boolean(field?.readonly);
   const multiple = Boolean(field.options?.multiple);
-  const storeAsObject =
-    field?.type === "reference" && field.options?.store === "object";
+  const storeAsObject = field?.type === "reference" && field.options?.store === "object";
   const anchor = useComboboxAnchor();
 
   const options = useMemo(
-    () =>
-      Array.isArray(field.options?.values)
-        ? field.options.values.map(normalizeOption)
-        : [],
+    () => (Array.isArray(field.options?.values) ? field.options.values.map(normalizeOption) : []),
     [field.options?.values],
   );
 
@@ -53,10 +49,7 @@ const EditComponent = (props: any) => {
     if (multiple) {
       const values = Array.isArray(value) ? value : [];
       return values.map((item) => {
-        const option =
-          typeof item === "object" && item !== null
-            ? normalizeOption(item)
-            : null;
+        const option = typeof item === "object" && item !== null ? normalizeOption(item) : null;
         const optionValue = option?.value ?? String(item);
         return (
           options.find((candidate: Option) => candidate.value === optionValue) ??
@@ -70,10 +63,7 @@ const EditComponent = (props: any) => {
       return null;
     }
 
-    const option =
-      typeof value === "object" && value !== null
-        ? normalizeOption(value)
-        : null;
+    const option = typeof value === "object" && value !== null ? normalizeOption(value) : null;
     const optionValue = option?.value ?? String(value);
     return (
       options.find((candidate: Option) => candidate.value === optionValue) ??
@@ -82,14 +72,11 @@ const EditComponent = (props: any) => {
     );
   }, [multiple, options, value]);
 
-  const placeholder = isReadonly
-    ? undefined
-    : field.options?.placeholder || "Select...";
+  const placeholder = isReadonly ? undefined : field.options?.placeholder || "Select...";
 
   const handleValueChange = (nextValue: Option[] | Option | null) => {
     if (isReadonly) return;
-    const toOutput = (option: Option) =>
-      storeAsObject ? option : option.value;
+    const toOutput = (option: Option) => (storeAsObject ? option : option.value);
 
     if (multiple) {
       onChange(Array.isArray(nextValue) ? nextValue.map(toOutput) : []);
@@ -113,9 +100,7 @@ const EditComponent = (props: any) => {
         <>
           <ComboboxChips
             ref={anchor}
-            className={cn(
-              isReadonly && "focus-within:border-input focus-within:ring-0",
-            )}
+            className={cn(isReadonly && "focus-within:border-input focus-within:ring-0")}
           >
             <ComboboxValue>
               {(values: Option[]) => (
@@ -149,7 +134,10 @@ const EditComponent = (props: any) => {
         <>
           <ComboboxInput
             placeholder={placeholder}
-            className={cn(isReadonly && "has-[[data-slot=input-group-control]:focus-visible]:border-input has-[[data-slot=input-group-control]:focus-visible]:ring-0")}
+            className={cn(
+              isReadonly &&
+                "has-[[data-slot=input-group-control]:focus-visible]:border-input has-[[data-slot=input-group-control]:focus-visible]:ring-0",
+            )}
             showTrigger={!isReadonly}
             readOnly={isReadonly}
           />

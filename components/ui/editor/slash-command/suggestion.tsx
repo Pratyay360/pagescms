@@ -2,7 +2,18 @@ import { ReactRenderer } from "@tiptap/react";
 import type { Editor } from "@tiptap/core";
 import tippy, { type Instance as TippyInstance } from "tippy.js";
 import CommandsList, { type CommandsListHandle, type SlashItem } from "./commands-list";
-import { Code, Heading1, Heading2, Heading3, Image, List, ListOrdered, Pilcrow, Quote, Table } from "lucide-react";
+import {
+  Code,
+  Heading1,
+  Heading2,
+  Heading3,
+  Image,
+  List,
+  ListOrdered,
+  Pilcrow,
+  Quote,
+  Table,
+} from "lucide-react";
 import type { SuggestionOptions as TiptapSuggestionOptions } from "@tiptap/suggestion";
 
 export type ImagePickerUrlResult = {
@@ -34,7 +45,9 @@ export type SlashImageFallback = "prompt-url" | "none";
 
 type SuggestionOptions = {
   onRequestImage?: ImagePickerHandler | null;
-  onInsertLocalImageFile?: ((context: ImagePickerContext & Omit<ImagePickerFileResult, "kind">) => void | Promise<void>) | null;
+  onInsertLocalImageFile?:
+    | ((context: ImagePickerContext & Omit<ImagePickerFileResult, "kind">) => void | Promise<void>)
+    | null;
   enableImages?: boolean;
   imageSlashFallback?: SlashImageFallback;
 };
@@ -43,7 +56,9 @@ const TABLE_SAFE_COMMANDS = new Set(["Image"]);
 
 type RequestImageAndInsertArgs = ImagePickerContext & {
   onRequestImage: ImagePickerHandler | null;
-  onInsertLocalImageFile: ((context: ImagePickerContext & Omit<ImagePickerFileResult, "kind">) => void | Promise<void>) | null;
+  onInsertLocalImageFile:
+    | ((context: ImagePickerContext & Omit<ImagePickerFileResult, "kind">) => void | Promise<void>)
+    | null;
   imageSlashFallback: SlashImageFallback;
 };
 
@@ -85,11 +100,7 @@ const requestImageAndInsert = async ({
     ...(result.title ? { title: result.title } : {}),
   };
 
-  editor
-    .chain()
-    .focus()
-    .setImage(imageAttrs)
-    .run();
+  editor.chain().focus().setImage(imageAttrs).run();
 };
 
 const getAllItems = (options: SuggestionOptions): SlashItem[] => [
@@ -101,27 +112,32 @@ const getAllItems = (options: SuggestionOptions): SlashItem[] => [
   {
     title: "Heading 1",
     icon: Heading1,
-    command: ({ editor, range }) => editor.chain().focus().deleteRange(range).setHeading({ level: 1 }).run(),
+    command: ({ editor, range }) =>
+      editor.chain().focus().deleteRange(range).setHeading({ level: 1 }).run(),
   },
   {
     title: "Heading 2",
     icon: Heading2,
-    command: ({ editor, range }) => editor.chain().focus().deleteRange(range).setHeading({ level: 2 }).run(),
+    command: ({ editor, range }) =>
+      editor.chain().focus().deleteRange(range).setHeading({ level: 2 }).run(),
   },
   {
     title: "Heading 3",
     icon: Heading3,
-    command: ({ editor, range }) => editor.chain().focus().deleteRange(range).setHeading({ level: 3 }).run(),
+    command: ({ editor, range }) =>
+      editor.chain().focus().deleteRange(range).setHeading({ level: 3 }).run(),
   },
   {
     title: "Bulleted list",
     icon: List,
-    command: ({ editor, range }) => editor.chain().focus().deleteRange(range).toggleBulletList().run(),
+    command: ({ editor, range }) =>
+      editor.chain().focus().deleteRange(range).toggleBulletList().run(),
   },
   {
     title: "Numbered list",
     icon: ListOrdered,
-    command: ({ editor, range }) => editor.chain().focus().deleteRange(range).toggleOrderedList().run(),
+    command: ({ editor, range }) =>
+      editor.chain().focus().deleteRange(range).toggleOrderedList().run(),
   },
   {
     title: "Image",
@@ -140,17 +156,24 @@ const getAllItems = (options: SuggestionOptions): SlashItem[] => [
     title: "Table",
     icon: Table,
     command: ({ editor, range }) =>
-      editor.chain().focus().deleteRange(range).insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run(),
+      editor
+        .chain()
+        .focus()
+        .deleteRange(range)
+        .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
+        .run(),
   },
   {
     title: "Quote",
     icon: Quote,
-    command: ({ editor, range }) => editor.chain().focus().deleteRange(range).toggleBlockquote().run(),
+    command: ({ editor, range }) =>
+      editor.chain().focus().deleteRange(range).toggleBlockquote().run(),
   },
   {
     title: "Code block",
     icon: Code,
-    command: ({ editor, range }) => editor.chain().focus().deleteRange(range).toggleCodeBlock().run(),
+    command: ({ editor, range }) =>
+      editor.chain().focus().deleteRange(range).toggleCodeBlock().run(),
   },
 ];
 

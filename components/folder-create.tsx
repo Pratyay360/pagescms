@@ -41,7 +41,7 @@ const FolderCreate = ({
   const [open, setOpen] = useState(false);
   const [folderPath, setFolderPath] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   const handleCreate = async () => {
     const normalizedFolderInput = normalizePath(folderPath.trim());
     if (!normalizedFolderInput) {
@@ -49,10 +49,7 @@ const FolderCreate = ({
       return;
     }
 
-    const fullNewPath = joinPathSegments([
-      normalizePath(path),
-      normalizedFolderInput,
-    ]);
+    const fullNewPath = joinPathSegments([normalizePath(path), normalizedFolderInput]);
 
     setIsSubmitting(true);
     try {
@@ -60,16 +57,19 @@ const FolderCreate = ({
         status: string;
         message?: string;
         data: FolderCreateResult;
-      }> = fetch(`/api/${config.owner}/${config.repo}/${encodeURIComponent(config.branch)}/files/${encodeURIComponent(fullNewPath + "/.gitkeep")}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          type,
-          name,
-          content: "",
-          onConflict: "error",
-        }),
-      }).then(async (response) => {
+      }> = fetch(
+        `/api/${config.owner}/${config.repo}/${encodeURIComponent(config.branch)}/files/${encodeURIComponent(fullNewPath + "/.gitkeep")}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            type,
+            name,
+            content: "",
+            onConflict: "error",
+          }),
+        },
+      ).then(async (response) => {
         const payload = await response.json().catch(() => null);
         if (!response.ok) {
           if (response.status === 409) {
@@ -114,13 +114,13 @@ const FolderCreate = ({
         }
       }}
     >
-      <DialogTrigger asChild>
-        {children}
-      </DialogTrigger>
+      <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Create a folder</DialogTitle>
-          <DialogDescription>Choose a name for the folder to create{path ? ` under "${normalizePath(path)}"` : null}.</DialogDescription>
+          <DialogDescription>
+            Choose a name for the folder to create{path ? ` under "${normalizePath(path)}"` : null}.
+          </DialogDescription>
         </DialogHeader>
         <form
           onSubmit={async (event) => {
@@ -129,16 +129,16 @@ const FolderCreate = ({
           }}
           className="space-y-4"
         >
-          <Input
-            autoFocus
-            value={folderPath}
-            onChange={(e) => setFolderPath(e.target.value)}
-          />
+          <Input autoFocus value={folderPath} onChange={(e) => setFolderPath(e.target.value)} />
           <DialogFooter>
             <DialogClose asChild>
-              <Button type="button" variant="secondary" disabled={isSubmitting}>Cancel</Button>
+              <Button type="button" variant="secondary" disabled={isSubmitting}>
+                Cancel
+              </Button>
             </DialogClose>
-            <Button type="submit" disabled={isSubmitting || !folderPath.trim()}>Create</Button>
+            <Button type="submit" disabled={isSubmitting || !folderPath.trim()}>
+              Create
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

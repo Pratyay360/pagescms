@@ -18,11 +18,17 @@ const requireApiSuccess = async <T = any>(
   const payload = await parseJsonSafely<T & ApiResponseLike>(response);
 
   if (!response.ok) {
-    const message = payload?.message || `${fallbackMessage}: ${response.status} ${response.statusText}`;
+    const message =
+      payload?.message || `${fallbackMessage}: ${response.status} ${response.statusText}`;
     throw new Error(message);
   }
 
-  if (payload && typeof payload === "object" && "status" in payload && payload.status !== "success") {
+  if (
+    payload &&
+    typeof payload === "object" &&
+    "status" in payload &&
+    payload.status !== "success"
+  ) {
     throw new Error(payload.message || fallbackMessage);
   }
 

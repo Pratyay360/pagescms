@@ -2,7 +2,7 @@ const escapeCsv = (value: unknown): string => {
   if (value == null) return "";
   const stringValue = String(value);
   if (!/[",\n\r]/.test(stringValue)) return stringValue;
-  return `"${stringValue.replace(/"/g, "\"\"")}"`;
+  return `"${stringValue.replace(/"/g, '""')}"`;
 };
 
 const parseCsvLine = (line: string): string[] => {
@@ -14,10 +14,10 @@ const parseCsvLine = (line: string): string[] => {
     const char = line[i];
 
     if (inQuotes) {
-      if (char === "\"") {
+      if (char === '"') {
         const next = line[i + 1];
-        if (next === "\"") {
-          current += "\"";
+        if (next === '"') {
+          current += '"';
           i += 1;
         } else {
           inQuotes = false;
@@ -28,7 +28,7 @@ const parseCsvLine = (line: string): string[] => {
       continue;
     }
 
-    if (char === "\"") {
+    if (char === '"') {
       inQuotes = true;
       continue;
     }

@@ -47,11 +47,7 @@ const Installations = () => {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem asChild>
-                <a
-                  href={getGithubInstallationUrl(account)}
-                  target="_blank"
-                  rel="noreferrer"
-                >
+                <a href={getGithubInstallationUrl(account)} target="_blank" rel="noreferrer">
                   Manage GitHub App
                   <ArrowUpRight className="size-3 text-muted-foreground ml-auto" />
                 </a>

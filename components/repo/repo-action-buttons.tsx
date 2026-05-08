@@ -3,13 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { formatDistanceToNowStrict } from "date-fns";
-import {
-  CircleCheck,
-  CirclePlay,
-  CircleX,
-  EllipsisVertical,
-  Loader,
-} from "lucide-react";
+import { CircleCheck, CirclePlay, CircleX, EllipsisVertical, Loader } from "lucide-react";
 import { toast } from "sonner";
 import { useActionToasts } from "@/contexts/action-toast-context";
 import { useUser } from "@/contexts/user-context";
@@ -79,9 +73,8 @@ const getRunIcon = (run: ActionRunSummary | null | undefined) => {
   return <CircleX className="size-4 text-destructive" />;
 };
 
-const getPrimaryIcon = (isBusy: boolean) => (
-  isBusy ? <Loader className="size-4 animate-spin" /> : <CirclePlay className="size-4" />
-);
+const getPrimaryIcon = (isBusy: boolean) =>
+  isBusy ? <Loader className="size-4 animate-spin" /> : <CirclePlay className="size-4" />;
 
 const formatRunLine = (run: ActionRunSummary) => {
   const createdAt = run.createdAt ? new Date(run.createdAt) : null;
@@ -90,9 +83,7 @@ const formatRunLine = (run: ActionRunSummary) => {
     return (
       <span className="flex min-w-0 flex-col">
         <span className="truncate">Unknown time</span>
-        {secondary && (
-          <span className="truncate text-xs text-muted-foreground">{secondary}</span>
-        )}
+        {secondary && <span className="truncate text-xs text-muted-foreground">{secondary}</span>}
       </span>
     );
   }
@@ -102,9 +93,7 @@ const formatRunLine = (run: ActionRunSummary) => {
   return (
     <span className="flex min-w-0 flex-col">
       <span className="truncate">{relative}</span>
-      {secondary && (
-        <span className="truncate text-xs text-muted-foreground">{secondary}</span>
-      )}
+      {secondary && <span className="truncate text-xs text-muted-foreground">{secondary}</span>}
     </span>
   );
 };
@@ -120,7 +109,10 @@ const getDefaultFieldValues = (fields: RepoActionField[] | undefined) => {
   }, {});
 };
 
-const isFieldValueValid = (field: RepoActionField, value: string | number | boolean | undefined) => {
+const isFieldValueValid = (
+  field: RepoActionField,
+  value: string | number | boolean | undefined,
+) => {
   if (!field.required) return true;
   if (field.type === "checkbox") return value === true;
   if (field.type === "number") return value !== "" && value != null;
@@ -159,7 +151,9 @@ export function RepoActionButtons({
     if (contextName) params.set("contextName", contextName);
     if (contextPath) params.set("contextPath", contextPath);
 
-    const response = await fetch(`/api/${owner}/${repo}/${encodeURIComponent(refName)}/actions?${params.toString()}`);
+    const response = await fetch(
+      `/api/${owner}/${repo}/${encodeURIComponent(refName)}/actions?${params.toString()}`,
+    );
     const payload = await requireApiSuccess<{ data: Record<string, ActionRunSummary[]> }>(
       response,
       "Failed to fetch action runs",
@@ -183,7 +177,6 @@ export function RepoActionButtons({
           toast.dismiss(refreshErrorToastIdRef.current);
           refreshErrorToastIdRef.current = null;
         }
-
       } catch (error) {
         console.error(error);
         if (refreshErrorToastIdRef.current == null) {
@@ -195,59 +188,70 @@ export function RepoActionButtons({
     return () => window.clearInterval(interval);
   }, [actions, loadRuns]);
 
-  const dispatchAction = useCallback(async (
-    action: RepoActionConfig,
-    inputValues: Record<string, string | number | boolean> = {},
-  ) => {
-    const toastId = toast.loading(`Starting "${action.label}"…`);
+  const dispatchAction = useCallback(
+    async (
+      action: RepoActionConfig,
+      inputValues: Record<string, string | number | boolean> = {},
+    ) => {
+      const toastId = toast.loading(`Starting "${action.label}"…`);
 
-    setDispatching((current) => ({ ...current, [action.name]: true }));
+      setDispatching((current) => ({ ...current, [action.name]: true }));
 
-    try {
-      const response = await fetch(`/api/${owner}/${repo}/${encodeURIComponent(refName)}/actions`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action,
-          context: {
-            kind: contextType,
-            name: contextName,
-            path: contextPath,
-            data: contextData,
+      try {
+        const response = await fetch(
+          `/api/${owner}/${repo}/${encodeURIComponent(refName)}/actions`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              action,
+              context: {
+                kind: contextType,
+                name: contextName,
+                path: contextPath,
+                data: contextData,
+              },
+              inputs: inputValues,
+            }),
           },
-          inputs: inputValues,
-        }),
-      });
-      const payload = await requireApiSuccess<{ data: { id: number } }>(
-        response,
-        "Failed to dispatch action",
-      );
-      trackActionRun({
-        runId: payload.data.id,
-        owner,
-        repo,
-        refName,
-        actionLabel: action.label,
-        toastId,
-      });
+        );
+        const payload = await requireApiSuccess<{ data: { id: number } }>(
+          response,
+          "Failed to dispatch action",
+        );
+        trackActionRun({
+          runId: payload.data.id,
+          owner,
+          repo,
+          refName,
+          actionLabel: action.label,
+          toastId,
+        });
       } catch (error) {
-        toast.error(error instanceof Error ? error.message : "Failed to dispatch action.", { id: toastId });
+        toast.error(error instanceof Error ? error.message : "Failed to dispatch action.", {
+          id: toastId,
+        });
       } finally {
         setDispatching((current) => ({ ...current, [action.name]: false }));
       }
-  }, [contextData, contextName, contextPath, contextType, owner, refName, repo, trackActionRun]);
+    },
+    [contextData, contextName, contextPath, contextType, owner, refName, repo, trackActionRun],
+  );
 
-  const handleActionClick = useCallback((action: RepoActionConfig) => {
-    const shouldConfirm = action.confirm !== false;
-    const hasFields = Boolean(action.fields?.length);
-    if (!shouldConfirm && !hasFields) {
-      void dispatchAction(action);
-      return;
-    }
+  const handleActionClick = useCallback(
+    (action: RepoActionConfig) => {
+      const shouldConfirm = action.confirm !== false;
+      const hasFields = Boolean(action.fields?.length);
+      if (!shouldConfirm && !hasFields) {
+        void dispatchAction(action);
+        return;
+      }
 
-    setDialogAction(action);
-    setDialogValues(getDefaultFieldValues(action.fields));
-  }, [dispatchAction]);
+      setDialogAction(action);
+      setDialogValues(getDefaultFieldValues(action.fields));
+    },
+    [dispatchAction],
+  );
 
   const isDialogSubmitDisabled = useMemo(() => {
     if (!dialogAction?.fields?.length) return false;
@@ -270,7 +274,9 @@ export function RepoActionButtons({
         <Textarea
           id={fieldId}
           value={typeof value === "string" ? value : ""}
-          onChange={(event) => setDialogValues((current) => ({ ...current, [field.name]: event.target.value }))}
+          onChange={(event) =>
+            setDialogValues((current) => ({ ...current, [field.name]: event.target.value }))
+          }
         />
       );
     }
@@ -279,7 +285,9 @@ export function RepoActionButtons({
       return (
         <Select
           value={typeof value === "string" ? value : ""}
-          onValueChange={(nextValue) => setDialogValues((current) => ({ ...current, [field.name]: nextValue }))}
+          onValueChange={(nextValue) =>
+            setDialogValues((current) => ({ ...current, [field.name]: nextValue }))
+          }
         >
           <SelectTrigger className="w-full">
             <SelectValue placeholder={field.label} />
@@ -318,12 +326,17 @@ export function RepoActionButtons({
         id={fieldId}
         type={field.type === "number" ? "number" : "text"}
         value={typeof value === "string" || typeof value === "number" ? value : ""}
-        onChange={(event) => setDialogValues((current) => ({
-          ...current,
-          [field.name]: field.type === "number"
-            ? (Number.isNaN(event.target.valueAsNumber) ? "" : event.target.valueAsNumber)
-            : event.target.value,
-        }))}
+        onChange={(event) =>
+          setDialogValues((current) => ({
+            ...current,
+            [field.name]:
+              field.type === "number"
+                ? Number.isNaN(event.target.valueAsNumber)
+                  ? ""
+                  : event.target.valueAsNumber
+                : event.target.value,
+          }))
+        }
       />
     );
   };
@@ -334,20 +347,18 @@ export function RepoActionButtons({
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          {layout === "sidebar"
-            ? (
-              <SidebarMenuAction showOnHover>
-                <EllipsisVertical />
-              </SidebarMenuAction>
-            )
-            : (
-              <Button type="button" variant="outline" size="icon">
-                <EllipsisVertical />
-              </Button>
-            )}
+          {layout === "sidebar" ? (
+            <SidebarMenuAction showOnHover>
+              <EllipsisVertical />
+            </SidebarMenuAction>
+          ) : (
+            <Button type="button" variant="outline" size="icon">
+              <EllipsisVertical />
+            </Button>
+          )}
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="max-w-64">
-          {runs.map((run) => (
+          {runs.map((run) =>
             isGithubUser && run.htmlUrl ? (
               <DropdownMenuItem key={run.id} asChild>
                 <Link
@@ -357,23 +368,16 @@ export function RepoActionButtons({
                   className="flex w-full items-center gap-3"
                 >
                   {getRunIcon(run)}
-                  <span className="min-w-0 flex-1">
-                    {formatRunLine(run)}
-                  </span>
+                  <span className="min-w-0 flex-1">{formatRunLine(run)}</span>
                 </Link>
               </DropdownMenuItem>
             ) : (
-              <div
-                key={run.id}
-                className="flex items-center gap-3 rounded-sm px-2 py-1.5 text-sm"
-              >
+              <div key={run.id} className="flex items-center gap-3 rounded-sm px-2 py-1.5 text-sm">
                 {getRunIcon(run)}
-                <span className="min-w-0 flex-1">
-                  {formatRunLine(run)}
-                </span>
+                <span className="min-w-0 flex-1">{formatRunLine(run)}</span>
               </div>
-            )
-          ))}
+            ),
+          )}
           {isGithubUser && (
             <>
               <DropdownMenuSeparator />
@@ -390,12 +394,15 @@ export function RepoActionButtons({
   };
 
   const dialogNode = (
-    <Dialog open={dialogAction != null} onOpenChange={(open) => {
-      if (!open) {
-        setDialogAction(null);
-        setDialogValues({});
-      }
-    }}>
+    <Dialog
+      open={dialogAction != null}
+      onOpenChange={(open) => {
+        if (!open) {
+          setDialogAction(null);
+          setDialogValues({});
+        }
+      }}
+    >
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
@@ -424,16 +431,19 @@ export function RepoActionButtons({
           </div>
         ) : null}
         <DialogFooter>
-          <Button variant="outline" onClick={() => {
-            setDialogAction(null);
-            setDialogValues({});
-          }}>
+          <Button
+            variant="outline"
+            onClick={() => {
+              setDialogAction(null);
+              setDialogValues({});
+            }}
+          >
             Cancel
           </Button>
           <Button onClick={handleDialogSubmit} disabled={isDialogSubmitDisabled}>
             {typeof dialogAction?.confirm === "object" && dialogAction.confirm.button
               ? dialogAction.confirm.button
-              : dialogAction?.label ?? "Run action"}
+              : (dialogAction?.label ?? "Run action")}
           </Button>
         </DialogFooter>
       </DialogContent>

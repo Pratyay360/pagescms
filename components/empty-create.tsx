@@ -14,7 +14,7 @@ const EmptyCreate = ({
   children,
   type,
   name,
-  onCreate
+  onCreate,
 }: {
   children: React.ReactNode;
   type: "content" | "media" | "settings";
@@ -65,27 +65,27 @@ const EmptyCreate = ({
   } else {
     throw new Error(`Invalid type "${type}".`);
   }
-  
+
   const handleCreate = async () => {
     if (isCreating) return;
     setIsCreating(true);
     const toastId = toast.loading(`Creating ${toCreate}...`);
 
     try {
-      const response = await fetch(`/api/${config.owner}/${config.repo}/${encodeURIComponent(config.branch)}/files/${encodeURIComponent(normalizePath(path))}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          type,
-          name,
-          content,
-          ...(path.endsWith("/.gitkeep") ? { onConflict: "error" } : {}),
-        }),
-      });
-      await requireApiSuccess<any>(
-        response,
-        `Failed to create ${toCreate}`,
+      const response = await fetch(
+        `/api/${config.owner}/${config.repo}/${encodeURIComponent(config.branch)}/files/${encodeURIComponent(normalizePath(path))}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            type,
+            name,
+            content,
+            ...(path.endsWith("/.gitkeep") ? { onConflict: "error" } : {}),
+          }),
+        },
       );
+      await requireApiSuccess<any>(response, `Failed to create ${toCreate}`);
 
       toast.loading(`Opening ${toCreate}...`, { id: toastId });
       onCreate?.(normalizePath(path));
@@ -108,7 +108,9 @@ const EmptyCreate = ({
           Creating...
           <LucideLoader className="h-4 w-4 animate-spin" />
         </span>
-      ) : children}
+      ) : (
+        children
+      )}
     </Button>
   );
 };

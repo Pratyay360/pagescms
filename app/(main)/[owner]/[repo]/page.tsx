@@ -12,6 +12,6 @@ export default function Page() {
     // If no branch is provided, redirect to the default branch
     router.replace(`/${owner}/${repo}/${encodeURIComponent(defaultBranch as string)}`);
   }, [owner, repo, defaultBranch, router]);
-  
+
   return null;
-};
+}

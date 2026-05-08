@@ -27,9 +27,5 @@ export const ConfigProvider = ({
 }) => {
   const [config, setConfig] = useState<Config | null>(value);
 
-  return (
-    <ConfigContext.Provider value={{ config, setConfig }}>
-      {children}
-    </ConfigContext.Provider>
-  );
+  return <ConfigContext.Provider value={{ config, setConfig }}>{children}</ConfigContext.Provider>;
 };

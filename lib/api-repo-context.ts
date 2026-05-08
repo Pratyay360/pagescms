@@ -38,7 +38,8 @@ const getRepoReadContext = async ({ owner, repo, branch }: RepoRef): Promise<Rep
   const config = await getConfig(owner, repo, branch, {
     getToken: async () => token,
   });
-  if (!config) throw createHttpError(`Configuration not found for ${owner}/${repo}/${branch}.`, 404);
+  if (!config)
+    throw createHttpError(`Configuration not found for ${owner}/${repo}/${branch}.`, 404);
 
   return { user, token, config };
 };

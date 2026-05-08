@@ -8,7 +8,7 @@ export default async function Page({
   searchParams,
 }: {
   searchParams: Promise<{ redirect?: string }>;
-}) {  
+}) {
   const requestHeaders = await headers();
   const resolvedSearchParams = await searchParams;
   const session = await auth.api.getSession({
@@ -17,7 +17,5 @@ export default async function Page({
   const safeRedirect = getSafeRedirect(resolvedSearchParams.redirect);
   if (session?.user) return redirect(safeRedirect === "/sign-in" ? "/" : safeRedirect);
 
-	return (
-    <SignIn/>
-  );
+  return <SignIn />;
 }

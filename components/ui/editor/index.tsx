@@ -227,7 +227,9 @@ const normalizeMarkdownTables = (markdown: string): string =>
       const cells = splitMarkdownTableCells(line);
       if (!cells.length) return line;
 
-      const normalizedCells = cells.map((cell) => (TABLE_CELL_NBSP_PATTERN.test(cell.trim()) ? "" : cell.trim()));
+      const normalizedCells = cells.map((cell) =>
+        TABLE_CELL_NBSP_PATTERN.test(cell.trim()) ? "" : cell.trim(),
+      );
       return `| ${normalizedCells.join(" | ")} |`;
     })
     .join("\n");
@@ -342,7 +344,8 @@ export function Editor({
           const selectionFragment = editor.state.selection.content().content;
 
           if (format === "markdown") {
-            const markdown = editor.storage.markdown?.manager?.serialize(selectionFragment.toJSON()) ?? "";
+            const markdown =
+              editor.storage.markdown?.manager?.serialize(selectionFragment.toJSON()) ?? "";
             copyEvent.clipboardData.setData("text/plain", markdown);
             copyEvent.preventDefault();
             return true;
@@ -377,7 +380,9 @@ export function Editor({
 
         const coords = view.posAtCoords({ left: event.clientX, top: event.clientY });
         if (coords?.pos != null) {
-          view.dispatch(view.state.tr.setSelection(TextSelection.create(view.state.doc, coords.pos)));
+          view.dispatch(
+            view.state.tr.setSelection(TextSelection.create(view.state.doc, coords.pos)),
+          );
         }
 
         void insertImagesFromFiles(files, "drop");
@@ -400,46 +405,48 @@ export function Editor({
     },
   });
 
-  const activeState = (useEditorState({
-    editor,
-    selector: ({ editor: currentEditor }) => {
-      if (!currentEditor) {
-        return defaultActiveState;
-      }
+  const activeState =
+    (useEditorState({
+      editor,
+      selector: ({ editor: currentEditor }) => {
+        if (!currentEditor) {
+          return defaultActiveState;
+        }
 
-      const blockType: BlockType = currentEditor.isActive("heading", { level: 1 })
-        ? "heading1"
-        : currentEditor.isActive("heading", { level: 2 })
-          ? "heading2"
-          : currentEditor.isActive("heading", { level: 3 })
-            ? "heading3"
-            : currentEditor.isActive("bulletList")
-              ? "bulletList"
-              : currentEditor.isActive("orderedList")
-                ? "orderedList"
-                : currentEditor.isActive("blockquote")
-                  ? "blockquote"
-                  : currentEditor.isActive("codeBlock")
-                    ? "codeBlock"
-                    : "paragraph";
+        const blockType: BlockType = currentEditor.isActive("heading", { level: 1 })
+          ? "heading1"
+          : currentEditor.isActive("heading", { level: 2 })
+            ? "heading2"
+            : currentEditor.isActive("heading", { level: 3 })
+              ? "heading3"
+              : currentEditor.isActive("bulletList")
+                ? "bulletList"
+                : currentEditor.isActive("orderedList")
+                  ? "orderedList"
+                  : currentEditor.isActive("blockquote")
+                    ? "blockquote"
+                    : currentEditor.isActive("codeBlock")
+                      ? "codeBlock"
+                      : "paragraph";
 
-      return {
-        blockType,
-        bold: currentEditor.isActive("bold"),
-        italic: currentEditor.isActive("italic"),
-        underline: currentEditor.isActive("underline"),
-        strike: currentEditor.isActive("strike"),
-        code: currentEditor.isActive("code"),
-        link: currentEditor.isActive("link"),
-      };
-    },
-  }) as ActiveState | null) ?? defaultActiveState;
+        return {
+          blockType,
+          bold: currentEditor.isActive("bold"),
+          italic: currentEditor.isActive("italic"),
+          underline: currentEditor.isActive("underline"),
+          strike: currentEditor.isActive("strike"),
+          code: currentEditor.isActive("code"),
+          link: currentEditor.isActive("link"),
+        };
+      },
+    }) as ActiveState | null) ?? defaultActiveState;
 
   useEffect(() => {
     if (!editor) return;
     if (value === lastEmittedValueRef.current) return;
 
-    const current = format === "markdown" ? normalizeMarkdownTables(editor.getMarkdown()) : editor.getHTML();
+    const current =
+      format === "markdown" ? normalizeMarkdownTables(editor.getMarkdown()) : editor.getHTML();
     const hasChanged =
       format === "markdown" ? value.trimEnd() !== current.trimEnd() : value !== current;
 
@@ -559,7 +566,10 @@ export function Editor({
       reader.readAsDataURL(file);
     });
 
-  const preloadImageSource = async (src: string, timeoutMs = UPLOADED_IMAGE_PRELOAD_TIMEOUT_MS): Promise<boolean> =>
+  const preloadImageSource = async (
+    src: string,
+    timeoutMs = UPLOADED_IMAGE_PRELOAD_TIMEOUT_MS,
+  ): Promise<boolean> =>
     new Promise<boolean>((resolve) => {
       const image = new window.Image();
       let settled = false;
@@ -935,7 +945,12 @@ export function Editor({
         shouldShow={({ editor: bubbleEditor, from, to, view, element }) => {
           const hasEditorFocus = view.hasFocus() || element.contains(document.activeElement);
           if (!hasEditorFocus) return false;
-          return showLinkInput || showTableActions || showAltInput || (!bubbleEditor.state.selection.empty && from !== to);
+          return (
+            showLinkInput ||
+            showTableActions ||
+            showAltInput ||
+            (!bubbleEditor.state.selection.empty && from !== to)
+          );
         }}
       >
         <div className="flex flex-col gap-1">

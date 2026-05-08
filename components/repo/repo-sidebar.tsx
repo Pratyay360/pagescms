@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  Fragment,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useConfig } from "@/contexts/config-context";
@@ -163,13 +156,8 @@ function RepoSwitcher() {
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <Avatar className="h-8 w-8 rounded-md">
-                <AvatarImage
-                  src={`https://github.com/${owner}.png`}
-                  alt={owner}
-                />
-                <AvatarFallback>
-                  {owner.slice(0, 2).toUpperCase()}
-                </AvatarFallback>
+                <AvatarImage src={`https://github.com/${owner}.png`} alt={owner} />
+                <AvatarFallback>{owner.slice(0, 2).toUpperCase()}</AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">{repo}</span>
@@ -183,18 +171,10 @@ function RepoSwitcher() {
           <DropdownMenuContent
             className="rounded-lg"
             align="start"
-            style={
-              menuWidth
-                ? { width: `${menuWidth}px`, minWidth: `${menuWidth}px` }
-                : undefined
-            }
+            style={menuWidth ? { width: `${menuWidth}px`, minWidth: `${menuWidth}px` } : undefined}
           >
             <DropdownMenuItem asChild>
-              <a
-                href={`https://github.com/${owner}/${repo}`}
-                target="_blank"
-                rel="noreferrer"
-              >
+              <a href={`https://github.com/${owner}/${repo}`} target="_blank" rel="noreferrer">
                 View on GitHub
                 <ArrowUpRight className="size-3 text-muted-foreground ml-auto" />
               </a>
@@ -203,10 +183,7 @@ function RepoSwitcher() {
             <DropdownMenuLabel className="text-xs text-muted-foreground">
               Branches
             </DropdownMenuLabel>
-            <DropdownMenuRadioGroup
-              value={currentBranch}
-              onValueChange={handleBranchChange}
-            >
+            <DropdownMenuRadioGroup value={currentBranch} onValueChange={handleBranchChange}>
               {sortedBranches.map((branch) => (
                 <DropdownMenuRadioItem key={branch} value={branch}>
                   <span className="truncate">{branch}</span>
@@ -224,10 +201,7 @@ function RepoSwitcher() {
                   Recently visited
                 </DropdownMenuLabel>
                 {recentRepos.map((visit) => (
-                  <DropdownMenuItem
-                    asChild
-                    key={`${visit.owner}/${visit.repo}/${visit.branch}`}
-                  >
+                  <DropdownMenuItem asChild key={`${visit.owner}/${visit.repo}/${visit.branch}`}>
                     <Link
                       href={`/${visit.owner}/${visit.repo}/${encodeURIComponent(visit.branch)}`}
                     >
@@ -362,10 +336,7 @@ export function RepoSidebar() {
 
     return items;
   }, [config, user]);
-  const rootActions = useMemo(
-    () => getRootActions(config?.object),
-    [config?.object],
-  );
+  const rootActions = useMemo(() => getRootActions(config?.object), [config?.object]);
 
   const getNodeHref = useCallback(
     (node: NavigationNode) => {
@@ -395,39 +366,33 @@ export function RepoSidebar() {
     [getNodeHref, pathname],
   );
 
-  const activeGroupKeys = useMemo(
-    () => {
-      const collectActiveGroupKeys = (
-        nodes: NavigationNode[],
-        prefix: string,
-      ): string[] => {
-        const keys: string[] = [];
+  const activeGroupKeys = useMemo(() => {
+    const collectActiveGroupKeys = (nodes: NavigationNode[], prefix: string): string[] => {
+      const keys: string[] = [];
 
-        nodes.forEach((node) => {
-          const key = `${prefix}-${node.name}`;
-          if (node.type !== "group") {
-            return;
-          }
+      nodes.forEach((node) => {
+        const key = `${prefix}-${node.name}`;
+        if (node.type !== "group") {
+          return;
+        }
 
-          if (hasActiveDescendant(node)) {
-            keys.push(key);
-          }
+        if (hasActiveDescendant(node)) {
+          keys.push(key);
+        }
 
-          if (node.items?.length) {
-            keys.push(...collectActiveGroupKeys(node.items, key));
-          }
-        });
+        if (node.items?.length) {
+          keys.push(...collectActiveGroupKeys(node.items, key));
+        }
+      });
 
-        return keys;
-      };
+      return keys;
+    };
 
-      return [
-        ...collectActiveGroupKeys(contentNavigation, "Content"),
-        ...collectActiveGroupKeys(mediaNavigation, "Media"),
-      ];
-    },
-    [contentNavigation, hasActiveDescendant, mediaNavigation],
-  );
+    return [
+      ...collectActiveGroupKeys(contentNavigation, "Content"),
+      ...collectActiveGroupKeys(mediaNavigation, "Media"),
+    ];
+  }, [contentNavigation, hasActiveDescendant, mediaNavigation]);
 
   useEffect(() => {
     if (activeGroupKeys.length === 0) {
@@ -456,19 +421,23 @@ export function RepoSidebar() {
     }));
   }, []);
 
-  function renderNavigationNode(node: NavigationNode, key: string, nested: boolean = false): React.ReactNode {
+  function renderNavigationNode(
+    node: NavigationNode,
+    key: string,
+    nested: boolean = false,
+  ): React.ReactNode {
     if (node.type === "group") {
       const isActive = hasActiveDescendant(node);
       const isOpen = expandedGroups[key] ?? isActive;
       if (nested) {
         return (
-            <SidebarMenuSubItem key={key}>
-              <SidebarMenuSubButton
-                asChild
-              >
-                <button type="button" onClick={() => toggleGroup(key)}>
-                  <ChevronRight className={cn("size-4 transition-transform", isOpen && "rotate-90")} />
-                  <span>{node.label || node.name}</span>
+          <SidebarMenuSubItem key={key}>
+            <SidebarMenuSubButton asChild>
+              <button type="button" onClick={() => toggleGroup(key)}>
+                <ChevronRight
+                  className={cn("size-4 transition-transform", isOpen && "rotate-90")}
+                />
+                <span>{node.label || node.name}</span>
               </button>
             </SidebarMenuSubButton>
             {isOpen && node.items && node.items.length > 0 && (
@@ -482,9 +451,7 @@ export function RepoSidebar() {
 
       return (
         <SidebarMenuItem key={key}>
-          <SidebarMenuButton
-            asChild
-          >
+          <SidebarMenuButton asChild>
             <button type="button" onClick={() => toggleGroup(key)}>
               <ChevronRight className={cn("size-4 transition-transform", isOpen && "rotate-90")} />
               <span>{node.label || node.name}</span>
@@ -550,8 +517,7 @@ export function RepoSidebar() {
         <SidebarGroupContent>
           <SidebarMenu>
             {items.map((item) => {
-              const isActive =
-                pathname === item.href || pathname.startsWith(`${item.href}/`);
+              const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
               return (
                 <SidebarMenuItem key={item.key}>
                   <SidebarMenuButton asChild isActive={isActive}>
@@ -572,23 +538,21 @@ export function RepoSidebar() {
   const groups = [
     renderNavigationGroup("Content", contentNavigation),
     renderNavigationGroup("Media", mediaNavigation),
-    rootActions.length > 0 && config
-      ? (
-        <SidebarGroup key="Actions">
-          <SidebarGroupLabel>Actions</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <RepoActionButtons
-              actions={rootActions}
-              owner={config.owner}
-              repo={config.repo}
-              refName={config.branch}
-              contextType="repo"
-              layout="sidebar"
-            />
-          </SidebarGroupContent>
-        </SidebarGroup>
-      )
-      : null,
+    rootActions.length > 0 && config ? (
+      <SidebarGroup key="Actions">
+        <SidebarGroupLabel>Actions</SidebarGroupLabel>
+        <SidebarGroupContent>
+          <RepoActionButtons
+            actions={rootActions}
+            owner={config.owner}
+            repo={config.repo}
+            refName={config.branch}
+            contextType="repo"
+            layout="sidebar"
+          />
+        </SidebarGroupContent>
+      </SidebarGroup>
+    ) : null,
     renderFlatGroup("Admin", adminItems),
   ].filter(Boolean);
 

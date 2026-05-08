@@ -29,7 +29,9 @@ const GithubAuthExpired = () => {
     <Empty className="absolute inset-0 border-0 rounded-none">
       <EmptyHeader>
         <EmptyTitle>GitHub session expired</EmptyTitle>
-        <EmptyDescription>Your GitHub session has expired. You&apos;ll need to sign in again.</EmptyDescription>
+        <EmptyDescription>
+          Your GitHub session has expired. You&apos;ll need to sign in again.
+        </EmptyDescription>
         <Button variant="ghost" onClick={handleSignInAgain} disabled={loading}>
           <ArrowLeft className="size-4" />
           Sign in another way

@@ -62,12 +62,7 @@ const getBranchHeadCacheKey = (owner: string, repo: string, branch: string) =>
 const getRepoSnapshotCacheKey = (owner: string, repo: string) =>
   `${owner.toLowerCase()}::${repo.toLowerCase()}`;
 
-const setBranchHeadInfo = (
-  owner: string,
-  repo: string,
-  branch: string,
-  info: BranchHeadInfo,
-) => {
+const setBranchHeadInfo = (owner: string, repo: string, branch: string, info: BranchHeadInfo) => {
   const key = getBranchHeadCacheKey(owner, repo, branch);
   branchHeadCache.set(key, {
     sha: info.sha,
@@ -137,12 +132,7 @@ const getBranchHeadSha = async (
   return info.sha;
 };
 
-const setBranchHeadSha = (
-  owner: string,
-  repo: string,
-  branch: string,
-  sha: string,
-) => {
+const setBranchHeadSha = (owner: string, repo: string, branch: string, sha: string) => {
   setBranchHeadInfo(owner, repo, branch, {
     sha,
     timestamp: Date.now(),
@@ -214,7 +204,7 @@ const getRepoSnapshot = async (
 };
 
 type FileOperation = {
-  type: 'add' | 'modify' | 'delete' | 'rename';
+  type: "add" | "modify" | "delete" | "rename";
   path: string;
   newPath?: string;
   sha?: string;
@@ -228,20 +218,18 @@ type FileOperation = {
 };
 
 type FolderContext = "collection" | "media";
-type CacheMetaLike = {
-  status?: string | null;
-  commitSha?: string | null;
-} | null | undefined;
+type CacheMetaLike =
+  | {
+      status?: string | null;
+      commitSha?: string | null;
+    }
+  | null
+  | undefined;
 
 const cacheFileReconcileInFlight = new Map<string, Promise<void>>();
 const cacheFileCheckTTLms = parseInt(CACHE_RECONCILE_INTERVAL_MIN, 10) * 60 * 1000;
 
-const reconcileFileCache = async (
-  owner: string,
-  repo: string,
-  branch: string,
-  token: string,
-) => {
+const reconcileFileCache = async (owner: string, repo: string, branch: string, token: string) => {
   const key = getCacheFileMetaKey(owner, repo, branch);
   if (cacheFileReconcileInFlight.has(key)) {
     return cacheFileReconcileInFlight.get(key)!;
@@ -281,7 +269,7 @@ const ensureFileCacheFreshness = async (
   repo: string,
   branch: string,
   token: string,
-  options?: { force?: boolean }
+  options?: { force?: boolean },
 ) => {
   const meta = await getCacheFileMeta(owner, repo, branch, BRANCH_CACHE_SCOPE);
   const due =
@@ -341,7 +329,9 @@ const finalizePatchedFolderMetas = async (
 ) => {
   if (!commit || contextByPath.size === 0) return new Set<string>();
 
-  const candidatePaths = Array.from(contextByPath.keys()).filter((folderPath) => !failedPaths.has(folderPath));
+  const candidatePaths = Array.from(contextByPath.keys()).filter(
+    (folderPath) => !failedPaths.has(folderPath),
+  );
   if (candidatePaths.length === 0) return new Set<string>();
 
   const remainingRows = await db
@@ -361,12 +351,18 @@ const finalizePatchedFolderMetas = async (
 
   await Promise.all(
     keptPaths.map((folderPath) =>
-      upsertScopedMeta(owner, repo, branch, getFolderScope(contextByPath.get(folderPath)!, folderPath), {
-        commitSha: commit.sha,
-        commitTimestamp: new Date(commit.timestamp),
-        status: "ok",
-        error: null,
-      }),
+      upsertScopedMeta(
+        owner,
+        repo,
+        branch,
+        getFolderScope(contextByPath.get(folderPath)!, folderPath),
+        {
+          commitSha: commit.sha,
+          commitTimestamp: new Date(commit.timestamp),
+          status: "ok",
+          error: null,
+        },
+      ),
     ),
   );
 
@@ -391,14 +387,10 @@ const setBranchCacheToCommit = async (
   });
 };
 
-const hasVerifiedFolderSnapshot = (
-  scopeMeta: CacheMetaLike,
-  branchMeta?: CacheMetaLike,
-) =>
+const hasVerifiedFolderSnapshot = (scopeMeta: CacheMetaLike, branchMeta?: CacheMetaLike) =>
   scopeMeta?.status === "ok" &&
   !!scopeMeta.commitSha &&
   (!branchMeta?.commitSha || scopeMeta.commitSha === branchMeta.commitSha);
-
 
 // Bulk update cache entries (removed, modified and added files)
 const updateMultipleFilesCache = async (
@@ -409,17 +401,13 @@ const updateMultipleFilesCache = async (
   modifiedFiles: Array<FileChange>,
   addedFiles: Array<FileChange>,
   token: string,
-  commit?: { sha: string; timestamp: number }
+  commit?: { sha: string; timestamp: number },
 ) => {
   const lowerOwner = owner.toLowerCase();
   const lowerRepo = repo.toLowerCase();
-  const removedPaths = removedFiles.map(f => f.path);
-  const addedPaths = addedFiles.map(f => f.path);
-  const changedPaths = [
-    ...removedPaths,
-    ...modifiedFiles.map((file) => file.path),
-    ...addedPaths,
-  ];
+  const removedPaths = removedFiles.map((f) => f.path);
+  const addedPaths = addedFiles.map((f) => f.path);
+  const changedPaths = [...removedPaths, ...modifiedFiles.map((file) => file.path), ...addedPaths];
   const affectedFolderPaths = getFolderPathsForChanges(changedPaths);
   const directFolderPaths = getDirectFolderPaths(changedPaths);
   const verifiedDirectFolderContexts = commit
@@ -455,15 +443,17 @@ const updateMultipleFilesCache = async (
     verifiedDirectFolderContexts.has(getParentPath(filePath)),
   );
   if (removedPathsToPatch.length > 0) {
-    await db.delete(cacheFileTable).where(
-      and(
-        eq(cacheFileTable.owner, lowerOwner),
-        eq(cacheFileTable.repo, lowerRepo),
-        eq(cacheFileTable.branch, branch),
-        eq(cacheFileTable.type, 'file'),
-        inArray(cacheFileTable.path, removedPathsToPatch)
-      )
-    );
+    await db
+      .delete(cacheFileTable)
+      .where(
+        and(
+          eq(cacheFileTable.owner, lowerOwner),
+          eq(cacheFileTable.repo, lowerRepo),
+          eq(cacheFileTable.branch, branch),
+          eq(cacheFileTable.type, "file"),
+          inArray(cacheFileTable.path, removedPathsToPatch),
+        ),
+      );
   }
 
   // 2. Query existing entries for modified/added files if commit info is available
@@ -477,14 +467,14 @@ const updateMultipleFilesCache = async (
         eq(cacheFileTable.owner, lowerOwner),
         eq(cacheFileTable.repo, lowerRepo),
         eq(cacheFileTable.branch, branch),
-        inArray(cacheFileTable.path, filesToQuery)
-      )
+        inArray(cacheFileTable.path, filesToQuery),
+      ),
     });
-    existingFilesMap = new Map(existingFiles.map(f => [f.path, f]));
+    existingFilesMap = new Map(existingFiles.map((f) => [f.path, f]));
   }
 
   // 3. Determine which files need fetching from GitHub API
-  const filesToProcess = [...modifiedFiles, ...addedFiles].filter(file => {
+  const filesToProcess = [...modifiedFiles, ...addedFiles].filter((file) => {
     if (!verifiedDirectFolderContexts.has(getParentPath(file.path))) return false;
     if (!commit) return true; // No commit info—process
 
@@ -492,8 +482,14 @@ const updateMultipleFilesCache = async (
     if (!existingEntry) return true; // Doesn't exist in cache
 
     // Skip if cached entry is newer or same commit
-    if (existingEntry.commitTimestamp && existingEntry.commitTimestamp.getTime() > commit.timestamp) return false;
-    if (existingEntry.commitTimestamp && existingEntry.commitTimestamp.getTime() === commit.timestamp && existingEntry.commitSha === commit.sha) return false;
+    if (existingEntry.commitTimestamp && existingEntry.commitTimestamp.getTime() > commit.timestamp)
+      return false;
+    if (
+      existingEntry.commitTimestamp &&
+      existingEntry.commitTimestamp.getTime() === commit.timestamp &&
+      existingEntry.commitSha === commit.sha
+    )
+      return false;
 
     return true; // Process otherwise
   });
@@ -513,25 +509,32 @@ const updateMultipleFilesCache = async (
     for (const chunk of graphqlChunks) {
       // Batch GraphQL Query
       const query = `
-        query($owner: String!, $repo: String!, ${chunk.map((_, i) => `$exp${i}: String!`).join(', ')}) {
+        query($owner: String!, $repo: String!, ${chunk.map((_, i) => `$exp${i}: String!`).join(", ")}) {
           repository(owner: $owner, name: $repo) {
-            ${chunk.map((_, i) => `
+            ${chunk
+              .map(
+                (_, i) => `
               file${i}: object(expression: $exp${i}) {
                 ... on Blob { text oid byteSize }
               }
-            `).join('\n')}
+            `,
+              )
+              .join("\n")}
           }
         }`;
       const variables = {
-        owner, repo,
-        ...Object.fromEntries(chunk.map((file, i) => [`exp${i}`, `${branch}:${file.path}`]))
+        owner,
+        repo,
+        ...Object.fromEntries(chunk.map((file, i) => [`exp${i}`, `${branch}:${file.path}`])),
       };
 
       let response: any;
       try {
         response = await octokit.graphql(query, variables);
       } catch (error: any) {
-        console.error(`GraphQL query failed for chunk [${chunk.map(f => f.path).join(", ")}]: ${error.message}`);
+        console.error(
+          `GraphQL query failed for chunk [${chunk.map((f) => f.path).join(", ")}]: ${error.message}`,
+        );
         chunk.forEach((file) => failedDirectFolderPaths.add(getParentPath(file.path)));
         continue;
       }
@@ -542,32 +545,48 @@ const updateMultipleFilesCache = async (
         const fileData = response.repository[`file${i}`];
 
         if (!fileData) {
-          console.warn(`Skipping cache update for ${file.path}: File data missing from GitHub response.`);
+          console.warn(
+            `Skipping cache update for ${file.path}: File data missing from GitHub response.`,
+          );
           failedDirectFolderPaths.add(getParentPath(file.path));
           continue;
         }
 
         const parentPath = getParentPath(file.path);
-        const context = verifiedDirectFolderContexts.get(parentPath) ?? 'collection';
+        const context = verifiedDirectFolderContexts.get(parentPath) ?? "collection";
         const now = new Date();
 
         const entryData = {
-          context, owner: lowerOwner, repo: lowerRepo, branch,
-          path: file.path, parentPath, name: path.basename(file.path),
-          type: 'file' as 'file' | 'dir',
-          content: context === 'collection' ? fileData.text : null,
-          sha: fileData.oid, size: fileData.byteSize, downloadUrl: null,
+          context,
+          owner: lowerOwner,
+          repo: lowerRepo,
+          branch,
+          path: file.path,
+          parentPath,
+          name: path.basename(file.path),
+          type: "file" as "file" | "dir",
+          content: context === "collection" ? fileData.text : null,
+          sha: fileData.oid,
+          size: fileData.byteSize,
+          downloadUrl: null,
           updatedAt: now,
-          commitSha: commit?.sha ?? null, commitTimestamp: commit?.timestamp ? new Date(commit.timestamp) : null
+          commitSha: commit?.sha ?? null,
+          commitTimestamp: commit?.timestamp ? new Date(commit.timestamp) : null,
         };
 
         upsertPromises.push(
-          db.insert(cacheFileTable)
+          db
+            .insert(cacheFileTable)
             .values(entryData)
             .onConflictDoUpdate({
-              target: [cacheFileTable.owner, cacheFileTable.repo, cacheFileTable.branch, cacheFileTable.path],
-              set: { ...entryData, id: undefined } // Exclude id on update
-            })
+              target: [
+                cacheFileTable.owner,
+                cacheFileTable.repo,
+                cacheFileTable.branch,
+                cacheFileTable.path,
+              ],
+              set: { ...entryData, id: undefined }, // Exclude id on update
+            }),
         );
       }
     }
@@ -601,26 +620,29 @@ const updateFileCache = async (
   owner: string,
   repo: string,
   branch: string,
-  operation: FileOperation
+  operation: FileOperation,
 ) => {
   const lowerOwner = owner.toLowerCase();
   const lowerRepo = repo.toLowerCase();
   const folderContext = context === "media" ? "media" : "collection";
-  const changedPaths = operation.type === "rename" && operation.newPath
-    ? [operation.path, operation.newPath]
-    : [operation.path];
+  const changedPaths =
+    operation.type === "rename" && operation.newPath
+      ? [operation.path, operation.newPath]
+      : [operation.path];
   const affectedFolderPaths = getFolderPathsForChanges(changedPaths);
   const parentPath = getParentPath(operation.path);
-  const newParentPath = operation.type === "rename" && operation.newPath
-    ? getParentPath(operation.newPath)
-    : parentPath;
+  const newParentPath =
+    operation.type === "rename" && operation.newPath
+      ? getParentPath(operation.newPath)
+      : parentPath;
   const directFolderPaths = Array.from(new Set([parentPath, newParentPath]));
   const verifiedDirectFolderContexts = operation.commit
     ? await getVerifiedDirectFolderContexts(owner, repo, branch, directFolderPaths)
     : new Map<string, FolderContext>();
   const preservedDirectFolderPaths = new Set<string>();
   const failedDirectFolderPaths = new Set<string>();
-  const shouldPreserveSingleFolder = operation.commit && verifiedDirectFolderContexts.has(parentPath);
+  const shouldPreserveSingleFolder =
+    operation.commit && verifiedDirectFolderContexts.has(parentPath);
   const shouldPreserveRename =
     operation.type === "rename" &&
     operation.commit &&
@@ -629,17 +651,15 @@ const updateFileCache = async (
 
   const foldersToClaim =
     operation.type === "rename"
-      ? (shouldPreserveRename ? [parentPath] : [])
-      : (shouldPreserveSingleFolder ? [parentPath] : []);
+      ? shouldPreserveRename
+        ? [parentPath]
+        : []
+      : shouldPreserveSingleFolder
+        ? [parentPath]
+        : [];
 
   if (foldersToClaim.length > 0) {
-    const claimed = await claimFolderScopes(
-      owner,
-      repo,
-      branch,
-      folderContext,
-      foldersToClaim,
-    );
+    const claimed = await claimFolderScopes(owner, repo, branch, folderContext, foldersToClaim);
     if (!claimed) {
       await invalidateFolderScopes(owner, repo, branch, affectedFolderPaths);
       return;
@@ -648,53 +668,74 @@ const updateFileCache = async (
 
   try {
     switch (operation.type) {
-      case 'delete':
+      case "delete":
         if (shouldPreserveSingleFolder) {
-          await db.delete(cacheFileTable).where(
-            and(
-              eq(cacheFileTable.owner, lowerOwner), eq(cacheFileTable.repo, lowerRepo), eq(cacheFileTable.branch, branch),
-              eq(cacheFileTable.type, 'file'),
-              eq(cacheFileTable.path, operation.path)
-            )
-          );
+          await db
+            .delete(cacheFileTable)
+            .where(
+              and(
+                eq(cacheFileTable.owner, lowerOwner),
+                eq(cacheFileTable.repo, lowerRepo),
+                eq(cacheFileTable.branch, branch),
+                eq(cacheFileTable.type, "file"),
+                eq(cacheFileTable.path, operation.path),
+              ),
+            );
         }
         break;
 
-      case 'add':
-      case 'modify':
+      case "add":
+      case "modify":
         if (operation.content === undefined || !operation.sha) {
-          throw new Error('Content and SHA are required for add/modify operations');
+          throw new Error("Content and SHA are required for add/modify operations");
         }
 
         if (shouldPreserveSingleFolder) {
           const now = new Date();
           const entryData = {
-            context, owner: lowerOwner, repo: lowerRepo, branch,
-            path: operation.path, parentPath, name: path.basename(operation.path),
-            type: 'file' as 'file' | 'dir',
-            content: context === 'collection' ? operation.content : null,
-            sha: operation.sha, size: operation.size, downloadUrl: operation.downloadUrl,
+            context,
+            owner: lowerOwner,
+            repo: lowerRepo,
+            branch,
+            path: operation.path,
+            parentPath,
+            name: path.basename(operation.path),
+            type: "file" as "file" | "dir",
+            content: context === "collection" ? operation.content : null,
+            sha: operation.sha,
+            size: operation.size,
+            downloadUrl: operation.downloadUrl,
             updatedAt: now,
-            commitSha: operation.commit?.sha ?? null, commitTimestamp: operation.commit?.timestamp ? new Date(operation.commit.timestamp) : null
+            commitSha: operation.commit?.sha ?? null,
+            commitTimestamp: operation.commit?.timestamp
+              ? new Date(operation.commit.timestamp)
+              : null,
           };
 
-          await db.insert(cacheFileTable)
+          await db
+            .insert(cacheFileTable)
             .values(entryData)
             .onConflictDoUpdate({
-              target: [cacheFileTable.owner, cacheFileTable.repo, cacheFileTable.branch, cacheFileTable.path],
-              set: { ...entryData, id: undefined }
+              target: [
+                cacheFileTable.owner,
+                cacheFileTable.repo,
+                cacheFileTable.branch,
+                cacheFileTable.path,
+              ],
+              set: { ...entryData, id: undefined },
             });
         }
         break;
 
-      case 'rename':
-        if (!operation.newPath) throw new Error('newPath is required for rename operations');
+      case "rename":
+        if (!operation.newPath) throw new Error("newPath is required for rename operations");
 
         if (shouldPreserveRename) {
           const renameNow = new Date();
           const newName = path.basename(operation.newPath);
 
-          await db.update(cacheFileTable)
+          await db
+            .update(cacheFileTable)
             .set({
               path: operation.newPath,
               parentPath: newParentPath,
@@ -702,28 +743,34 @@ const updateFileCache = async (
               downloadUrl: null,
               updatedAt: renameNow,
               commitSha: operation.commit?.sha ?? null,
-              commitTimestamp: operation.commit?.timestamp ? new Date(operation.commit.timestamp) : null
+              commitTimestamp: operation.commit?.timestamp
+                ? new Date(operation.commit.timestamp)
+                : null,
             })
             .where(
               and(
-                eq(cacheFileTable.owner, lowerOwner), eq(cacheFileTable.repo, lowerRepo), eq(cacheFileTable.branch, branch),
-                eq(cacheFileTable.path, operation.path)
-              )
+                eq(cacheFileTable.owner, lowerOwner),
+                eq(cacheFileTable.repo, lowerRepo),
+                eq(cacheFileTable.branch, branch),
+                eq(cacheFileTable.path, operation.path),
+              ),
             );
         }
         break;
     }
   } catch (error: any) {
-    await Promise.all(Array.from(affectedFolderPaths).map((folderPath) =>
-      markFolderScopeError(
-        owner,
-        repo,
-        branch,
-        folderContext,
-        folderPath,
-        error?.message ? String(error.message) : "File cache update failed.",
-      )
-    ));
+    await Promise.all(
+      Array.from(affectedFolderPaths).map((folderPath) =>
+        markFolderScopeError(
+          owner,
+          repo,
+          branch,
+          folderContext,
+          folderPath,
+          error?.message ? String(error.message) : "File cache update failed.",
+        ),
+      ),
+    );
     throw error;
   }
 
@@ -752,39 +799,28 @@ const updateFileCache = async (
 };
 
 // Update repository name in all cache entries
-const updateFileCacheRepository = async (
-  owner: string,
-  oldName: string,
-  newName: string
-) => {
-  await db.update(cacheFileTable)
+const updateFileCacheRepository = async (owner: string, oldName: string, newName: string) => {
+  await db
+    .update(cacheFileTable)
     .set({ repo: newName.toLowerCase() })
     .where(
       and(
         eq(cacheFileTable.owner, owner.toLowerCase()),
-        eq(cacheFileTable.repo, oldName.toLowerCase())
-      )
+        eq(cacheFileTable.repo, oldName.toLowerCase()),
+      ),
     );
 };
 
 // Update owner name in all cache entries
-const updateFileCacheOwner = async (
-  oldOwner: string,
-  newOwner: string
-) => {
-  await db.update(cacheFileTable)
+const updateFileCacheOwner = async (oldOwner: string, newOwner: string) => {
+  await db
+    .update(cacheFileTable)
     .set({ owner: newOwner.toLowerCase() })
-    .where(
-      eq(cacheFileTable.owner, oldOwner.toLowerCase())
-    );
+    .where(eq(cacheFileTable.owner, oldOwner.toLowerCase()));
 };
 
 // Clear file cache entries
-const clearFileCache = async (
-  owner: string,
-  repo?: string,
-  branch?: string
-) => {
+const clearFileCache = async (owner: string, repo?: string, branch?: string) => {
   const conditions = [];
   conditions.push(eq(cacheFileTable.owner, owner.toLowerCase()));
   if (repo) {
@@ -800,9 +836,9 @@ const getCollectionCache = async (
   owner: string,
   repo: string,
   branch: string,
-  dirPath : string,
+  dirPath: string,
   token: string,
-  nodeEntryFilename?: string
+  nodeEntryFilename?: string,
 ) => {
   void ensureFileCacheFreshness(owner, repo, branch, token).catch(() => {});
   const scope = getFolderScope("collection", dirPath);
@@ -820,8 +856,8 @@ const getCollectionCache = async (
       eq(cacheFileTable.owner, owner.toLowerCase()),
       eq(cacheFileTable.repo, repo.toLowerCase()),
       eq(cacheFileTable.branch, branch),
-      eq(cacheFileTable.parentPath, dirPath)
-    )
+      eq(cacheFileTable.parentPath, dirPath),
+    ),
   });
 
   let cacheExpired = false;
@@ -834,16 +870,22 @@ const getCollectionCache = async (
 
   let octokit;
   if (stableMeta?.status === "syncing") {
-    const githubEntries = await fetchCollectionDirectoryEntries(owner, repo, branch, dirPath, token);
+    const githubEntries = await fetchCollectionDirectoryEntries(
+      owner,
+      repo,
+      branch,
+      dirPath,
+      token,
+    );
     entries = githubEntries.map((entry: any) => ({
-      context: 'collection',
+      context: "collection",
       owner: owner.toLowerCase(),
       repo: repo.toLowerCase(),
       branch,
       parentPath: dirPath,
       name: entry.name,
       path: entry.path,
-      type: entry.type === 'blob' ? 'file' : 'dir',
+      type: entry.type === "blob" ? "file" : "dir",
       content: entry.type === "blob" ? entry.object.text : null,
       sha: entry.type === "blob" ? entry.object.oid : null,
       size: entry.type === "blob" ? entry.object.byteSize : null,
@@ -861,7 +903,7 @@ const getCollectionCache = async (
     !stableMeta ||
     entries.length === 0 ||
     cacheExpired ||
-    (entries.length > 0 && entries[0].context === 'media');
+    (entries.length > 0 && entries[0].context === "media");
 
   if (stableMeta?.status !== "syncing" && shouldRefetch) {
     await upsertScopedMeta(owner, repo, branch, scope, {
@@ -871,16 +913,22 @@ const getCollectionCache = async (
 
     try {
       const head = await getBranchHeadInfo(owner, repo, branch, token);
-      const githubEntries = await fetchCollectionDirectoryEntries(owner, repo, branch, dirPath, token);
+      const githubEntries = await fetchCollectionDirectoryEntries(
+        owner,
+        repo,
+        branch,
+        dirPath,
+        token,
+      );
       const mappedEntries = githubEntries.map((entry: any) => ({
-        context: 'collection',
+        context: "collection",
         owner: owner.toLowerCase(),
         repo: repo.toLowerCase(),
         branch,
         parentPath: dirPath,
         name: entry.name,
         path: entry.path,
-        type: entry.type === 'blob' ? 'file' : 'dir',
+        type: entry.type === "blob" ? "file" : "dir",
         content: entry.type === "blob" ? entry.object.text : null,
         sha: entry.type === "blob" ? entry.object.oid : null,
         size: entry.type === "blob" ? entry.object.byteSize : null,
@@ -908,7 +956,7 @@ const getCollectionCache = async (
   if (nodeEntryFilename) {
     if (!octokit) octokit = createOctokitInstance(token);
 
-    const subdirs = entries.filter((entry: any) => entry.type === 'dir');
+    const subdirs = entries.filter((entry: any) => entry.type === "dir");
 
     if (subdirs.length > 0) {
       // Check the cache for node entries
@@ -917,22 +965,30 @@ const getCollectionCache = async (
           eq(cacheFileTable.owner, owner.toLowerCase()),
           eq(cacheFileTable.repo, repo.toLowerCase()),
           eq(cacheFileTable.branch, branch),
-          inArray(cacheFileTable.path, subdirs.map((dir: any) => `${dir.path}/${nodeEntryFilename}`))
-        )
+          inArray(
+            cacheFileTable.path,
+            subdirs.map((dir: any) => `${dir.path}/${nodeEntryFilename}`),
+          ),
+        ),
       });
-      
+
       // Query the GitHub API for the missing node entries
-      const missingSubdirs = subdirs.filter((dir: any) => !nodeEntries.some((entry: any) => entry.path === `${dir.path}/${nodeEntryFilename}`));
-      
+      const missingSubdirs = subdirs.filter(
+        (dir: any) =>
+          !nodeEntries.some((entry: any) => entry.path === `${dir.path}/${nodeEntryFilename}`),
+      );
+
       if (missingSubdirs.length > 0) {
         const nodeEntryExpressions = missingSubdirs.map((dir: { path: string }, i: number) => ({
           alias: `nodeFile${i}`,
-          expression: `${branch}:${dir.path}/${nodeEntryFilename}`
+          expression: `${branch}:${dir.path}/${nodeEntryFilename}`,
         }));
         const queryNodeEntries = `
-          query ($owner: String!, $repo: String!, ${nodeEntryExpressions.map((nodeEntryExpression: any) => `$exp${nodeEntryExpression.alias}: String!`).join(', ')}) {
+          query ($owner: String!, $repo: String!, ${nodeEntryExpressions.map((nodeEntryExpression: any) => `$exp${nodeEntryExpression.alias}: String!`).join(", ")}) {
             repository(owner: $owner, name: $repo) {
-              ${nodeEntryExpressions.map(nodeEntryExpression => `
+              ${nodeEntryExpressions
+                .map(
+                  (nodeEntryExpression) => `
                 ${nodeEntryExpression.alias}: object(expression: $exp${nodeEntryExpression.alias}) {
                   ... on Blob {
                     text
@@ -940,40 +996,48 @@ const getCollectionCache = async (
                     byteSize
                   }
                 }
-              `).join('\n')}
+              `,
+                )
+                .join("\n")}
             }
           }
         `;
         const variablesNodeEntries = {
-          owner, repo,
-          ...Object.fromEntries(nodeEntryExpressions.map(nf => [`exp${nf.alias}`, nf.expression]))
+          owner,
+          repo,
+          ...Object.fromEntries(
+            nodeEntryExpressions.map((nf) => [`exp${nf.alias}`, nf.expression]),
+          ),
         };
 
-        const responseNodeEntries: any = await octokit.graphql(queryNodeEntries, variablesNodeEntries);
-        
+        const responseNodeEntries: any = await octokit.graphql(
+          queryNodeEntries,
+          variablesNodeEntries,
+        );
+
         for (let i = 0; i < missingSubdirs.length; i++) {
           const dir = missingSubdirs[i];
           const alias = `nodeFile${i}`;
           const nodeEntry = responseNodeEntries.repository?.[alias];
-      
+
           if (nodeEntry) {
             nodeEntries.push({
               id: -1,
-              context: '',
+              context: "",
               owner: owner.toLowerCase(),
               repo: repo.toLowerCase(),
               branch,
               parentPath: dir.path,
               name: nodeEntryFilename,
               path: `${dir.path}/${nodeEntryFilename}`,
-              type: 'file',
+              type: "file",
               content: nodeEntry.text,
               sha: nodeEntry.oid,
               size: nodeEntry.byteSize,
               downloadUrl: null,
               updatedAt: new Date(),
               commitSha: null,
-              commitTimestamp: null
+              commitTimestamp: null,
             });
           }
         }
@@ -988,7 +1052,7 @@ const getCollectionCache = async (
   }
 
   return entries;
-}
+};
 
 // Attempt to get a media folder from cache, if not found, fetch from GitHub.
 const getMediaCache = async (
@@ -997,7 +1061,7 @@ const getMediaCache = async (
   branch: string,
   path: string,
   token: string,
-  nocache?: boolean
+  nocache?: boolean,
 ) => {
   void ensureFileCacheFreshness(owner, repo, branch, token).catch(() => {});
   const scope = getFolderScope("media", path);
@@ -1017,8 +1081,8 @@ const getMediaCache = async (
         eq(cacheFileTable.owner, owner.toLowerCase()),
         eq(cacheFileTable.repo, repo.toLowerCase()),
         eq(cacheFileTable.branch, branch),
-        eq(cacheFileTable.parentPath, path)
-      )
+        eq(cacheFileTable.parentPath, path),
+      ),
     });
   }
 
@@ -1033,7 +1097,7 @@ const getMediaCache = async (
   if (!nocache && stableMeta?.status === "syncing") {
     const githubEntries = await fetchMediaDirectoryEntries(owner, repo, branch, path, token);
     entries = githubEntries.map((entry) => ({
-      context: 'media',
+      context: "media",
       owner: owner.toLowerCase(),
       repo: repo.toLowerCase(),
       branch,
@@ -1065,8 +1129,8 @@ const getMediaCache = async (
       const head = await getBranchHeadInfo(owner, repo, branch, token);
       const githubEntries = await fetchMediaDirectoryEntries(owner, repo, branch, path, token);
 
-      const mappedEntries = githubEntries.map(entry => ({
-        context: 'media',
+      const mappedEntries = githubEntries.map((entry) => ({
+        context: "media",
         owner: owner.toLowerCase(),
         repo: repo.toLowerCase(),
         branch,
@@ -1080,7 +1144,7 @@ const getMediaCache = async (
         downloadUrl: entry.download_url || null,
         updatedAt: new Date(),
         commitSha: head.sha,
-        commitTimestamp: new Date(head.timestamp)
+        commitTimestamp: new Date(head.timestamp),
       }));
 
       if (!nocache) {

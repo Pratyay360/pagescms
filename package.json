@@ -1,12 +1,12 @@
 {
   "name": "pagescms",
+  "version": "2.1.6",
+  "private": true,
   "description": "A user-friendly CMS for Next.js, Astro, Hugo, Nuxt, Jekyll or any other static site generator.",
   "license": "MIT",
   "author": {
     "name": "Ronan Berder"
   },
-  "version": "2.1.6",
-  "private": true,
   "scripts": {
     "setup:github-app": "node scripts/setup-github-app.mjs",
     "dev": "next dev",

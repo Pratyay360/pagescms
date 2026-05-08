@@ -5,15 +5,15 @@ import { requireApiUserSession } from "@/lib/session-server";
 
 /**
  * Creates a new branch in a GitHub repository.
- * 
+ *
  * POST /api/[owner]/[repo]/[branch]/branches
- * 
+ *
  * Requires authentication.
  */
 
 export async function POST(
   request: Request,
-  context: { params: Promise<{ owner: string, repo: string, branch: string }> }
+  context: { params: Promise<{ owner: string; repo: string; branch: string }> },
 ) {
   try {
     const params = await context.params;

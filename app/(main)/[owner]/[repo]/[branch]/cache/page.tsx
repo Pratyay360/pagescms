@@ -30,7 +30,9 @@ export default function Page() {
       <Empty className="absolute inset-0 border-0 rounded-none">
         <EmptyHeader>
           <EmptyTitle>Cache disabled</EmptyTitle>
-          <EmptyDescription>Enable the cache in &quot;.pages.yml&quot; by setting &quot;settings.cache: true&quot;.</EmptyDescription>
+          <EmptyDescription>
+            Enable the cache in &quot;.pages.yml&quot; by setting &quot;settings.cache: true&quot;.
+          </EmptyDescription>
         </EmptyHeader>
       </Empty>
     );

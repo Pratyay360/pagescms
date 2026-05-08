@@ -4,12 +4,7 @@ import { forwardRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { RefreshCcw } from "lucide-react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const EditComponent = forwardRef((props: any, ref: React.Ref<HTMLInputElement>) => {
   const { field, onChange, ...restProps } = props;
@@ -21,18 +16,13 @@ const EditComponent = forwardRef((props: any, ref: React.Ref<HTMLInputElement>) 
 
   return (
     <div className="flex gap-2">
-      <Input 
-        {...restProps} 
-        ref={ref} 
-        className="text-base" 
-        readOnly={isInputReadonly}
-      />
+      <Input {...restProps} ref={ref} className="text-base" readOnly={isInputReadonly} />
       {field?.options?.generate !== false && (
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button 
-                type="button" 
+              <Button
+                type="button"
                 variant="outline"
                 size="icon"
                 onClick={generateNewUUID}

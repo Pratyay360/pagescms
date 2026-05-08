@@ -26,17 +26,17 @@ type Option = {
 };
 
 const optionsEqual = (a: Option[], b: Option[]) =>
-  a.length === b.length && a.every((item, index) =>
-    item.value === b[index]?.value &&
-    item.label === b[index]?.label &&
-    item.resolved === b[index]?.resolved
+  a.length === b.length &&
+  a.every(
+    (item, index) =>
+      item.value === b[index]?.value &&
+      item.label === b[index]?.label &&
+      item.resolved === b[index]?.resolved,
   );
 
 const normalizeInputValues = (input: any, multiple: boolean): string[] => {
   const normalizeOne = (item: any) =>
-    typeof item === "object" && item !== null
-      ? String(item.value ?? "")
-      : String(item ?? "");
+    typeof item === "object" && item !== null ? String(item.value ?? "") : String(item ?? "");
 
   if (multiple) {
     return (Array.isArray(input) ? input : []).map(normalizeOne).filter(Boolean);
@@ -50,15 +50,19 @@ const normalizeSelected = (input: any, options: Option[], multiple: boolean) => 
   const normalizeOne = (item: any): Option => {
     if (typeof item === "object" && item !== null) {
       const value = String(item.value ?? "");
-      return options.find((option) => option.value === value) ?? {
-        value,
-        label: String(item.label ?? item.value ?? ""),
-        resolved: false,
-      };
+      return (
+        options.find((option) => option.value === value) ?? {
+          value,
+          label: String(item.label ?? item.value ?? ""),
+          resolved: false,
+        }
+      );
     }
 
     const value = String(item ?? "");
-    return options.find((option) => option.value === value) ?? { value, label: value, resolved: false };
+    return (
+      options.find((option) => option.value === value) ?? { value, label: value, resolved: false }
+    );
   };
 
   if (multiple) {
@@ -75,11 +79,14 @@ const EditComponent = (props: any) => {
   const anchor = useComboboxAnchor();
   const isReadonly = Boolean(field?.readonly);
   const multiple = Boolean(field.options?.multiple);
-  const collectionName = typeof field.options?.collection === "string" ? field.options.collection : null;
-  const collectionPath = config && collectionName ? getSchemaByName(config.object, collectionName)?.path || null : null;
-  const url = config && collectionName
-    ? `/api/${config.owner}/${config.repo}/${encodeURIComponent(config.branch)}/references/${collectionName}`
-    : null;
+  const collectionName =
+    typeof field.options?.collection === "string" ? field.options.collection : null;
+  const collectionPath =
+    config && collectionName ? getSchemaByName(config.object, collectionName)?.path || null : null;
+  const url =
+    config && collectionName
+      ? `/api/${config.owner}/${config.repo}/${encodeURIComponent(config.branch)}/references/${collectionName}`
+      : null;
   const searchFields = typeof field.options?.search === "string" ? field.options.search : "name";
   const valueTemplate = typeof field.options?.value === "string" ? field.options.value : "{path}";
   const labelTemplate = typeof field.options?.label === "string" ? field.options.label : "{name}";
@@ -116,7 +123,7 @@ const EditComponent = (props: any) => {
           label: String(item.label ?? item.value ?? ""),
           resolved: true,
         }));
-        setOptions((previous) => optionsEqual(previous, nextOptions) ? previous : nextOptions);
+        setOptions((previous) => (optionsEqual(previous, nextOptions) ? previous : nextOptions));
       } catch (error) {
         console.error("Error loading references:", error);
         if (!cancelled) setOptions([]);
@@ -129,29 +136,14 @@ const EditComponent = (props: any) => {
       cancelled = true;
       window.clearTimeout(timeoutId);
     };
-  }, [
-    url,
-    collectionPath,
-    searchTerm,
-    searchFields,
-    valueTemplate,
-    labelTemplate,
-  ]);
+  }, [url, collectionPath, searchTerm, searchFields, valueTemplate, labelTemplate]);
 
-  const selectedValues = useMemo(
-    () => normalizeInputValues(value, multiple),
-    [value, multiple],
-  );
-  const selectedValuesKey = useMemo(
-    () => selectedValues.join("\u0000"),
-    [selectedValues],
-  );
+  const selectedValues = useMemo(() => normalizeInputValues(value, multiple), [value, multiple]);
+  const selectedValuesKey = useMemo(() => selectedValues.join("\u0000"), [selectedValues]);
 
   useEffect(() => {
     if (!url || !collectionPath) return;
-    const selectedValuesForRequest = selectedValuesKey
-      ? selectedValuesKey.split("\u0000")
-      : [];
+    const selectedValuesForRequest = selectedValuesKey ? selectedValuesKey.split("\u0000") : [];
 
     if (selectedValuesForRequest.length === 0) {
       setSelectedOptions([]);
@@ -182,7 +174,9 @@ const EditComponent = (props: any) => {
           label: String(item.label ?? item.value ?? ""),
           resolved: true,
         }));
-        setSelectedOptions((previous) => optionsEqual(previous, nextSelectedOptions) ? previous : nextSelectedOptions);
+        setSelectedOptions((previous) =>
+          optionsEqual(previous, nextSelectedOptions) ? previous : nextSelectedOptions,
+        );
       } catch (error) {
         console.error("Error resolving selected references:", error);
         if (!cancelled) setSelectedOptions([]);
@@ -194,13 +188,7 @@ const EditComponent = (props: any) => {
     return () => {
       cancelled = true;
     };
-  }, [
-    url,
-    collectionPath,
-    selectedValuesKey,
-    valueTemplate,
-    labelTemplate,
-  ]);
+  }, [url, collectionPath, selectedValuesKey, valueTemplate, labelTemplate]);
 
   const mergedOptions = useMemo(() => {
     const byValue = new Map<string, Option>();
@@ -218,12 +206,9 @@ const EditComponent = (props: any) => {
     [value, mergedOptions, multiple],
   );
 
-  const singleSelected = !multiple && selectedValue && !Array.isArray(selectedValue)
-    ? selectedValue
-    : null;
-  const placeholder = isReadonly
-    ? undefined
-    : field.options?.placeholder || "Select...";
+  const singleSelected =
+    !multiple && selectedValue && !Array.isArray(selectedValue) ? selectedValue : null;
+  const placeholder = isReadonly ? undefined : field.options?.placeholder || "Select...";
 
   const handleValueChange = (nextValue: Option[] | Option | null) => {
     if (isReadonly) return;
@@ -253,9 +238,7 @@ const EditComponent = (props: any) => {
         <>
           <ComboboxChips
             ref={anchor}
-            className={cn(
-              isReadonly && "focus-within:border-input focus-within:ring-0",
-            )}
+            className={cn(isReadonly && "focus-within:border-input focus-within:ring-0")}
           >
             <ComboboxValue>
               {(values: Option[]) => (
@@ -288,7 +271,9 @@ const EditComponent = (props: any) => {
             )}
             <ComboboxList>
               {(option: Option) => (
-                <ComboboxItem key={option.value} value={option}>{option.label}</ComboboxItem>
+                <ComboboxItem key={option.value} value={option}>
+                  {option.label}
+                </ComboboxItem>
               )}
             </ComboboxList>
           </ComboboxContent>
@@ -299,7 +284,8 @@ const EditComponent = (props: any) => {
             placeholder={placeholder}
             className={cn(
               singleSelected?.resolved === false && "animate-pulse",
-              isReadonly && "has-[[data-slot=input-group-control]:focus-visible]:border-input has-[[data-slot=input-group-control]:focus-visible]:ring-0",
+              isReadonly &&
+                "has-[[data-slot=input-group-control]:focus-visible]:border-input has-[[data-slot=input-group-control]:focus-visible]:ring-0",
             )}
             showTrigger={!isReadonly}
             readOnly={isReadonly}
@@ -314,7 +300,9 @@ const EditComponent = (props: any) => {
             )}
             <ComboboxList>
               {(option: Option) => (
-                <ComboboxItem key={option.value} value={option}>{option.label}</ComboboxItem>
+                <ComboboxItem key={option.value} value={option}>
+                  {option.label}
+                </ComboboxItem>
               )}
             </ComboboxList>
           </ComboboxContent>

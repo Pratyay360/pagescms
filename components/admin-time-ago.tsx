@@ -1,18 +1,8 @@
 "use client";
 
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
-export function AdminTimeAgo({
-  label,
-  fullDate,
-}: {
-  label: string;
-  fullDate: string;
-}) {
+export function AdminTimeAgo({ label, fullDate }: { label: string; fullDate: string }) {
   return (
     <Tooltip>
       <TooltipTrigger asChild>

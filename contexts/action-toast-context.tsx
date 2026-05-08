@@ -12,11 +12,7 @@ import {
 import { toast } from "sonner";
 import { requireApiSuccess } from "@/lib/api-client";
 import { buttonVariants } from "@/components/ui/button";
-import {
-  formatActionRunState,
-  isActionRunActive,
-  type ActionRunSummary,
-} from "@/lib/actions";
+import { formatActionRunState, isActionRunActive, type ActionRunSummary } from "@/lib/actions";
 
 type TrackedActionToast = {
   runId: number;
@@ -77,17 +73,20 @@ export function ActionToastProvider({ children }: { children: React.ReactNode })
 
     try {
       const parsed = JSON.parse(stored) as Array<Omit<TrackedActionToast, "toastId" | "state">>;
-      const nextTrackedRuns = parsed.reduce<Record<number, TrackedActionToast>>((accumulator, item) => {
-        if (Date.now() - item.trackedAt > TRACKING_TIMEOUT_MS) {
+      const nextTrackedRuns = parsed.reduce<Record<number, TrackedActionToast>>(
+        (accumulator, item) => {
+          if (Date.now() - item.trackedAt > TRACKING_TIMEOUT_MS) {
+            return accumulator;
+          }
+          accumulator[item.runId] = {
+            ...item,
+            toastId: toast.loading(getToastMessage(item.actionLabel)),
+            state: null,
+          };
           return accumulator;
-        }
-        accumulator[item.runId] = {
-          ...item,
-          toastId: toast.loading(getToastMessage(item.actionLabel)),
-          state: null,
-        };
-        return accumulator;
-      }, {});
+        },
+        {},
+      );
       setTrackedRuns(nextTrackedRuns);
     } catch {}
   }, []);
@@ -95,14 +94,16 @@ export function ActionToastProvider({ children }: { children: React.ReactNode })
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    const serializable = Object.values(trackedRuns).map(({ runId, owner, repo, refName, actionLabel, trackedAt }) => ({
-      runId,
-      owner,
-      repo,
-      refName,
-      actionLabel,
-      trackedAt,
-    }));
+    const serializable = Object.values(trackedRuns).map(
+      ({ runId, owner, repo, refName, actionLabel, trackedAt }) => ({
+        runId,
+        owner,
+        repo,
+        refName,
+        actionLabel,
+        trackedAt,
+      }),
+    );
 
     if (serializable.length === 0) {
       window.sessionStorage.removeItem(STORAGE_KEY);
@@ -128,13 +129,17 @@ export function ActionToastProvider({ children }: { children: React.ReactNode })
         await requireApiSuccess(response, "Failed to cancel action run");
         toast.success("Run cancelled.", { id: trackedRun.toastId });
       } catch (error) {
-        toast.error(error instanceof Error ? error.message : "Failed to cancel action run.", { id: trackedRun.toastId });
+        toast.error(error instanceof Error ? error.message : "Failed to cancel action run.", {
+          id: trackedRun.toastId,
+        });
       }
     };
 
     const syncTrackedRuns = async () => {
       const entries = Object.values(trackedRuns);
-      const expiredEntries = entries.filter((trackedRun) => Date.now() - trackedRun.trackedAt > TRACKING_TIMEOUT_MS);
+      const expiredEntries = entries.filter(
+        (trackedRun) => Date.now() - trackedRun.trackedAt > TRACKING_TIMEOUT_MS,
+      );
 
       if (expiredEntries.length > 0) {
         expiredEntries.forEach((trackedRun) => {
@@ -156,16 +161,18 @@ export function ActionToastProvider({ children }: { children: React.ReactNode })
         return;
       }
 
-      const results = await Promise.all(entries.map(async (trackedRun) => {
-        const response = await fetch(
-          `/api/${trackedRun.owner}/${trackedRun.repo}/${encodeURIComponent(trackedRun.refName)}/actions/${trackedRun.runId}`,
-        );
-        const payload = await requireApiSuccess<{ data: ActionRunSummary }>(
-          response,
-          "Failed to fetch action run",
-        );
-        return { trackedRun, run: payload.data };
-      }));
+      const results = await Promise.all(
+        entries.map(async (trackedRun) => {
+          const response = await fetch(
+            `/api/${trackedRun.owner}/${trackedRun.repo}/${encodeURIComponent(trackedRun.refName)}/actions/${trackedRun.runId}`,
+          );
+          const payload = await requireApiSuccess<{ data: ActionRunSummary }>(
+            response,
+            "Failed to fetch action run",
+          );
+          return { trackedRun, run: payload.data };
+        }),
+      );
 
       if (refreshErrorToastIdRef.current != null) {
         toast.dismiss(refreshErrorToastIdRef.current);
@@ -184,15 +191,19 @@ export function ActionToastProvider({ children }: { children: React.ReactNode })
         if (isActionRunActive(run)) {
           toast.loading(getToastMessage(trackedRun.actionLabel, run), {
             id: trackedRun.toastId,
-            action: run.canCancel ? {
-              label: "Cancel",
-              onClick: () => {
-                void cancelTrackedRun(trackedRun);
-              },
-            } : undefined,
-            classNames: run.canCancel ? {
-              actionButton: buttonVariants({ variant: "outline", size: "sm" }),
-            } : undefined,
+            action: run.canCancel
+              ? {
+                  label: "Cancel",
+                  onClick: () => {
+                    void cancelTrackedRun(trackedRun);
+                  },
+                }
+              : undefined,
+            classNames: run.canCancel
+              ? {
+                  actionButton: buttonVariants({ variant: "outline", size: "sm" }),
+                }
+              : undefined,
           });
           return;
         }
@@ -253,15 +264,14 @@ export function ActionToastProvider({ children }: { children: React.ReactNode })
     }));
   }, []);
 
-  const value = useMemo<ActionToastContextValue>(() => ({
-    trackActionRun,
-  }), [trackActionRun]);
-
-  return (
-    <ActionToastContext.Provider value={value}>
-      {children}
-    </ActionToastContext.Provider>
+  const value = useMemo<ActionToastContextValue>(
+    () => ({
+      trackActionRun,
+    }),
+    [trackActionRun],
   );
+
+  return <ActionToastContext.Provider value={value}>{children}</ActionToastContext.Provider>;
 }
 
 export const useActionToasts = () => {

@@ -4,7 +4,14 @@
 
 import slugify from "slugify";
 
-const serializedTypes = ["yaml-frontmatter", "json-frontmatter", "toml-frontmatter", "yaml", "json", "toml"];
+const serializedTypes = [
+  "yaml-frontmatter",
+  "json-frontmatter",
+  "toml-frontmatter",
+  "yaml",
+  "json",
+  "toml",
+];
 
 const extensionCategories: Record<string, string[]> = {
   image: ["jpg", "jpeg", "apng", "png", "gif", "svg", "ico", "avif", "bmp", "tif", "tiff", "webp"],
@@ -12,15 +19,36 @@ const extensionCategories: Record<string, string[]> = {
   video: ["mp4", "avi", "mov", "wmv", "flv", "mpeg", "webm", "ogv", "ts", "3gp", "3g2"],
   audio: ["mp3", "wav", "aac", "ogg", "flac", "weba", "oga", "opus", "mid", "midi", "3gp", "3g2"],
   compressed: ["zip", "rar", "7z", "tar", "gz", "tgz", "bz", "bz2"],
-  code: ["js", "jsx", "ts", "tsx", "html", "css", "scss", "json", "xml", "yaml", "yml", "md", "py", "rb", "php", "java", "c", "cpp", "h", "cs", "go", "rs", "sql"],
+  code: [
+    "js",
+    "jsx",
+    "ts",
+    "tsx",
+    "html",
+    "css",
+    "scss",
+    "json",
+    "xml",
+    "yaml",
+    "yml",
+    "md",
+    "py",
+    "rb",
+    "php",
+    "java",
+    "c",
+    "cpp",
+    "h",
+    "cs",
+    "go",
+    "rs",
+    "sql",
+  ],
   font: ["ttf", "otf", "woff", "woff2", "eot"],
-  spreadsheet: ["csv", "tsv", "ods"]
+  spreadsheet: ["csv", "tsv", "ods"],
 };
 
-const getFileSize = (
-  bytes: number,
-  decimals: number = 2
-): string => {
+const getFileSize = (bytes: number, decimals: number = 2): string => {
   if (bytes === 0) return "0 Bytes";
 
   const k = 1024;
@@ -30,14 +58,14 @@ const getFileSize = (
   const i = Math.floor(Math.log(bytes) / Math.log(k));
 
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
-}
+};
 
 const getFileExtension = (path: string): string => {
   const filename = getFileName(path);
   if (filename.startsWith(".") && !filename.includes(".", 1)) return "";
   const extensionMatch = /(?:\.([^.]+))?$/.exec(filename);
   return extensionMatch?.[1] ?? "";
-}
+};
 
 function getFileName(path: string): string {
   return normalizePath(path).split("/").pop() || "";
@@ -63,10 +91,8 @@ function normalizePath(path: string): string {
 }
 
 const getParentPath = (path: string): string => {
-  return (path === "" || path === "/")
-    ? ""
-    : path.split("/").slice(0, -1).join("/") || "";
-}
+  return path === "" || path === "/" ? "" : path.split("/").slice(0, -1).join("/") || "";
+};
 
 const getRelativePath = (path: string, rootPath: string): string => {
   if (!path.startsWith(rootPath)) {
@@ -74,12 +100,12 @@ const getRelativePath = (path: string, rootPath: string): string => {
     return path;
   }
   return !rootPath ? path : path.slice(rootPath.length + 1);
-}
+};
 
 const joinPathSegments = (segments: string[]): string => {
   return segments
-    .map(segment => segment.replace(/^\/+|\/+$/g, ""))
-    .filter(segment => segment.length > 0)
+    .map((segment) => segment.replace(/^\/+|\/+$/g, ""))
+    .filter((segment) => segment.length > 0)
     .join("/");
 };
 
@@ -130,24 +156,20 @@ type UploadRenameMode = boolean | "safe" | "random" | undefined;
 const getSafeUploadName = (filename: string): string => {
   const normalizedName = decodePathSafely(getFileName(filename || ""));
   const extension = getFileExtension(normalizedName);
-  const baseName = extension
-    ? normalizedName.slice(0, -(extension.length + 1))
-    : normalizedName;
+  const baseName = extension ? normalizedName.slice(0, -(extension.length + 1)) : normalizedName;
 
-  const safeBaseName = slugify(baseName, {
-    lower: true,
-    strict: true,
-    trim: true,
-  }) || "file";
+  const safeBaseName =
+    slugify(baseName, {
+      lower: true,
+      strict: true,
+      trim: true,
+    }) || "file";
 
   const safeExtension = extension ? `.${extension.toLowerCase()}` : "";
   return `${safeBaseName}${safeExtension}`;
 };
 
-const getUploadFileName = (
-  filename: string,
-  rename: UploadRenameMode,
-): string => {
+const getUploadFileName = (filename: string, rename: UploadRenameMode): string => {
   if (rename === false || rename == null) return filename;
   if (rename === "random") return generateRandomUploadName(getFileExtension(filename));
   return getSafeUploadName(filename);
@@ -177,5 +199,5 @@ export {
   getUploadFileName,
   sortFiles,
   extensionCategories,
-  serializedTypes
+  serializedTypes,
 };

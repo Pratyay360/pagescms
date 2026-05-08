@@ -10,14 +10,19 @@ const EditComponent = forwardRef((props: any, ref) => {
 
   useImperativeHandle(ref, () => internalRef.current);
 
-  return <Textarea
-    {...restProps}
-    ref={internalRef}
-    minLength={field.options?.minlength}
-    maxLength={field.options?.maxlength}
-    className={cn("text-base min-h-19.5", field?.readonly && "focus-visible:border-input focus-visible:ring-0")}
-    readOnly={field?.readonly}
-  />;
+  return (
+    <Textarea
+      {...restProps}
+      ref={internalRef}
+      minLength={field.options?.minlength}
+      maxLength={field.options?.maxlength}
+      className={cn(
+        "text-base min-h-19.5",
+        field?.readonly && "focus-visible:border-input focus-visible:ring-0",
+      )}
+      readOnly={field?.readonly}
+    />
+  );
 });
 
 export { EditComponent };

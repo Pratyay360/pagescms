@@ -7,9 +7,7 @@ import { App } from "@octokit/app";
 import { decrypt, encrypt } from "@/lib/crypto";
 import { createOctokitInstance } from "@/lib/utils/octokit";
 import { db } from "@/db";
-import {
-  githubInstallationTokenTable
-} from "@/db/schema";
+import { githubInstallationTokenTable } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { User } from "@/types/user";
 import { getGithubAccount } from "@/lib/github-account";
@@ -19,45 +17,37 @@ import { collaboratorMatchesUserForRepo } from "@/lib/collaborator-access";
 const installationTokenRefreshInFlight = new Map<number, Promise<string>>();
 
 // Get a token for a user (including collagborators who need to provide an owner/repo scope).
-const getToken = cache(async (
-  user: User,
-  owner: string,
-  repo: string,
-  verifyGithubAccess: boolean = false,
-) => {
-  const githubAccount = await getGithubAccount(user.id);
-  if (githubAccount?.accessToken) {
-    const hasGithubAccess = await canAccessRepoWithToken(githubAccount.accessToken, owner, repo);
-    if (hasGithubAccess) return {
-      token: githubAccount.accessToken,
-      source: "user" as const,
-    };
+const getToken = cache(
+  async (user: User, owner: string, repo: string, verifyGithubAccess: boolean = false) => {
+    const githubAccount = await getGithubAccount(user.id);
+    if (githubAccount?.accessToken) {
+      const hasGithubAccess = await canAccessRepoWithToken(githubAccount.accessToken, owner, repo);
+      if (hasGithubAccess)
+        return {
+          token: githubAccount.accessToken,
+          source: "user" as const,
+        };
 
-    if (verifyGithubAccess) {
-      throw createHttpError(
-        `You do not have permission to access "${owner}/${repo}".`,
-        403,
-      );
+      if (verifyGithubAccess) {
+        throw createHttpError(`You do not have permission to access "${owner}/${repo}".`, 403);
+      }
     }
-  }
 
-  const permission = await db.query.collaboratorTable.findFirst({
-    where: collaboratorMatchesUserForRepo(user, owner, repo),
-  });
-  if (!permission) {
-    throw createHttpError(
-      `You do not have permission to access "${owner}/${repo}".`,
-      403,
-    );
-  }
+    const permission = await db.query.collaboratorTable.findFirst({
+      where: collaboratorMatchesUserForRepo(user, owner, repo),
+    });
+    if (!permission) {
+      throw createHttpError(`You do not have permission to access "${owner}/${repo}".`, 403);
+    }
 
-  const installationToken = await getInstallationToken(owner, repo);
+    const installationToken = await getInstallationToken(owner, repo);
 
-  return {
-    token: installationToken,
-    source: "installation" as const,
-  };
-});
+    return {
+      token: installationToken,
+      source: "installation" as const,
+    };
+  },
+);
 
 // Get the GitHub App installation token for a specific repository.
 const getInstallationToken = cache(async (owner: string, repo: string) => {
@@ -66,15 +56,15 @@ const getInstallationToken = cache(async (owner: string, repo: string) => {
     privateKey: process.env.GITHUB_APP_PRIVATE_KEY!,
   });
 
-  const repoInstallation = await app.octokit.request(
-    "GET /repos/{owner}/{repo}/installation",
-    { owner, repo },
-  );
+  const repoInstallation = await app.octokit.request("GET /repos/{owner}/{repo}/installation", {
+    owner,
+    repo,
+  });
   if (!repoInstallation) throw new Error(`Installation token not found for "${owner}/${repo}".`);
 
   const installationId = repoInstallation.data.id;
   const tokenData = await db.query.githubInstallationTokenTable.findFirst({
-    where: eq(githubInstallationTokenTable.installationId, installationId)
+    where: eq(githubInstallationTokenTable.installationId, installationId),
   });
 
   if (tokenData && Date.now() < tokenData.expiresAt.getTime() - 60_000) {
@@ -100,27 +90,31 @@ const getInstallationToken = cache(async (owner: string, repo: string) => {
     const expiresAt = new Date(installationToken.data.expires_at);
 
     if (tokenData) {
-      await db.update(githubInstallationTokenTable).set({
-        ciphertext,
-        iv,
-        expiresAt
-      }).where(
-        eq(githubInstallationTokenTable.id, tokenData.id)
-      );
-    } else {
-      await db.insert(githubInstallationTokenTable).values({
-        ciphertext,
-        iv,
-        installationId,
-        expiresAt
-      }).onConflictDoUpdate({
-        target: githubInstallationTokenTable.installationId,
-        set: {
+      await db
+        .update(githubInstallationTokenTable)
+        .set({
           ciphertext,
           iv,
           expiresAt,
-        },
-      });
+        })
+        .where(eq(githubInstallationTokenTable.id, tokenData.id));
+    } else {
+      await db
+        .insert(githubInstallationTokenTable)
+        .values({
+          ciphertext,
+          iv,
+          installationId,
+          expiresAt,
+        })
+        .onConflictDoUpdate({
+          target: githubInstallationTokenTable.installationId,
+          set: {
+            ciphertext,
+            iv,
+            expiresAt,
+          },
+        });
     }
 
     return installationToken.data.token;
@@ -142,11 +136,7 @@ const getUserToken = cache(async (userId: string) => {
   return githubAccount.accessToken;
 });
 
-const canAccessRepoWithToken = async (
-  token: string,
-  owner: string,
-  repo: string,
-) => {
+const canAccessRepoWithToken = async (token: string, owner: string, repo: string) => {
   try {
     const octokit = createOctokitInstance(token);
     await octokit.rest.repos.get({ owner, repo });

@@ -21,17 +21,9 @@ import { Button } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
 import { Input } from "@/components/ui/input";
 import { requireApiSuccess } from "@/lib/api-client";
-import {
-  formatActionRunState,
-  isActionRunActive,
-  type ActionRunSummary,
-} from "@/lib/actions";
+import { formatActionRunState, isActionRunActive, type ActionRunSummary } from "@/lib/actions";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -39,16 +31,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from "@/components/ui/hover-card";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -80,9 +64,7 @@ const PAGE_BUTTON_COUNT = 5;
 const getRunIcon = (run: ActionRunSummary) => {
   if (isActionRunActive(run)) return <Loader className="size-4 animate-spin" />;
   if (run.conclusion === "success")
-    return (
-      <CircleCheck className="size-4 text-green-600 dark:text-green-400" />
-    );
+    return <CircleCheck className="size-4 text-green-600 dark:text-green-400" />;
   return <CircleX className="size-4 text-destructive" />;
 };
 
@@ -94,14 +76,10 @@ const getStatusFilterValue = (run: ActionRunSummary) => {
   return "failed";
 };
 
-const formatContext = (
-  run: ActionRunSummary,
-  contextLabels: Record<string, string>,
-) => {
+const formatContext = (run: ActionRunSummary, contextLabels: Record<string, string>) => {
   const contextLabel =
     run.contextType && run.contextName
-      ? (contextLabels[`${run.contextType}:${run.contextName}`] ??
-        run.contextName)
+      ? (contextLabels[`${run.contextType}:${run.contextName}`] ?? run.contextName)
       : null;
 
   switch (run.contextType) {
@@ -129,23 +107,22 @@ const getShaUrl = (owner: string, repo: string, sha: string | null) => {
   return `https://github.com/${owner}/${repo}/commit/${sha}`;
 };
 
-const UnderlinedTrigger = forwardRef<
-  HTMLButtonElement,
-  React.ComponentPropsWithoutRef<"button">
->(function UnderlinedTrigger({ children, className, ...props }, ref) {
-  return (
-    <button
-      ref={ref}
-      type="button"
-      className={`group text-left ${className ?? ""}`.trim()}
-      {...props}
-    >
-      <span className="border-b border-dotted border-current/50 transition-colors group-hover:border-current">
-        {children}
-      </span>
-    </button>
-  );
-});
+const UnderlinedTrigger = forwardRef<HTMLButtonElement, React.ComponentPropsWithoutRef<"button">>(
+  function UnderlinedTrigger({ children, className, ...props }, ref) {
+    return (
+      <button
+        ref={ref}
+        type="button"
+        className={`group text-left ${className ?? ""}`.trim()}
+        {...props}
+      >
+        <span className="border-b border-dotted border-current/50 transition-colors group-hover:border-current">
+          {children}
+        </span>
+      </button>
+    );
+  },
+);
 
 function DetailValue({ value }: { value: string }) {
   if (value === "-") {
@@ -184,9 +161,7 @@ function ActionsPagination({
                 event.preventDefault();
                 onPrevious();
               }}
-              className={
-                pageIndex === 0 ? "pointer-events-none opacity-50" : undefined
-              }
+              className={pageIndex === 0 ? "pointer-events-none opacity-50" : undefined}
             />
           </PaginationItem>
           {paginationItems.map((item, index) => (
@@ -215,11 +190,7 @@ function ActionsPagination({
                 event.preventDefault();
                 onNext();
               }}
-              className={
-                pageIndex >= pageCount - 1
-                  ? "pointer-events-none opacity-50"
-                  : undefined
-              }
+              className={pageIndex >= pageCount - 1 ? "pointer-events-none opacity-50" : undefined}
             />
           </PaginationItem>
         </PaginationContent>
@@ -332,44 +303,44 @@ export function ActionsPage({
     setRuns(payload.data);
   }, [branch, owner, repo]);
 
-  const handleRunAction = useCallback(async (
-    run: ActionRunSummary,
-    intent: "cancel" | "rerun",
-  ) => {
-    try {
-      const response = await fetch(
-        `/api/${owner}/${repo}/${encodeURIComponent(branch)}/actions/${run.id}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ intent }),
-        },
-      );
-      const payload = await requireApiSuccess<{ data?: ActionRunSummary | { id: number } }>(
-        response,
-        `Failed to ${intent === "cancel" ? "cancel" : "run"} action`,
-      );
+  const handleRunAction = useCallback(
+    async (run: ActionRunSummary, intent: "cancel" | "rerun") => {
+      try {
+        const response = await fetch(
+          `/api/${owner}/${repo}/${encodeURIComponent(branch)}/actions/${run.id}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ intent }),
+          },
+        );
+        const payload = await requireApiSuccess<{ data?: ActionRunSummary | { id: number } }>(
+          response,
+          `Failed to ${intent === "cancel" ? "cancel" : "run"} action`,
+        );
 
-      if (intent === "rerun" && payload.data && "id" in payload.data) {
-        const actionLabel = actionLabels[run.actionName] ?? run.actionName;
-        const toastId = toast.loading(`Starting "${actionLabel}"…`);
-        trackActionRun({
-          runId: payload.data.id,
-          owner,
-          repo,
-          refName: branch,
-          actionLabel,
-          toastId,
-        });
-      } else if (intent === "cancel") {
-        toast.success("Run cancelled.");
+        if (intent === "rerun" && payload.data && "id" in payload.data) {
+          const actionLabel = actionLabels[run.actionName] ?? run.actionName;
+          const toastId = toast.loading(`Starting "${actionLabel}"…`);
+          trackActionRun({
+            runId: payload.data.id,
+            owner,
+            repo,
+            refName: branch,
+            actionLabel,
+            toastId,
+          });
+        } else if (intent === "cancel") {
+          toast.success("Run cancelled.");
+        }
+
+        await loadRuns();
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : "Action failed.");
       }
-
-      await loadRuns();
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Action failed.");
-    }
-  }, [actionLabels, branch, loadRuns, owner, repo, trackActionRun]);
+    },
+    [actionLabels, branch, loadRuns, owner, repo, trackActionRun],
+  );
 
   useEffect(() => {
     void loadRuns();
@@ -418,24 +389,12 @@ export function ActionsPage({
         .toLowerCase();
 
       if (statusFilter !== "all" && status !== statusFilter) return false;
-      if (actionFilter !== "all" && run.actionName !== actionFilter)
-        return false;
-      if (
-        triggeredByFilter !== "all" &&
-        run.triggeredByName !== triggeredByFilter
-      )
-        return false;
+      if (actionFilter !== "all" && run.actionName !== actionFilter) return false;
+      if (triggeredByFilter !== "all" && run.triggeredByName !== triggeredByFilter) return false;
       if (search && !haystack.includes(search.toLowerCase())) return false;
       return true;
     });
-  }, [
-    actionFilter,
-    actionLabels,
-    runs,
-    search,
-    statusFilter,
-    triggeredByFilter,
-  ]);
+  }, [actionFilter, actionLabels, runs, search, statusFilter, triggeredByFilter]);
 
   useEffect(() => {
     setPageIndex(0);
@@ -554,10 +513,7 @@ export function ActionsPage({
                       ))}
                     </SelectContent>
                   </Select>
-                  <Select
-                    value={triggeredByFilter}
-                    onValueChange={setTriggeredByFilter}
-                  >
+                  <Select value={triggeredByFilter} onValueChange={setTriggeredByFilter}>
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Triggered by" />
                     </SelectTrigger>
@@ -632,10 +588,7 @@ export function ActionsPage({
         <TableBody>
           {filteredRuns.length === 0 ? (
             <TableRow>
-              <TableCell
-                colSpan={7}
-                className="py-8 text-center text-muted-foreground"
-              >
+              <TableCell colSpan={7} className="py-8 text-center text-muted-foreground">
                 {runs.length === 0 ? "No actions yet." : "No matching actions."}
               </TableCell>
             </TableRow>
@@ -648,15 +601,11 @@ export function ActionsPage({
                     <TooltipContent>{getStatusLabel(run)}</TooltipContent>
                   </Tooltip>
                 </TableCell>
-                <TableCell className="font-mono font-medium">
-                  {run.actionName}
-                </TableCell>
+                <TableCell className="font-mono font-medium">{run.actionName}</TableCell>
                 <TableCell>
                   <HoverCard>
                     <HoverCardTrigger asChild>
-                      <UnderlinedTrigger>
-                        {formatContext(run, contextLabels)}
-                      </UnderlinedTrigger>
+                      <UnderlinedTrigger>{formatContext(run, contextLabels)}</UnderlinedTrigger>
                     </HoverCardTrigger>
                     <HoverCardContent align="start">
                       <ul className="space-y-2 text-sm">
@@ -681,9 +630,7 @@ export function ActionsPage({
                   {run.triggeredByName ? (
                     <HoverCard>
                       <HoverCardTrigger asChild>
-                        <UnderlinedTrigger>
-                          {run.triggeredByName}
-                        </UnderlinedTrigger>
+                        <UnderlinedTrigger>{run.triggeredByName}</UnderlinedTrigger>
                       </HoverCardTrigger>
                       <HoverCardContent align="start">
                         <div className="flex items-start gap-3">
@@ -699,15 +646,11 @@ export function ActionsPage({
                               alt={run.triggeredByName}
                             />
                             <AvatarFallback>
-                              {getInitialsFromName(
-                                run.triggeredByName ?? undefined,
-                              )}
+                              {getInitialsFromName(run.triggeredByName ?? undefined)}
                             </AvatarFallback>
                           </Avatar>
                           <div className="grid gap-1 text-sm">
-                            <div className="font-medium">
-                              {run.triggeredByName}
-                            </div>
+                            <div className="font-medium">{run.triggeredByName}</div>
                             {run.triggeredByGithubUsername ? (
                               <Link
                                 href={`https://github.com/${run.triggeredByGithubUsername}`}
@@ -719,9 +662,7 @@ export function ActionsPage({
                               </Link>
                             ) : null}
                             {run.triggeredByEmail ? (
-                              <div className="text-muted-foreground">
-                                {run.triggeredByEmail}
-                              </div>
+                              <div className="text-muted-foreground">{run.triggeredByEmail}</div>
                             ) : (
                               <div className="text-muted-foreground">-</div>
                             )}
@@ -746,12 +687,10 @@ export function ActionsPage({
                         : run.sha.slice(0, 7)}
                     </Link>
                   ) : (
-                    <span className="font-mono text-[13px]">
-                      {run.workflowRef ?? "-"}
-                    </span>
+                    <span className="font-mono text-[13px]">{run.workflowRef ?? "-"}</span>
                   )}
                 </TableCell>
-              <TableCell className="text-right">
+                <TableCell className="text-right">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="outline" size="icon-sm">
@@ -761,11 +700,7 @@ export function ActionsPage({
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem asChild disabled={!run.htmlUrl}>
-                        <Link
-                          href={run.htmlUrl ?? "#"}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
+                        <Link href={run.htmlUrl ?? "#"} target="_blank" rel="noreferrer">
                           View on GitHub
                           <ArrowUpRight className="ml-auto size-3 text-muted-foreground" />
                         </Link>

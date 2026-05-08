@@ -64,10 +64,7 @@ export const InviteEmailTemplate = ({
             >
               Join &quot;{repoName}&quot; on Pages CMS
             </Heading>
-            <Text
-              className="text-[16px] leading-[24px]"
-              style={{ color: emailTheme.foreground }}
-            >
+            <Text className="text-[16px] leading-[24px]" style={{ color: emailTheme.foreground }}>
               <Link
                 href={invitedByUrl}
                 className="underline rounded-md"
@@ -75,8 +72,8 @@ export const InviteEmailTemplate = ({
               >
                 {invitedByName}
               </Link>{" "}
-              has invited you to the &quot;{repoName}&quot; project on Pages
-              CMS. Use the following link to start collaborating:
+              has invited you to the &quot;{repoName}&quot; project on Pages CMS. Use the following
+              link to start collaborating:
             </Text>
             <Section className="text-center mt-[24px] mb-[24px]">
               <Button
@@ -91,16 +88,10 @@ export const InviteEmailTemplate = ({
                 Join &quot;{repoName}&quot;
               </Button>
             </Section>
-            <Text
-              className="text-[16px] leading-[24px]"
-              style={{ color: emailTheme.foreground }}
-            >
+            <Text className="text-[16px] leading-[24px]" style={{ color: emailTheme.foreground }}>
               or copy and paste this URL into your browser:{" "}
             </Text>
-            <Text
-              className="text-[16px] leading-[24px]"
-              style={{ color: emailTheme.foreground }}
-            >
+            <Text className="text-[16px] leading-[24px]" style={{ color: emailTheme.foreground }}>
               <Link
                 href={inviteUrl}
                 className="underline rounded-md"
@@ -121,8 +112,7 @@ export const InviteEmailTemplate = ({
               >
                 {email}
               </Link>
-              . If you think this is a mistake, you can safely ignore this
-              email.
+              . If you think this is a mistake, you can safely ignore this email.
             </Text>
           </Container>
         </Body>

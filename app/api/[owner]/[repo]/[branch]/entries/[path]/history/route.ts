@@ -10,15 +10,15 @@ import { requireApiUserSession } from "@/lib/session-server";
 
 /**
  * Fetches the history of a file from GitHub repositories.
- * 
+ *
  * GET /api/[owner]/[repo]/[branch]/entries/[path]/history
- * 
+ *
  * Requires authentication.
  */
 
 export async function GET(
   request: NextRequest,
-  context: { params: Promise<{ owner: string, repo: string, branch: string, path: string }> }
+  context: { params: Promise<{ owner: string; repo: string; branch: string; path: string }> },
 ) {
   try {
     const params = await context.params;
@@ -31,31 +31,42 @@ export async function GET(
 
     const searchParams = request.nextUrl.searchParams;
     const name = searchParams.get("name") || "";
-    
+
     const normalizedPath = normalizePath(params.path);
     if (normalizedPath === ".pages.yml") {
       assertGithubIdentity(user, "Only GitHub users can access settings history.");
     }
-    
+
     if (name) {
       const config = await getConfig(params.owner, params.repo, params.branch, {
         getToken: async () => token,
       });
-      if (!config) throw createHttpError(`Configuration not found for ${params.owner}/${params.repo}/${params.branch}.`, 404);
-      
+      if (!config)
+        throw createHttpError(
+          `Configuration not found for ${params.owner}/${params.repo}/${params.branch}.`,
+          404,
+        );
+
       const schema = getSchemaByName(config.object, name);
       if (!schema) throw createHttpError(`Schema not found for ${name}.`, 404);
 
-      if (!normalizedPath.startsWith(schema.path)) throw createHttpError(`Invalid path "${params.path}" for ${schema.type} "${name}".`, 400);
+      if (!normalizedPath.startsWith(schema.path))
+        throw createHttpError(`Invalid path "${params.path}" for ${schema.type} "${name}".`, 400);
 
       const extension = schema.extension ?? "";
       if (getFileExtension(normalizedPath) !== extension) {
-        throw createHttpError(`Invalid extension "${getFileExtension(normalizedPath)}" for ${schema.type} "${name}".`, 400);
+        throw createHttpError(
+          `Invalid extension "${getFileExtension(normalizedPath)}" for ${schema.type} "${name}".`,
+          400,
+        );
       }
     } else if (normalizedPath !== ".pages.yml") {
-      throw createHttpError("If no content entry name is provided, the path must be \".pages.yml\".", 400);
+      throw createHttpError(
+        'If no content entry name is provided, the path must be ".pages.yml".',
+        400,
+      );
     }
-    
+
     const octokit = createOctokitInstance(token);
     const response = await octokit.rest.repos.listCommits({
       owner: params.owner,
@@ -66,7 +77,7 @@ export async function GET(
 
     return Response.json({
       status: "success",
-      data: response.data
+      data: response.data,
     });
   } catch (error: any) {
     console.error(error);

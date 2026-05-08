@@ -8,14 +8,14 @@ import { getSchemaByName } from "@/lib/schema";
 import { Collection } from "@/components/collection/collection";
 
 export default function Page({
-  params
+  params,
 }: {
   params: Promise<{
     owner: string;
     repo: string;
     branch: string;
-    name: string
-  }>
+    name: string;
+  }>;
 }) {
   const resolvedParams = use(params);
   const { config } = useConfig();
@@ -31,9 +31,14 @@ export default function Page({
   return (
     <>
       <DocumentTitle
-        title={formatRepoBranchTitle(schema.label || schema.name, config.owner, config.repo, config.branch)}
+        title={formatRepoBranchTitle(
+          schema.label || schema.name,
+          config.owner,
+          config.repo,
+          config.branch,
+        )}
       />
-      <Collection name={name} path={path}/>
+      <Collection name={name} path={path} />
     </>
   );
 }

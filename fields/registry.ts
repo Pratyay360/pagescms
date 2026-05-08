@@ -25,10 +25,17 @@ type FieldModule = {
 
 const fieldTypes = new Set<string>();
 const labels: Record<string, string> = {};
-const schemas: Record<string, (field: Field, configObject?: Record<string, any>) => z.ZodTypeAny> = {};
+const schemas: Record<string, (field: Field, configObject?: Record<string, any>) => z.ZodTypeAny> =
+  {};
 const defaultValues: Record<string, any> = {};
-const readFns: Record<string, (value: any, field: Field, configObject?: Record<string, any>) => void> = {};
-const writeFns: Record<string, (value: any, field: Field, configObject?: Record<string, any>) => void> = {};
+const readFns: Record<
+  string,
+  (value: any, field: Field, configObject?: Record<string, any>) => void
+> = {};
+const writeFns: Record<
+  string,
+  (value: any, field: Field, configObject?: Record<string, any>) => void
+> = {};
 const editComponents: Record<string, React.ComponentType<any>> = {};
 const viewComponents: Record<string, React.ComponentType<any>> = {};
 
@@ -57,4 +64,13 @@ registerField("string", stringField);
 registerField("text", textField);
 registerField("uuid", uuidField);
 
-export { labels, schemas, readFns, writeFns, defaultValues, editComponents, viewComponents, fieldTypes };
+export {
+  labels,
+  schemas,
+  readFns,
+  writeFns,
+  defaultValues,
+  editComponents,
+  viewComponents,
+  fieldTypes,
+};

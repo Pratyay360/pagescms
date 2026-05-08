@@ -61,8 +61,7 @@ const main = async () => {
   }
 
   const defaultInvitedByUser =
-    (await findUserById(defaultInvitedByUserId))
-    ?? (await findUserByEmail(defaultInvitedByEmail));
+    (await findUserById(defaultInvitedByUserId)) ?? (await findUserByEmail(defaultInvitedByEmail));
 
   let inserted = 0;
   let updated = 0;
@@ -88,9 +87,9 @@ const main = async () => {
       const repoId = parseNumberOrNull(row.repoId);
 
       const invitedByUser =
-        (await findUserById(row.invitedBy?.trim()))
-        ?? (await findUserByEmail(row.invitedByEmail?.trim()))
-        ?? defaultInvitedByUser;
+        (await findUserById(row.invitedBy?.trim())) ??
+        (await findUserByEmail(row.invitedByEmail?.trim())) ??
+        defaultInvitedByUser;
 
       // userId is optional; if missing, we try matching by collaborator email.
       let linkedUserId: string | null = null;
@@ -106,7 +105,7 @@ const main = async () => {
         where: and(
           sql`lower(${collaboratorTable.owner}) = lower(${owner})`,
           sql`lower(${collaboratorTable.repo}) = lower(${repo})`,
-          sql`lower(${collaboratorTable.email}) = lower(${email})`
+          sql`lower(${collaboratorTable.email}) = lower(${email})`,
         ),
       });
 
@@ -124,10 +123,7 @@ const main = async () => {
       };
 
       if (existing) {
-        await db
-          .update(collaboratorTable)
-          .set(values)
-          .where(eq(collaboratorTable.id, existing.id));
+        await db.update(collaboratorTable).set(values).where(eq(collaboratorTable.id, existing.id));
         updated += 1;
       } else {
         await db.insert(collaboratorTable).values(values);

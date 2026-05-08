@@ -1,4 +1,10 @@
-import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyTitle,
+} from "@/components/ui/empty";
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 
@@ -15,5 +21,5 @@ export default function NotFound() {
         </Link>
       </EmptyContent>
     </Empty>
-  )
+  );
 }

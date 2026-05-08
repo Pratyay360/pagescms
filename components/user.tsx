@@ -37,11 +37,7 @@ export function User({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          className={cn(className, "rounded-full")}
-        >
+        <Button variant="ghost" size="icon-sm" className={cn(className, "rounded-full")}>
           <Avatar className="size-6">
             <AvatarImage
               src={
@@ -51,9 +47,7 @@ export function User({
               }
               alt={user?.name || user.email}
             />
-            <AvatarFallback>
-              {getInitialsFromName(user.name ?? undefined)}
-            </AvatarFallback>
+            <AvatarFallback>{getInitialsFromName(user.name ?? undefined)}</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
@@ -62,9 +56,7 @@ export function User({
           <div className="text-sm font-medium truncate">
             {user.name || user.githubUsername || user.email}
           </div>
-          <div className="text-xs font-normal text-muted-foreground truncate">
-            {user.email}
-          </div>
+          <div className="text-xs font-normal text-muted-foreground truncate">{user.email}</div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuLabel className="w-40 text-xs text-muted-foreground font-medium">

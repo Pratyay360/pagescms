@@ -24,13 +24,13 @@ type NavigationNode = {
 const deepMap = (
   contentObject: Record<string, any>,
   fields: Field[],
-  apply: (value: any, field: Field) => any
+  apply: (value: any, field: Field) => any,
 ): Record<string, any> => {
   const traverse = (data: any, schema: Field[]): any => {
     const result: any = {};
     const currentData = data || {}; // Ensure data is an object
 
-    schema.forEach(field => {
+    schema.forEach((field) => {
       const value = currentData[field.name];
 
       if (field.list) {
@@ -38,17 +38,17 @@ const deepMap = (
           result[field.name] = apply(value, field);
         } else {
           result[field.name] = Array.isArray(value)
-            ? value.map(item => {
+            ? value.map((item) => {
                 if (field.type === "object") {
                   return traverse(item, field.fields || []);
                 } else if (field.type === "block") {
                   const blockKey = field.blockKey || "_block";
                   const blockName = item?.[blockKey];
-                  const blockDef = field.blocks?.find(b => b.name === blockName);
+                  const blockDef = field.blocks?.find((b) => b.name === blockName);
                   if (blockDef) {
                     const innerResult = traverse(item, blockDef.fields || []);
                     // Merge discriminator back after processing inner fields
-                    return { [blockKey]: blockName, ...innerResult }; 
+                    return { [blockKey]: blockName, ...innerResult };
                   }
                   return item;
                 } else {
@@ -62,7 +62,7 @@ const deepMap = (
       } else if (field.type === "block") {
         const blockKey = field.blockKey || "_block";
         const blockName = value?.[blockKey];
-        const blockDef = field.blocks?.find(b => b.name === blockName);
+        const blockDef = field.blocks?.find((b) => b.name === blockName);
         if (blockDef && value) {
           const innerResult = traverse(value, blockDef.fields || []);
           // Merge discriminator back after processing inner fields
@@ -74,7 +74,7 @@ const deepMap = (
         result[field.name] = apply(value, field);
       }
     });
-    
+
     return result;
   };
 
@@ -84,10 +84,10 @@ const deepMap = (
 // Create an initial state for an entry based on the schema fields and content
 const initializeState = (
   fields: Field[] | undefined,
-  contentObject: Record<string, any> = {}
+  contentObject: Record<string, any> = {},
 ): Record<string, any> => {
   if (!fields) return {};
-  
+
   // Ensure deepMap gets a valid object even if contentObject is null/undefined
   const sanitizedContent = contentObject || {};
 
@@ -95,14 +95,14 @@ const initializeState = (
     let appliedValue = value;
     if (value === undefined) {
       appliedValue = field.list
-        ? (typeof field.list === "object" && field.list.default !== undefined)
+        ? typeof field.list === "object" && field.list.default !== undefined
           ? field.list.default
           : []
         : getDefaultValue(field);
     }
     // Handle potential null values passed from traverse if the object didn't exist
-    else if (appliedValue === null && field.type !== 'object' && !field.list) {
-       appliedValue = getDefaultValue(field);
+    else if (appliedValue === null && field.type !== "object" && !field.list) {
+      appliedValue = getDefaultValue(field);
     }
     return appliedValue;
   });
@@ -120,7 +120,9 @@ const getDefaultValue = (field: Record<string, any>) => {
     const defaultValue = defaultValues?.[field.type];
     return defaultValue instanceof Function
       ? defaultValue(field)
-      : defaultValue !== undefined ? defaultValue : "";
+      : defaultValue !== undefined
+        ? defaultValue
+        : "";
   }
 };
 
@@ -144,54 +146,60 @@ const isEffectivelyEmpty = (value: unknown): boolean => {
 };
 
 // Generate a Zod schema for validation
-const generateZodSchema = (
-  fields: Field[],
-  ignoreHidden: boolean = false
-): z.ZodTypeAny => {
+const generateZodSchema = (fields: Field[], ignoreHidden: boolean = false): z.ZodTypeAny => {
   const buildSchemaObject = (currentFields: Field[]): Record<string, z.ZodTypeAny> => {
     return currentFields.reduce((acc: Record<string, z.ZodTypeAny>, field) => {
       if (ignoreHidden && field.hidden) return acc;
 
       let fieldSchema: z.ZodTypeAny;
 
-      if (field.type === 'object') {
+      if (field.type === "object") {
         // Optional objects should only be validated when they are meaningfully present.
         const objectSchema = z.object(buildSchemaObject(field.fields || []));
         fieldSchema = field.required
           ? objectSchema
           : z.preprocess(
               (value) => (isEffectivelyEmpty(value) ? undefined : value),
-              objectSchema.optional()
+              objectSchema.optional(),
             );
-      } else if (field.type === 'block') {
+      } else if (field.type === "block") {
         // Block field
         if (!field.blocks || field.blocks.length === 0) {
           console.warn(`Block field "${field.name}" has no 'blocks' defined. Allowing any object.`);
           fieldSchema = z.object({}).passthrough();
         } else {
           const discriminator = field.blockKey || "_block";
-          const blockTypeSchemas = field.blocks.map(blockDef => {
-            if (!blockDef.name) {
-              console.warn(`Block definition within field "${field.name}" is missing a 'name'. Skipping.`);
-              return null;
-            }
-            const base = z.object({
-              [discriminator]: z.literal(blockDef.name) 
-            });
-            const blockFieldsSchema = z.object(buildSchemaObject(blockDef.fields || []));
-            return base.merge(blockFieldsSchema); 
-          }).filter(schema => schema !== null) as z.ZodObject<any>[];
+          const blockTypeSchemas = field.blocks
+            .map((blockDef) => {
+              if (!blockDef.name) {
+                console.warn(
+                  `Block definition within field "${field.name}" is missing a 'name'. Skipping.`,
+                );
+                return null;
+              }
+              const base = z.object({
+                [discriminator]: z.literal(blockDef.name),
+              });
+              const blockFieldsSchema = z.object(buildSchemaObject(blockDef.fields || []));
+              return base.merge(blockFieldsSchema);
+            })
+            .filter((schema) => schema !== null) as z.ZodObject<any>[];
 
           if (blockTypeSchemas.length === 0) {
-            console.warn(`Block field "${field.name}" has no valid block definitions in 'blocks'. Allowing any object.`);
+            console.warn(
+              `Block field "${field.name}" has no valid block definitions in 'blocks'. Allowing any object.`,
+            );
             fieldSchema = z.object({}).passthrough();
           } else if (blockTypeSchemas.length === 1) {
             fieldSchema = blockTypeSchemas[0].optional().nullable();
           } else {
-            fieldSchema = z.discriminatedUnion(
-              discriminator,
-              blockTypeSchemas as [z.ZodObject<any>, z.ZodObject<any>, ...z.ZodObject<any>[]]
-            ).optional().nullable();
+            fieldSchema = z
+              .discriminatedUnion(
+                discriminator,
+                blockTypeSchemas as [z.ZodObject<any>, z.ZodObject<any>, ...z.ZodObject<any>[]],
+              )
+              .optional()
+              .nullable();
           }
         }
       } else if (field.type && schemas[field.type]) {
@@ -199,7 +207,9 @@ const generateZodSchema = (
         const fieldSchemaFn = schemas[field.type];
         fieldSchema = fieldSchemaFn(field);
       } else {
-        console.warn(`Unknown or invalid type "${field.type}" for field "${field.name}". Defaulting to text validation.`);
+        console.warn(
+          `Unknown or invalid type "${field.type}" for field "${field.name}". Defaulting to text validation.`,
+        );
         const fallbackSchema = schemas["text"];
         fieldSchema = fallbackSchema ? fallbackSchema(field) : z.string();
       }
@@ -221,15 +231,15 @@ const generateZodSchema = (
           fieldSchema = arraySchema.optional();
         }
       }
-      
+
       if (!field.list) {
         if (!field.required) {
           fieldSchema = fieldSchema.optional();
         } else {
-          if (field.type === 'block') {
+          if (field.type === "block") {
             fieldSchema = fieldSchema.refine(
-              (val) => val != null && typeof val === 'object' && Object.keys(val).length > 0,
-              { message: "Please select a block." }
+              (val) => val != null && typeof val === "object" && Object.keys(val).length > 0,
+              { message: "Please select a block." },
             );
           }
         }
@@ -249,8 +259,10 @@ const sanitizeObject = (object: any): any => {
 
   if (Array.isArray(object)) {
     return object
-      .map(val => (val && typeof val === "object" && !(val instanceof Date) ? sanitizeObject(val) : val))
-      .filter(val => !isEmpty(val));
+      .map((val) =>
+        val && typeof val === "object" && !(val instanceof Date) ? sanitizeObject(val) : val,
+      )
+      .filter((val) => !isEmpty(val));
   }
 
   if (object && typeof object === "object" && !(object instanceof Date)) {
@@ -264,9 +276,13 @@ const sanitizeObject = (object: any): any => {
       }
 
       if (
-        (Array.isArray(objectCopy[key]) && objectCopy[key].every(isEmpty))
-        || (typeof objectCopy[key] === "object" && !Array.isArray(objectCopy[key]) && !(objectCopy[key] instanceof Date) && objectCopy[key] != null && !Object.keys(objectCopy[key]).length)
-        || isEmpty(objectCopy[key])
+        (Array.isArray(objectCopy[key]) && objectCopy[key].every(isEmpty)) ||
+        (typeof objectCopy[key] === "object" &&
+          !Array.isArray(objectCopy[key]) &&
+          !(objectCopy[key] instanceof Date) &&
+          objectCopy[key] != null &&
+          !Object.keys(objectCopy[key]).length) ||
+        isEmpty(objectCopy[key])
       ) {
         delete objectCopy[key];
       }
@@ -311,17 +327,23 @@ const getSchemaGroupTrail = (
 };
 
 // Retrieve the matching schema for a media or content entry
-const getSchemaByName = (config: Record<string, any> | null | undefined, name: string, type: string = "content") => {
+const getSchemaByName = (
+  config: Record<string, any> | null | undefined,
+  name: string,
+  type: string = "content",
+) => {
   if (
-    !config
-    || (type === "media" && !config.media)
-    || (type === "content" && !config.content)
-    || !name
-  ) return null;
-  
-  const schema = (type === "media")
-    ? config.media.find((item: Record<string, any>) => item.name === name)
-    : config.content.find((item: Record<string, any>) => item.name === name);
+    !config ||
+    (type === "media" && !config.media) ||
+    (type === "content" && !config.content) ||
+    !name
+  )
+    return null;
+
+  const schema =
+    type === "media"
+      ? config.media.find((item: Record<string, any>) => item.name === name)
+      : config.content.find((item: Record<string, any>) => item.name === name);
 
   // We deep clone the object to avoid mutating config if schema is modified.
   if (!schema) return null;
@@ -351,28 +373,33 @@ function safeAccess(obj: Record<string, any>, path: string) {
 
 // Interpolate a string with a data object, with optional prefix fallback (e.g. "fields")
 function interpolate(input: string, data: Record<string, any>, prefixFallback?: string): string {
-  return input.replace(/(?<!\\)\{([^}]+)\}/g, (_, token) => {
-    // First try direct access
-    let value = safeAccess(data, token);
-    
-    // If value is undefined and we have a prefix fallback, try with prefix
-    if (value === undefined && prefixFallback) {
-      value = safeAccess(data, `${prefixFallback}.${token}`);
-    }
-    
-    return value !== undefined ? String(value) : '';
-  }).replace(/\\([{}])/g, '$1');
+  return input
+    .replace(/(?<!\\)\{([^}]+)\}/g, (_, token) => {
+      // First try direct access
+      let value = safeAccess(data, token);
+
+      // If value is undefined and we have a prefix fallback, try with prefix
+      if (value === undefined && prefixFallback) {
+        value = safeAccess(data, `${prefixFallback}.${token}`);
+      }
+
+      return value !== undefined ? String(value) : "";
+    })
+    .replace(/\\([{}])/g, "$1");
 }
 
 // Get a field by its path
 function getFieldByPath(schema: Field[], path: string): Field | undefined {
-  const [first, ...rest] = path.split('.');
-  const field = schema.find(f => f.name === first);
-  
-  return !field ? undefined
-    : rest.length === 0 ? field
-    : field.type === 'object' && field.fields ? getFieldByPath(field.fields, rest.join('.'))
-    : undefined;
+  const [first, ...rest] = path.split(".");
+  const field = schema.find((f) => f.name === first);
+
+  return !field
+    ? undefined
+    : rest.length === 0
+      ? field
+      : field.type === "object" && field.fields
+        ? getFieldByPath(field.fields, rest.join("."))
+        : undefined;
 }
 
 function findNestedFieldPath(
@@ -400,28 +427,31 @@ function findNestedFieldPath(
 
 // Get the primary field for a schema
 const getPrimaryField = (schema: Record<string, any>) => {
-  return schema?.view?.primary
-    || findNestedFieldPath(schema?.fields, (field) => field.name === "title")
-    || findNestedFieldPath(
+  return (
+    schema?.view?.primary ||
+    findNestedFieldPath(schema?.fields, (field) => field.name === "title") ||
+    findNestedFieldPath(
       schema?.fields,
       (field) => !["object", "block"].includes(String(field.type)),
     )
-}
+  );
+};
 
 // Generate a filename for an entry
 const generateFilename = (
   pattern: string,
   schema: Record<string, any>,
-  state: Record<string, any>
+  state: Record<string, any>,
 ) => {
   // Replace date placeholders
   const now = new Date();
-  pattern = pattern.replace(/\{year\}/g, format(now, 'yyyy'))
-    .replace(/\{month\}/g, format(now, 'MM'))
-    .replace(/\{day\}/g, format(now, 'dd'))
-    .replace(/\{hour\}/g, format(now, 'HH'))
-    .replace(/\{minute\}/g, format(now, 'mm'))
-    .replace(/\{second\}/g, format(now, 'ss'));
+  pattern = pattern
+    .replace(/\{year\}/g, format(now, "yyyy"))
+    .replace(/\{month\}/g, format(now, "MM"))
+    .replace(/\{day\}/g, format(now, "dd"))
+    .replace(/\{hour\}/g, format(now, "HH"))
+    .replace(/\{minute\}/g, format(now, "mm"))
+    .replace(/\{second\}/g, format(now, "ss"));
 
   // Replace `{primary}` and `{slug}` with the actual name of the primary field.
   // `{slug}` is kept as an alias for compatibility with existing configs.
@@ -429,7 +459,7 @@ const generateFilename = (
   pattern = pattern
     .replace(/\{primary\}/g, primaryField ? `{fields.${primaryField}}` : "untitled")
     .replace(/\{slug\}/g, primaryField ? `{fields.${primaryField}}` : "untitled");
-  
+
   // Replace field placeholders, accepting both `{fields.title}` and `{title}`.
   return pattern.replace(/\{(?:fields\.)?([^}]+)\}/g, (_, fieldName) => {
     const value = safeAccess(state, fieldName);
@@ -443,7 +473,7 @@ function getDateFromFilename(filename: string) {
   const match = filename.match(pattern);
 
   if (match) {
-    const [ , year, month, day ] = match;
+    const [, year, month, day] = match;
     const date = new Date(`${year}-${month}-${day}`);
     if (!isNaN(date.getTime())) {
       return { year, month, day, string: `${year}-${month}-${day}` };
@@ -465,5 +495,5 @@ export {
   getDateFromFilename,
   generateZodSchema,
   safeAccess,
-  interpolate
+  interpolate,
 };

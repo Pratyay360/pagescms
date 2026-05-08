@@ -17,11 +17,7 @@ export const formatRepoBranchTitle = (
   return `${title} | ${repoRef}`;
 };
 
-export function DocumentTitle({
-  title,
-}: {
-  title?: string | null;
-}) {
+export function DocumentTitle({ title }: { title?: string | null }) {
   useEffect(() => {
     document.title = formatDocumentTitle(title);
   }, [title]);

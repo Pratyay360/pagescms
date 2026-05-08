@@ -20,13 +20,15 @@ const WEBHOOK_PUSH_SCOPED_INVALIDATION_MAX_FILES = Number.parseInt(
 );
 
 const deleteConfigCacheForBranch = async (owner: string, repo: string, branch: string) => {
-  await db.delete(configTable).where(
-    and(
-      sql`lower(${configTable.owner}) = lower(${owner})`,
-      sql`lower(${configTable.repo}) = lower(${repo})`,
-      eq(configTable.branch, branch),
-    ),
-  );
+  await db
+    .delete(configTable)
+    .where(
+      and(
+        sql`lower(${configTable.owner}) = lower(${owner})`,
+        sql`lower(${configTable.repo}) = lower(${repo})`,
+        eq(configTable.branch, branch),
+      ),
+    );
 };
 
 const handlePushWebhookEvent = async (event: string | null, data: any) => {
@@ -82,11 +84,10 @@ const handlePushWebhookEvent = async (event: string | null, data: any) => {
   };
 
   const largePush =
-    WEBHOOK_PUSH_INCREMENTAL_MAX_FILES > 0
-    && changedCount > WEBHOOK_PUSH_INCREMENTAL_MAX_FILES;
+    WEBHOOK_PUSH_INCREMENTAL_MAX_FILES > 0 && changedCount > WEBHOOK_PUSH_INCREMENTAL_MAX_FILES;
   const hugePush =
-    WEBHOOK_PUSH_SCOPED_INVALIDATION_MAX_FILES > 0
-    && changedCount > WEBHOOK_PUSH_SCOPED_INVALIDATION_MAX_FILES;
+    WEBHOOK_PUSH_SCOPED_INVALIDATION_MAX_FILES > 0 &&
+    changedCount > WEBHOOK_PUSH_SCOPED_INVALIDATION_MAX_FILES;
 
   if (hugePush) {
     console.warn("Push webhook exceeded scoped threshold. Falling back to branch cache clear.", {
@@ -112,13 +113,16 @@ const handlePushWebhookEvent = async (event: string | null, data: any) => {
   }
 
   if (largePush) {
-    console.warn("Push webhook exceeded incremental threshold. Falling back to scoped cache clear.", {
-      owner: pushOwner,
-      repo: pushRepo,
-      branch: pushBranch,
-      changedCount,
-      threshold: WEBHOOK_PUSH_INCREMENTAL_MAX_FILES,
-    });
+    console.warn(
+      "Push webhook exceeded incremental threshold. Falling back to scoped cache clear.",
+      {
+        owner: pushOwner,
+        repo: pushRepo,
+        branch: pushBranch,
+        changedCount,
+        threshold: WEBHOOK_PUSH_INCREMENTAL_MAX_FILES,
+      },
+    );
 
     await clearScopedFileCache(pushOwner, pushRepo, pushBranch, uniqueChangedPaths);
     await deleteCacheFileMeta(pushOwner, pushRepo, pushBranch);
@@ -146,9 +150,9 @@ const handlePushWebhookEvent = async (event: string | null, data: any) => {
     installationToken,
     commit.sha
       ? {
-        sha: commit.sha,
-        timestamp: commit.timestamp,
-      }
+          sha: commit.sha,
+          timestamp: commit.timestamp,
+        }
       : undefined,
   );
 
@@ -184,7 +188,9 @@ const handlePushWebhookEvent = async (event: string | null, data: any) => {
   const configFile = Buffer.from(configFileResponse.data.content, "base64").toString();
   const parsed = parseConfig(configFile);
   if (parsed.errors.length > 0) {
-    throw new Error(`Failed to parse .pages.yml: ${parsed.errors[0]?.message || "Unknown parse error"}`);
+    throw new Error(
+      `Failed to parse .pages.yml: ${parsed.errors[0]?.message || "Unknown parse error"}`,
+    );
   }
   const configObject = normalizeConfig(parsed.document.toJSON());
 

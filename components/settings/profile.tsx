@@ -4,11 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { getInitialsFromName } from "@/lib/utils/avatar";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -117,12 +113,7 @@ export function Profile({ name, email, githubUsername }: ProfileProps) {
         </form>
       </CardContent>
       <CardFooter>
-        <Button
-          size="sm"
-          className="ml-auto"
-          onClick={() => void handleSave()}
-          disabled={!canSave}
-        >
+        <Button size="sm" className="ml-auto" onClick={() => void handleSave()} disabled={!canSave}>
           Save profile
           {isSaving && <Loader className="ml-2 h-4 w-4 animate-spin" />}
         </Button>

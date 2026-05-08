@@ -4,11 +4,7 @@ import { formatDistanceToNow } from "date-fns";
 import { getInitialsFromName } from "@/lib/utils/avatar";
 import { useConfig } from "@/contexts/config-context";
 import type { EntryHistoryItem } from "@/types/api";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -32,7 +28,10 @@ function HistoryItemContent({
   return (
     <>
       <Avatar className={compact ? "size-7" : "h-8 w-8"}>
-        <AvatarImage src={item.author?.login ? `https://github.com/${item.author.login}.png` : undefined} alt={`${authorName}'s avatar`} />
+        <AvatarImage
+          src={item.author?.login ? `https://github.com/${item.author.login}.png` : undefined}
+          alt={`${authorName}'s avatar`}
+        />
         <AvatarFallback>{getInitialsFromName(authorName)}</AvatarFallback>
       </Avatar>
       <div className={compact ? "text-left overflow-hidden" : "text-left overflow-hidden ml-3"}>
@@ -109,12 +108,17 @@ export function EntryHistoryDropdown({
       <DropdownMenuContent align="end" className="max-w-3xs">
         {history.slice(0, 3).map((item) => (
           <DropdownMenuItem key={item.sha} asChild>
-            <a href={item.html_url} target="_blank" rel="noopener noreferrer" className="w-full truncate flex items-center gap-3">
+            <a
+              href={item.html_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full truncate flex items-center gap-3"
+            >
               <HistoryItemContent item={item} compact />
             </a>
           </DropdownMenuItem>
         ))}
-        <DropdownMenuSeparator/>
+        <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
           <a
             href={`https://github.com/${config?.owner}/${config?.repo}/commits/${encodeURIComponent(config!.branch)}/${path}`}

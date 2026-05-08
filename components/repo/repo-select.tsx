@@ -8,14 +8,20 @@ import { useUser } from "@/contexts/user-context";
 import { getGithubInstallationUrl } from "@/lib/github-app";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
-import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyTitle,
+} from "@/components/ui/empty";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  DropdownMenuSeparator
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -24,11 +30,7 @@ import { cn } from "@/lib/utils";
 import { hasGithubIdentity } from "@/lib/authz-shared";
 import { requireApiSuccess } from "@/lib/api-client";
 
-export function RepoSelect({
-  onAccountSelect
-}: {
-  onAccountSelect?: (account: any) => void
-}) {
+export function RepoSelect({ onAccountSelect }: { onAccountSelect?: (account: any) => void }) {
   const { user } = useUser();
   const isGithubUser = hasGithubIdentity(user);
 
@@ -41,7 +43,7 @@ export function RepoSelect({
   const [keyword, setKeyword] = useState("");
   const [debouncedKeyword] = useDebounce(
     selectedAccount?.repositorySelection === "all" ? keyword : "",
-    500
+    500,
   );
   const [results, setResults] = useState<any[] | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -51,7 +53,9 @@ export function RepoSelect({
   const searchResults = useMemo(() => {
     if (!results) return [];
     if (selectedAccount?.repositorySelection !== "all") {
-      return results.filter((result: any) => result.repo.toLowerCase().includes(keyword.toLowerCase()));
+      return results.filter((result: any) =>
+        result.repo.toLowerCase().includes(keyword.toLowerCase()),
+      );
     }
     return results;
   }, [results, keyword, selectedAccount]);
@@ -69,27 +73,26 @@ export function RepoSelect({
   useEffect(() => {
     const fetchResults = async () => {
       if (!selectedAccount) return;
-  
+
       abortControllerRef.current?.abort();
       abortControllerRef.current = new AbortController();
-  
+
       setIsLoading(true);
       try {
         const params = new URLSearchParams({
           type: selectedAccount.type,
           keyword: debouncedKeyword,
-          repository_selection: selectedAccount.repositorySelection
+          repository_selection: selectedAccount.repositorySelection,
         });
-  
-        const response = await fetch(
-          `/api/repos/${selectedAccount.login}?${params.toString()}`,
-          { signal: abortControllerRef.current.signal }
-        );
+
+        const response = await fetch(`/api/repos/${selectedAccount.login}?${params.toString()}`, {
+          signal: abortControllerRef.current.signal,
+        });
         const data = await requireApiSuccess<{ status: string; data: any[]; message?: string }>(
           response,
           "Failed to fetch repos",
         );
-  
+
         setResults(data.data);
       } catch (error: any) {
         if (error.name !== "AbortError") {
@@ -108,19 +111,25 @@ export function RepoSelect({
     };
   }, [debouncedKeyword, selectedAccount]);
 
-  const resultsLoadingSkeleton = useMemo(() => (
-    <ul>
-      {[...Array(5)].map((_, index) => (
-        <li key={index} className="flex gap-x-2 items-center border border-b-0 last:border-b first:rounded-t-md last:rounded-b-md px-3 py-2 text-sm">
-          <Skeleton className="h-5 w-24 text-left rounded" />
-          <Skeleton className="h-5 w-24 text-left rounded" />
-          <Button variant="outline" size="xs" className="ml-auto" disabled>
-            Open
-          </Button>
-        </li>
-      ))}
-    </ul>
-  ), []);
+  const resultsLoadingSkeleton = useMemo(
+    () => (
+      <ul>
+        {[...Array(5)].map((_, index) => (
+          <li
+            key={index}
+            className="flex gap-x-2 items-center border border-b-0 last:border-b first:rounded-t-md last:rounded-b-md px-3 py-2 text-sm"
+          >
+            <Skeleton className="h-5 w-24 text-left rounded" />
+            <Skeleton className="h-5 w-24 text-left rounded" />
+            <Button variant="outline" size="xs" className="ml-auto" disabled>
+              Open
+            </Button>
+          </li>
+        ))}
+      </ul>
+    ),
+    [],
+  );
 
   return (
     <div className="flex flex-col gap-y-4">
@@ -129,9 +138,13 @@ export function RepoSelect({
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline">
-                <img className="size-6 rounded" src={`https://github.com/${selectedAccount?.login}.png`} alt={`${selectedAccount?.login}'s avatar`}/>
+                <img
+                  className="size-6 rounded"
+                  src={`https://github.com/${selectedAccount?.login}.png`}
+                  alt={`${selectedAccount?.login}'s avatar`}
+                />
                 <span className="mr-2">{selectedAccount?.login}</span>
-                <ChevronsUpDown className="ml-auto h-4 w-4 opacity-50"/>
+                <ChevronsUpDown className="ml-auto h-4 w-4 opacity-50" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start">
@@ -143,27 +156,29 @@ export function RepoSelect({
                     if (onAccountSelect) onAccountSelect(account);
                   }}
                 >
-                  <img className="size-6 rounded" src={`https://github.com/${account.login}.png`} alt={`${account.login}'s avatar`}/>
+                  <img
+                    className="size-6 rounded"
+                    src={`https://github.com/${account.login}.png`}
+                    alt={`${account.login}'s avatar`}
+                  />
                   <span className="truncate">{account.login}</span>
                 </DropdownMenuItem>
               ))}
-              {isGithubUser &&
+              {isGithubUser && (
                 <>
-                  <DropdownMenuSeparator/>
+                  <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
                     <Link href="/api/github-app/install">Manage GitHub accounts</Link>
                   </DropdownMenuItem>
                 </>
-              }
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
           {selectedAccountInstallationUrl && (
             <Tooltip>
               <TooltipTrigger asChild>
                 <a
-                  className={cn(
-                    buttonVariants({ variant: "outline", size: "icon" })
-                  )}
+                  className={cn(buttonVariants({ variant: "outline", size: "icon" }))}
                   href={selectedAccountInstallationUrl}
                   target="_blank"
                   rel="noreferrer"
@@ -176,60 +191,66 @@ export function RepoSelect({
             </Tooltip>
           )}
         </ButtonGroup>
-        <div className="relative flex-1"> 
+        <div className="relative flex-1">
           <Input
             placeholder="Search repositories by name"
             className="pl-9"
             value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
           />
-          <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 opacity-50 pointer-events-none"/>
+          <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 opacity-50 pointer-events-none" />
         </div>
       </div>
-      {isLoading || results === null
-        ? resultsLoadingSkeleton
-        : searchResults.length > 0
-          ? <ul>
-              {searchResults.map((result: any) => (
-                <li key={`${result.owner}/${result.repo}`} className="flex gap-x-2 items-center border border-b-0 last:border-b first:rounded-t-md last:rounded-b-md px-3 py-2 text-sm">
-                  <Link
-                    className="truncate font-medium hover:underline"
-                    href={`/${result.owner}/${result.repo}/${result.defaultBranch ? encodeURIComponent(result.defaultBranch) : ""}`}
-                  >{result.repo}</Link>
-                  {result.private && <LockKeyhole className="h-3 w-3 opacity-50"/>}
-                  {result.updatedAt &&
-                    <div className="text-muted-foreground truncate">{formatDistanceToNow(new Date(result.updatedAt))} ago</div>
-                  }
-                  <Link
-                    className={cn("ml-auto", buttonVariants({ variant: "outline", size: "xs"}))}
-                    href={`/${result.owner}/${result.repo}/${result.defaultBranch ? encodeURIComponent(result.defaultBranch) : ""}`}
-                  >
-                    Open
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          : <Empty className="h-[206px] flex-none bg-accent p-4 md:p-6">
-              <EmptyHeader>
-                <EmptyTitle>No projects</EmptyTitle>
-                <EmptyDescription>
-                  No projects matched your search.
-                </EmptyDescription>
-              </EmptyHeader>
-              {selectedAccountInstallationUrl && (
-                <EmptyContent>
-                  <a
-                    href={selectedAccountInstallationUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className={buttonVariants({ variant: "outline" })}
-                  >
-                    Manage GitHub App
-                  </a>
-                </EmptyContent>
+      {isLoading || results === null ? (
+        resultsLoadingSkeleton
+      ) : searchResults.length > 0 ? (
+        <ul>
+          {searchResults.map((result: any) => (
+            <li
+              key={`${result.owner}/${result.repo}`}
+              className="flex gap-x-2 items-center border border-b-0 last:border-b first:rounded-t-md last:rounded-b-md px-3 py-2 text-sm"
+            >
+              <Link
+                className="truncate font-medium hover:underline"
+                href={`/${result.owner}/${result.repo}/${result.defaultBranch ? encodeURIComponent(result.defaultBranch) : ""}`}
+              >
+                {result.repo}
+              </Link>
+              {result.private && <LockKeyhole className="h-3 w-3 opacity-50" />}
+              {result.updatedAt && (
+                <div className="text-muted-foreground truncate">
+                  {formatDistanceToNow(new Date(result.updatedAt))} ago
+                </div>
               )}
-            </Empty>
-      }
+              <Link
+                className={cn("ml-auto", buttonVariants({ variant: "outline", size: "xs" }))}
+                href={`/${result.owner}/${result.repo}/${result.defaultBranch ? encodeURIComponent(result.defaultBranch) : ""}`}
+              >
+                Open
+              </Link>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <Empty className="h-[206px] flex-none bg-accent p-4 md:p-6">
+          <EmptyHeader>
+            <EmptyTitle>No projects</EmptyTitle>
+            <EmptyDescription>No projects matched your search.</EmptyDescription>
+          </EmptyHeader>
+          {selectedAccountInstallationUrl && (
+            <EmptyContent>
+              <a
+                href={selectedAccountInstallationUrl}
+                target="_blank"
+                rel="noreferrer"
+                className={buttonVariants({ variant: "outline" })}
+              >
+                Manage GitHub App
+              </a>
+            </EmptyContent>
+          )}
+        </Empty>
+      )}
     </div>
   );
 }

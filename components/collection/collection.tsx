@@ -1,14 +1,6 @@
 "use client";
 
-import {
-  Fragment,
-  memo,
-  type ReactNode,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { Fragment, memo, type ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useConfig } from "@/contexts/config-context";
@@ -23,12 +15,7 @@ import {
 } from "@/lib/utils/file";
 import { viewComponents } from "@/fields/registry";
 import { getSchemaActions } from "@/lib/actions";
-import {
-  getSchemaByName,
-  getPrimaryField,
-  getFieldByPath,
-  safeAccess,
-} from "@/lib/schema";
+import { getSchemaByName, getPrimaryField, getFieldByPath, safeAccess } from "@/lib/schema";
 import { requireApiSuccess } from "@/lib/api-client";
 import { EmptyCreate } from "@/components/empty-create";
 import { FileOptions } from "@/components/file/file-options";
@@ -77,11 +64,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { EllipsisVertical, FolderPlus, Plus, Search } from "lucide-react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 type GroupTrailItem = {
   name: string;
@@ -136,12 +119,7 @@ const CollectionHeaderActions = memo(function CollectionHeaderActions({
                 name={name}
                 onCreate={onFolderCreate}
               >
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="shrink-0"
-                  size="icon"
-                >
+                <Button type="button" variant="outline" className="shrink-0" size="icon">
                   <FolderPlus />
                 </Button>
               </FolderCreate>
@@ -152,10 +130,7 @@ const CollectionHeaderActions = memo(function CollectionHeaderActions({
       )}
       {showAddEntry && (
         <>
-          <Link
-            className={cn(buttonVariants(), "hidden sm:flex")}
-            href={addEntryHref}
-          >
+          <Link className={cn(buttonVariants(), "hidden sm:flex")} href={addEntryHref}>
             Add an entry
           </Link>
           <Link
@@ -183,13 +158,9 @@ export function Collection({ name, path }: { name: string; path?: string }) {
   const { config } = useConfig();
   if (!config) throw new Error(`Configuration not found.`);
 
-  const schema = useMemo(
-    () => getSchemaByName(config?.object, name),
-    [config, name],
-  );
+  const schema = useMemo(() => getSchemaByName(config?.object, name), [config, name]);
   if (!schema) throw new Error(`Schema not found for "${name}".`);
-  if (schema.type !== "collection")
-    throw new Error(`"${name}" is not a collection.`);
+  if (schema.type !== "collection") throw new Error(`"${name}" is not a collection.`);
   const operations = useMemo(() => resolveContentOperations({ schema }), [schema]);
   const canCreate = operations.create;
   const canRename = operations.rename;
@@ -207,10 +178,7 @@ export function Collection({ name, path }: { name: string; path?: string }) {
         });
       } else {
         pathAndFieldArray = schema.fields
-          .filter(
-            (field: any) =>
-              !["object", "block"].includes(field.type) && !field.hidden,
-          )
+          .filter((field: any) => !["object", "block"].includes(field.type) && !field.hidden)
           .map((field: any) => ({ path: field.name, field: field }));
       }
     } else {
@@ -229,8 +197,7 @@ export function Collection({ name, path }: { name: string; path?: string }) {
     if (
       !pathAndFieldArray.find((item: any) => item.path === "date") &&
       schema.filename.startsWith("{year}-{month}-{day}") &&
-      ((schema.view?.fields && schema.view?.fields.includes("date")) ||
-        !schema.view?.fields)
+      ((schema.view?.fields && schema.view?.fields.includes("date")) || !schema.view?.fields)
     ) {
       pathAndFieldArray.push({
         path: "date",
@@ -245,14 +212,8 @@ export function Collection({ name, path }: { name: string; path?: string }) {
     return pathAndFieldArray;
   }, [schema]);
 
-  const primaryField = useMemo(
-    () => getPrimaryField(schema) ?? "name",
-    [schema],
-  );
-  const collectionActions = useMemo(
-    () => getSchemaActions(schema, "collection"),
-    [schema],
-  );
+  const primaryField = useMemo(() => getPrimaryField(schema) ?? "name", [schema]);
+  const collectionActions = useMemo(() => getSchemaActions(schema, "collection"), [schema]);
   const requestedFieldPaths = useMemo(() => {
     const paths = new Set<string>(["name", "path", primaryField]);
     viewFields.forEach((item: any) => paths.add(item.path));
@@ -286,30 +247,29 @@ export function Collection({ name, path }: { name: string; path?: string }) {
       const unsortedData = result.data.contents || [];
       if (unsortedData.length === 0) return [];
       return unsortedData.sort((a: any, b: any) => {
-        if (a.type === "dir" && b.type === "file")
-          return schema.view?.foldersFirst ? -1 : 1;
-        if (a.type === "file" && b.type === "dir")
-          return schema.view?.foldersFirst ? 1 : -1;
+        if (a.type === "dir" && b.type === "file") return schema.view?.foldersFirst ? -1 : 1;
+        if (a.type === "file" && b.type === "dir") return schema.view?.foldersFirst ? 1 : -1;
         return a.name.localeCompare(b.name);
       });
     },
     [schema.view?.foldersFirst],
   );
 
-  const collectionPath =
-    schema.view?.layout === "tree" ? schema.path : path || schema.path;
+  const collectionPath = schema.view?.layout === "tree" ? schema.path : path || schema.path;
   const rootCollectionKey = useMemo(
     () => buildCollectionApiUrl(collectionPath),
     [buildCollectionApiUrl, collectionPath],
   );
 
-  const { data: swrCollectionData, error: swrCollectionError } = useSWR<
-    Record<string, any>[]
-  >(rootCollectionKey, fetchCollectionByUrl, {
-    revalidateOnFocus: true,
-    revalidateOnReconnect: true,
-    dedupingInterval: 2000,
-  });
+  const { data: swrCollectionData, error: swrCollectionError } = useSWR<Record<string, any>[]>(
+    rootCollectionKey,
+    fetchCollectionByUrl,
+    {
+      revalidateOnFocus: true,
+      revalidateOnReconnect: true,
+      dedupingInterval: 2000,
+    },
+  );
 
   useEffect(() => {
     setData([]);
@@ -324,19 +284,13 @@ export function Collection({ name, path }: { name: string; path?: string }) {
 
   useEffect(() => {
     if (!swrCollectionError) return;
-    setError(
-      swrCollectionError instanceof Error
-        ? swrCollectionError.message
-        : "Fetch failed",
-    );
+    setError(swrCollectionError instanceof Error ? swrCollectionError.message : "Fetch failed");
   }, [swrCollectionError]);
 
   const fetchCollectionData = useCallback(
     async (fetchPath: string): Promise<Record<string, any>[] | undefined> => {
       const apiUrl = buildCollectionApiUrl(fetchPath);
-      const cachedValue = cache.get(apiUrl) as
-        | { data?: Record<string, any>[] }
-        | undefined;
+      const cachedValue = cache.get(apiUrl) as { data?: Record<string, any>[] } | undefined;
       if (cachedValue?.data) return cachedValue.data;
 
       try {
@@ -348,21 +302,12 @@ export function Collection({ name, path }: { name: string; path?: string }) {
         if (fetchPath === (path || schema.path)) {
           setError(err.message);
         } else {
-          toast.error(
-            `Could not load items inside ${getFileName(fetchPath)}: ${err.message}`,
-          );
+          toast.error(`Could not load items inside ${getFileName(fetchPath)}: ${err.message}`);
         }
         return undefined;
       }
     },
-    [
-      buildCollectionApiUrl,
-      cache,
-      fetchCollectionByUrl,
-      mutate,
-      path,
-      schema.path,
-    ],
+    [buildCollectionApiUrl, cache, fetchCollectionByUrl, mutate, path, schema.path],
   );
 
   const handleDelete = useCallback((path: string) => {
@@ -395,10 +340,7 @@ export function Collection({ name, path }: { name: string; path?: string }) {
       };
 
       // Check if the item is moving to a different folder
-      if (
-        getParentPath(normalizePath(path)) !==
-        getParentPath(normalizePath(newPath))
-      ) {
+      if (getParentPath(normalizePath(path)) !== getParentPath(normalizePath(newPath))) {
         // For items moved to a different folder, we need to:
         // 1. Remove the item from its original location (recursively)
         const removeItem = (items: any[]): any[] => {
@@ -459,10 +401,7 @@ export function Collection({ name, path }: { name: string; path?: string }) {
                 }),
               },
             );
-            const data = await requireApiSuccess<any>(
-              response,
-              "Failed to rename file",
-            );
+            const data = await requireApiSuccess<any>(response, "Failed to rename file");
 
             resolve(data);
           } catch (error) {
@@ -499,14 +438,10 @@ export function Collection({ name, path }: { name: string; path?: string }) {
           return {
             id: path,
             accessorKey: path,
-            accessorFn: (originalRow: any) =>
-              safeAccess(originalRow.fields, path),
+            accessorFn: (originalRow: any) => safeAccess(originalRow.fields, path),
             header: field?.label ?? field.name,
             meta: {
-              className:
-                path === primaryField
-                  ? "truncate w-full min-w-[12rem] max-w-[1px]"
-                  : "",
+              className: path === primaryField ? "truncate w-full min-w-[12rem] max-w-[1px]" : "",
             },
             cell: ({ cell, row }: { cell: any; row: any }) => {
               const cellValue = cell.getValue();
@@ -528,9 +463,7 @@ export function Collection({ name, path }: { name: string; path?: string }) {
                   </Link>
                 );
               }
-              return (
-                <div className="truncate w-full max-w-[12rem]">{CellView}</div>
-              );
+              return <div className="truncate w-full max-w-[12rem]">{CellView}</div>;
             },
             sortUndefined: schema.view?.foldersFirst ? "first" : "last",
           };
@@ -545,9 +478,7 @@ export function Collection({ name, path }: { name: string; path?: string }) {
           {row.original.type === "file" && (
             <ButtonGroup>
               <Link
-                className={cn(
-                  buttonVariants({ variant: "outline", size: "sm" }),
-                )}
+                className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
                 href={`/${config.owner}/${config.repo}/${encodeURIComponent(config.branch)}/collection/${name}/edit/${encodeURIComponent(row.original.path)}`}
               >
                 Edit
@@ -572,57 +503,50 @@ export function Collection({ name, path }: { name: string; path?: string }) {
             schema.view?.layout === "tree" &&
             (row.original.type === "file" &&
             !row.original.isNode &&
-            !(
-              row.depth === 0 &&
-              row.original.name === schema.view?.node?.filename
-            ) ? (
+            !(row.depth === 0 && row.original.name === schema.view?.node?.filename) ? (
               canRename ? (
-              <AlertDialog>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <AlertDialogTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size="icon-sm"
-                        className="w-8 h-8"
+                <AlertDialog>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="outline" size="icon-sm" className="w-8 h-8">
+                          <Plus className="size-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                    </TooltipTrigger>
+                    <TooltipContent>Add children entry</TooltipContent>
+                  </Tooltip>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Rename this file first?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Before adding children to this file, you must rename it from &quot;
+                        {row.original.path}&quot; to &quot;
+                        {row.original.path.replace(
+                          `.${schema.extension}`,
+                          `/${schema.view?.node?.filename}`,
+                        )}
+                        &quot;.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() =>
+                          handleConfirmRenameNode(
+                            row.original.path,
+                            row.original.path.replace(
+                              `.${schema.extension}`,
+                              `/${schema.view?.node?.filename}`,
+                            ),
+                          )
+                        }
                       >
-                        <Plus className="size-4" />
-                      </Button>
-                    </AlertDialogTrigger>
-                  </TooltipTrigger>
-                  <TooltipContent>Add children entry</TooltipContent>
-                </Tooltip>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Rename this file first?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Before adding children to this file, you must rename it
-                      from &quot;{row.original.path}&quot; to &quot;
-                      {row.original.path.replace(
-                        `.${schema.extension}`,
-                        `/${schema.view?.node?.filename}`,
-                      )}
-                      &quot;.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={() =>
-                        handleConfirmRenameNode(
-                          row.original.path,
-                          row.original.path.replace(
-                            `.${schema.extension}`,
-                            `/${schema.view?.node?.filename}`,
-                          ),
-                        )
-                      }
-                    >
-                      Rename
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+                        Rename
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               ) : null
             ) : (
               <Tooltip>
@@ -676,20 +600,14 @@ export function Collection({ name, path }: { name: string; path?: string }) {
       viewFields == null
         ? "name"
         : schema.view?.default?.sort ||
-          (viewFields.find((item: any) => item.field.name === "date") &&
-            "date") ||
+          (viewFields.find((item: any) => item.field.name === "date") && "date") ||
           primaryField;
 
     return {
       sorting: [
         {
           id: sortId,
-          desc:
-            sortId === "date"
-              ? true
-              : schema.view?.default?.order === "desc"
-                ? true
-                : false,
+          desc: sortId === "date" ? true : schema.view?.default?.order === "desc" ? true : false,
         },
       ],
       pagination: {
@@ -710,9 +628,7 @@ export function Collection({ name, path }: { name: string; path?: string }) {
   const handleExpand = useCallback(
     async (row: any) => {
       if (!row) return;
-      const subRows = await fetchCollectionData(
-        row.isNode ? row.parentPath : row.path,
-      );
+      const subRows = await fetchCollectionData(row.isNode ? row.parentPath : row.path);
       if (subRows !== undefined) {
         setData((currentData: any[]) => {
           const updateNestedData = (items: any[]): any[] => {
@@ -777,12 +693,7 @@ export function Collection({ name, path }: { name: string; path?: string }) {
                     </Button>
                   </ButtonGroup>
                   {schema.view?.layout === "tree" && (
-                    <Button
-                      variant="outline"
-                      size="icon-sm"
-                      className="w-8 h-8"
-                      disabled
-                    >
+                    <Button variant="outline" size="icon-sm" className="w-8 h-8" disabled>
                       <Plus className="size-4" />
                     </Button>
                   )}
@@ -803,30 +714,19 @@ export function Collection({ name, path }: { name: string; path?: string }) {
   }`;
 
   const breadcrumbNode = useMemo(() => {
-    const groupTrail: GroupTrailItem[] = Array.isArray(schema.groupTrail)
-      ? schema.groupTrail
-      : [];
+    const groupTrail: GroupTrailItem[] = Array.isArray(schema.groupTrail) ? schema.groupTrail : [];
     const normalizedRootPath = normalizePath(schema.path);
     const normalizedCurrentPath = normalizePath(collectionPath);
-    const relativePath = getRelativePath(
-      normalizedCurrentPath,
-      normalizedRootPath,
-    );
-    const segments = relativePath
-      ? relativePath.split("/").filter(Boolean)
-      : [];
+    const relativePath = getRelativePath(normalizedCurrentPath, normalizedRootPath);
+    const segments = relativePath ? relativePath.split("/").filter(Boolean) : [];
 
     const entries = segments.map((segment, index) => ({
       name: segment,
-      path: joinPathSegments([
-        normalizedRootPath,
-        segments.slice(0, index + 1).join("/"),
-      ]),
+      path: joinPathSegments([normalizedRootPath, segments.slice(0, index + 1).join("/")]),
     }));
 
     const middleEntries = entries.length > 3 ? entries.slice(1, -1) : [];
-    const visibleEntries =
-      entries.length > 3 ? [entries[0], entries[entries.length - 1]] : entries;
+    const visibleEntries = entries.length > 3 ? [entries[0], entries[entries.length - 1]] : entries;
 
     return (
       <Breadcrumb>
@@ -840,9 +740,7 @@ export function Collection({ name, path }: { name: string; path?: string }) {
             </Fragment>
           ))}
           <BreadcrumbItem
-            className={
-              entries.length === 0 ? "min-w-0 max-w-full truncate" : undefined
-            }
+            className={entries.length === 0 ? "min-w-0 max-w-full truncate" : undefined}
           >
             {entries.length > 0 ? (
               <BreadcrumbLink
@@ -888,9 +786,7 @@ export function Collection({ name, path }: { name: string; path?: string }) {
             const isLast = index === visibleEntries.length - 1;
             return (
               <Fragment key={entry.path}>
-                <BreadcrumbItem
-                  className={isLast ? "min-w-0 max-w-full truncate" : undefined}
-                >
+                <BreadcrumbItem className={isLast ? "min-w-0 max-w-full truncate" : undefined}>
                   {isLast ? (
                     <BreadcrumbPage className="block max-w-full font-semibold truncate">
                       {entry.name}
@@ -911,14 +807,7 @@ export function Collection({ name, path }: { name: string; path?: string }) {
         </BreadcrumbList>
       </Breadcrumb>
     );
-  }, [
-    collectionPath,
-    handleNavigate,
-    schema.groupTrail,
-    schema.label,
-    schema.name,
-    schema.path,
-  ]);
+  }, [collectionPath, handleNavigate, schema.groupTrail, schema.label, schema.name, schema.path]);
 
   const headerNode = useMemo(
     () => (
@@ -977,8 +866,7 @@ export function Collection({ name, path }: { name: string; path?: string }) {
     header: headerNode,
   });
 
-  const isLoading =
-    !swrCollectionData && !swrCollectionError && data.length === 0;
+  const isLoading = !swrCollectionData && !swrCollectionError && data.length === 0;
 
   const contentNode = isLoading ? (
     loadingSkeleton
@@ -987,9 +875,7 @@ export function Collection({ name, path }: { name: string; path?: string }) {
       <Empty className="max-w-[420px] flex-none">
         <EmptyHeader>
           <EmptyTitle>
-            {error === "Not found"
-              ? "Folder not found"
-              : "Something went wrong"}
+            {error === "Not found" ? "Folder not found" : "Something went wrong"}
           </EmptyTitle>
           <EmptyDescription>
             {error === "Not found"

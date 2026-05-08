@@ -16,7 +16,10 @@ const EditComponent = forwardRef((props: any, ref: React.Ref<HTMLInputElement>) 
       type={field?.options?.time ? "datetime-local" : "date"}
       value={value}
       onChange={onChange}
-      className={cn("w-auto text-base", field?.readonly && "focus-visible:border-input focus-visible:ring-0")}
+      className={cn(
+        "w-auto text-base",
+        field?.readonly && "focus-visible:border-input focus-visible:ring-0",
+      )}
       readOnly={field?.readonly}
     />
   );

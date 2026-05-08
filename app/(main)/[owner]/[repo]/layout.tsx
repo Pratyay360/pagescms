@@ -7,16 +7,22 @@ import { getRepoSnapshot } from "@/lib/github-cache-file";
 import { GithubAuthExpired } from "@/components/github-auth-expired";
 import { isGithubAuthError } from "@/lib/github-auth";
 import { invalidateSessionForGithubAuthError } from "@/lib/github-auth-server";
-import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyTitle,
+} from "@/components/ui/empty";
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 
 export default async function Layout({
   children,
-  params
+  params,
 }: {
   children: React.ReactNode;
-  params: Promise<{ owner: string; repo: string; }>;
+  params: Promise<{ owner: string; repo: string }>;
 }) {
   const { owner, repo } = await params;
   const requestHeaders = await headers();
@@ -35,13 +41,15 @@ export default async function Layout({
 
     const repoInfo = await getRepoSnapshot(owner, repo, token);
     const branchNames = repoInfo.branches ?? [];
-    
+
     if (branchNames.length === 0) {
-      return(
+      return (
         <Empty className="absolute inset-0 border-0 rounded-none">
           <EmptyHeader>
             <EmptyTitle>Empty repository</EmptyTitle>
-            <EmptyDescription>Create a branch and add a &quot;.pages.yml&quot; file to configure this repository.</EmptyDescription>
+            <EmptyDescription>
+              Create a branch and add a &quot;.pages.yml&quot; file to configure this repository.
+            </EmptyDescription>
           </EmptyHeader>
           <EmptyContent>
             <Link className={buttonVariants({ variant: "default" })} href="/">
@@ -52,11 +60,7 @@ export default async function Layout({
       );
     }
 
-    return (
-      <RepoProvider repo={repoInfo}>
-        {children}
-      </RepoProvider>
-    );
+    return <RepoProvider repo={repoInfo}>{children}</RepoProvider>;
   } catch (error: any) {
     if (isGithubAuthError(error)) {
       await invalidateSessionForGithubAuthError(session);
@@ -66,11 +70,13 @@ export default async function Layout({
     switch (error.status) {
       case 404:
         // TODO: adjust as it may be the permissions as insufficient (suggest installing the app)
-        return(
+        return (
           <Empty className="absolute inset-0 border-0 rounded-none">
             <EmptyHeader>
               <EmptyTitle>Repository not found</EmptyTitle>
-              <EmptyDescription>It may have been removed, renamed, or the URL may be incorrect.</EmptyDescription>
+              <EmptyDescription>
+                It may have been removed, renamed, or the URL may be incorrect.
+              </EmptyDescription>
             </EmptyHeader>
             <EmptyContent>
               <Link className={buttonVariants({ variant: "default" })} href="/">
@@ -78,13 +84,15 @@ export default async function Layout({
               </Link>
             </EmptyContent>
           </Empty>
-        ); 
+        );
       case 403:
-        return(
+        return (
           <Empty className="absolute inset-0 border-0 rounded-none">
             <EmptyHeader>
               <EmptyTitle>Access denied</EmptyTitle>
-              <EmptyDescription>You do not have permission to access this repository.</EmptyDescription>
+              <EmptyDescription>
+                You do not have permission to access this repository.
+              </EmptyDescription>
             </EmptyHeader>
             <EmptyContent>
               <Link className={buttonVariants({ variant: "default" })} href="/">
@@ -92,7 +100,7 @@ export default async function Layout({
               </Link>
             </EmptyContent>
           </Empty>
-        ); 
+        );
       default:
         throw error;
     }

@@ -35,16 +35,10 @@ export default function Error({
         <EmptyDescription>{error.message}</EmptyDescription>
       </EmptyHeader>
       <EmptyContent className="flex-row justify-center gap-2">
-        <Link
-          className={buttonVariants({ variant: "default" })}
-          href="/"
-        >
+        <Link className={buttonVariants({ variant: "default" })} href="/">
           Go home
         </Link>
-        <button
-          className={buttonVariants({ variant: "outline" })}
-          onClick={reset}
-        >
+        <button className={buttonVariants({ variant: "outline" })} onClick={reset}>
           Try again
         </button>
       </EmptyContent>

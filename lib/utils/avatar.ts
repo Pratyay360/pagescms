@@ -3,9 +3,9 @@
  */
 
 const getInitialsFromName = (name?: string) => {
-  if (!name) return 'U';
+  if (!name) return "U";
 
-  const nameParts = name.trim().split(' ');
+  const nameParts = name.trim().split(" ");
 
   if (nameParts.length === 1) {
     return nameParts[0].substring(0, 2).toUpperCase();

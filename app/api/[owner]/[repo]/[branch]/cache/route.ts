@@ -2,12 +2,14 @@ import { and, eq, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { cacheFileTable, cachePermissionTable, configTable } from "@/db/schema";
 import { requireGithubRepoWriteAccess } from "@/lib/authz-server";
-import {
-  clearFileCache,
-  ensureFileCacheFreshness,
-} from "@/lib/github-cache-file";
+import { clearFileCache, ensureFileCacheFreshness } from "@/lib/github-cache-file";
 import { clearPermissionCache } from "@/lib/github-cache-permissions";
-import { deleteCacheFileMeta, getCacheFileMeta, listCacheFileMeta, upsertCacheFileMeta } from "@/lib/github-cache-meta";
+import {
+  deleteCacheFileMeta,
+  getCacheFileMeta,
+  listCacheFileMeta,
+  upsertCacheFileMeta,
+} from "@/lib/github-cache-meta";
 import { getConfig } from "@/lib/config-store";
 import { createHttpError, toErrorResponse } from "@/lib/api-error";
 import { isCacheEnabled } from "@/lib/config";
@@ -30,16 +32,11 @@ export async function GET(
       "Only GitHub users can view cache status.",
     );
 
-    const config = await getConfig(
-      params.owner,
-      params.repo,
-      params.branch,
-      {
-        sync: true,
-        getToken: async () => token,
-        backgroundRefreshWhenStale: true,
-      },
-    );
+    const config = await getConfig(params.owner, params.repo, params.branch, {
+      sync: true,
+      getToken: async () => token,
+      backgroundRefreshWhenStale: true,
+    });
     if (!config?.object || !isCacheEnabled(config.object)) {
       throw createHttpError("Cache is disabled for this repository.", 403);
     }
@@ -118,16 +115,11 @@ export async function POST(
       "Only GitHub users can manage cache.",
     );
 
-    const config = await getConfig(
-      params.owner,
-      params.repo,
-      params.branch,
-      {
-        sync: true,
-        getToken: async () => token,
-        backgroundRefreshWhenStale: true,
-      },
-    );
+    const config = await getConfig(params.owner, params.repo, params.branch, {
+      sync: true,
+      getToken: async () => token,
+      backgroundRefreshWhenStale: true,
+    });
     if (!config?.object || !isCacheEnabled(config.object)) {
       throw createHttpError("Cache is disabled for this repository.", 403);
     }
@@ -160,16 +152,11 @@ export async function POST(
           message: "Permission cache cleared.",
         });
       case "refresh-config":
-        await getConfig(
-          params.owner,
-          params.repo,
-          params.branch,
-          {
-            sync: true,
-            getToken: async () => token,
-            ttlMs: 0,
-          },
-        );
+        await getConfig(params.owner, params.repo, params.branch, {
+          sync: true,
+          getToken: async () => token,
+          ttlMs: 0,
+        });
         return Response.json({
           status: "success",
           message: "Config cache refreshed.",

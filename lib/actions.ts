@@ -17,11 +17,13 @@ export type RepoActionConfig = {
   ref?: string;
   cancelable?: boolean;
   scope?: "collection" | "entry";
-  confirm?: boolean | {
-    title?: string;
-    message?: string;
-    button?: string;
-  };
+  confirm?:
+    | boolean
+    | {
+        title?: string;
+        message?: string;
+        button?: string;
+      };
   fields?: RepoActionField[];
 };
 
@@ -49,10 +51,8 @@ export type ActionRunSummary = {
   completedAt: string | null;
 };
 
-export const resolveActionRef = (
-  ref: string | undefined,
-  currentRef: string,
-) => (!ref || ref === "current" ? currentRef : ref);
+export const resolveActionRef = (ref: string | undefined, currentRef: string) =>
+  !ref || ref === "current" ? currentRef : ref;
 
 export const getRootActions = (configObject: any): RepoActionConfig[] => {
   return Array.isArray(configObject?.actions) ? configObject.actions : [];
@@ -76,7 +76,12 @@ export const isActionRunActive = (run: ActionRunSummary | null | undefined) => {
 
 export const formatActionRunState = (run: Pick<ActionRunSummary, "status" | "conclusion">) => {
   if (run.status !== "completed") {
-    if (run.status === "queued" || run.status === "requested" || run.status === "waiting" || run.status === "dispatching") {
+    if (
+      run.status === "queued" ||
+      run.status === "requested" ||
+      run.status === "waiting" ||
+      run.status === "dispatching"
+    ) {
       return "Queued";
     }
     return "Running";

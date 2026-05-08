@@ -31,62 +31,62 @@ type ResolvedLabel = {
 
 const ViewComponent = ({ value, field }: { value: unknown; field: Field }) => {
   const { config } = useConfig();
-  const collectionName = typeof field.options?.collection === "string"
-    ? field.options.collection
-    : null;
-  const collection = config && collectionName
-    ? getSchemaByName(config.object, collectionName)
-    : null;
+  const collectionName =
+    typeof field.options?.collection === "string" ? field.options.collection : null;
+  const collection =
+    config && collectionName ? getSchemaByName(config.object, collectionName) : null;
   const values = Array.isArray(value) ? value : value == null || value === "" ? [] : [value];
 
-  const valueTemplate = typeof field.options?.value === "string"
-    ? field.options.value
-    : "{path}";
-  const labelTemplate = typeof field.options?.label === "string"
-    ? field.options.label
-    : "{name}";
+  const valueTemplate = typeof field.options?.value === "string" ? field.options.value : "{path}";
+  const labelTemplate = typeof field.options?.label === "string" ? field.options.label : "{name}";
   const selectedValues = values.map(normalizeValue).filter(Boolean);
-  const params = collection ? new URLSearchParams({
-    valueTemplate,
-    labelTemplate,
-  }) : null;
+  const params = collection
+    ? new URLSearchParams({
+        valueTemplate,
+        labelTemplate,
+      })
+    : null;
   selectedValues.forEach((item) => params?.append("value", item));
 
   const { data } = useSWR(
     config && collection && selectedValues.length > 0
       ? `/api/${config.owner}/${config.repo}/${encodeURIComponent(config.branch)}/references/${collectionName}?${params?.toString()}`
       : null,
-    fetcher
+    fetcher,
   );
 
   const labelsByValue = new Map<string, string>();
   data?.forEach((item: Record<string, unknown>) => {
-    labelsByValue.set(
-      String(item.value ?? ""),
-      String(item.label ?? item.value ?? "")
-    );
+    labelsByValue.set(String(item.value ?? ""), String(item.label ?? item.value ?? ""));
   });
 
-  const labels: ResolvedLabel[] = values.map((item) => {
-    const normalized = normalizeValue(item);
-    const resolved = labelsByValue.get(normalized);
-    return {
-      label: resolved || normalized,
-      resolved: Boolean(resolved),
-    };
-  }).filter(Boolean);
+  const labels: ResolvedLabel[] = values
+    .map((item) => {
+      const normalized = normalizeValue(item);
+      const resolved = labelsByValue.get(normalized);
+      return {
+        label: resolved || normalized,
+        resolved: Boolean(resolved),
+      };
+    })
+    .filter(Boolean);
 
   if (!labels.length) return null;
 
   return (
     <span className="flex items-center gap-x-1.5">
-      <Badge variant="secondary" className={labels[0]?.resolved === false ? "max-w-full animate-pulse" : "max-w-full"}>
+      <Badge
+        variant="secondary"
+        className={labels[0]?.resolved === false ? "max-w-full animate-pulse" : "max-w-full"}
+      >
         <span className="truncate">{labels[0]?.label}</span>
       </Badge>
       {labels.length > 1 && (
         <Badge
           variant="secondary"
-          className={labels.slice(1).some((item) => item.resolved === false) ? "px-1 animate-pulse" : "px-1"}
+          className={
+            labels.slice(1).some((item) => item.resolved === false) ? "px-1 animate-pulse" : "px-1"
+          }
         >
           +{labels.length - 1}
         </Badge>

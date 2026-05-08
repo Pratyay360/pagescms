@@ -53,9 +53,7 @@ const main = async () => {
   const out = getArg("out") || "collaborators-export.csv";
 
   if (!url) {
-    throw new Error(
-      "Missing SQLite/libSQL URL. Pass --url=... or set SQLITE_URL env var.",
-    );
+    throw new Error("Missing SQLite/libSQL URL. Pass --url=... or set SQLITE_URL env var.");
   }
 
   const client = createClient({

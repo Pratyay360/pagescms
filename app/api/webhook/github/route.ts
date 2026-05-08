@@ -12,9 +12,9 @@ export const maxDuration = 60;
  * - Maintains tables related to GitHub installations (e.g. collaborators,
  *   installation tokens)
  * - Maintains GitHub cache (both files and permissions)
- * 
+ *
  * POST /api/webhook/github
- * 
+ *
  * Requires GitHub App webhook secret and signature.
  */
 const processWebhookEvent = async (event: string | null, data: any) => {
@@ -44,8 +44,8 @@ export async function POST(request: Request) {
     const signatureBuffer = Buffer.from(signature, "utf8");
     const digestBuffer = Buffer.from(digest, "utf8");
     if (
-      signatureBuffer.length !== digestBuffer.length
-      || !crypto.timingSafeEqual(signatureBuffer, digestBuffer)
+      signatureBuffer.length !== digestBuffer.length ||
+      !crypto.timingSafeEqual(signatureBuffer, digestBuffer)
     ) {
       return Response.json(null, { status: 401 });
     }

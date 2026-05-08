@@ -8,7 +8,7 @@ import { useConfig } from "@/contexts/config-context";
 import { getSchemaByName } from "@/lib/schema";
 
 export default function Page({
-  params
+  params,
 }: {
   params: Promise<{
     owner: string;
@@ -16,7 +16,7 @@ export default function Page({
     branch: string;
     name: string;
     path: string;
-  }>
+  }>;
 }) {
   const resolvedParams = use(params);
   const { config } = useConfig();
@@ -30,9 +30,14 @@ export default function Page({
   return (
     <>
       <DocumentTitle
-        title={formatRepoBranchTitle(`New entry | ${displayName}`, config.owner, config.repo, config.branch)}
+        title={formatRepoBranchTitle(
+          `New entry | ${displayName}`,
+          config.owner,
+          config.repo,
+          config.branch,
+        )}
       />
-      <Entry name={schemaName} title="New entry" parent={parent}/>
+      <Entry name={schemaName} title="New entry" parent={parent} />
     </>
   );
 }

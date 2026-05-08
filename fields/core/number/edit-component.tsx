@@ -17,7 +17,10 @@ const EditComponent = forwardRef((props: any, ref: React.Ref<HTMLInputElement>) 
       step={field?.options?.step ?? undefined}
       value={value}
       onChange={onChange}
-      className={cn("text-base", field?.readonly && "focus-visible:border-input focus-visible:ring-0")}
+      className={cn(
+        "text-base",
+        field?.readonly && "focus-visible:border-input focus-visible:ring-0",
+      )}
       readOnly={field?.readonly}
     />
   );

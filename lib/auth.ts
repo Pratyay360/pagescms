@@ -64,7 +64,12 @@ export const auth = betterAuth({
         const profile = await profileResponse.json();
 
         let emails:
-          | Array<{ email: string; primary: boolean; verified: boolean; visibility: "public" | "private" }>
+          | Array<{
+              email: string;
+              primary: boolean;
+              verified: boolean;
+              visibility: "public" | "private";
+            }>
           | undefined;
         try {
           const emailsResponse = await fetch("https://api.github.com/user/emails", {
@@ -81,7 +86,8 @@ export const auth = betterAuth({
         if (!profile.email && emails) {
           profile.email = (emails.find((entry) => entry.primary) ?? emails[0])?.email as string;
         }
-        const emailVerified = emails?.find((entry) => entry.email === profile.email)?.verified ?? false;
+        const emailVerified =
+          emails?.find((entry) => entry.email === profile.email)?.verified ?? false;
 
         const userMap = {
           name: profile.name ?? profile.login,
@@ -148,7 +154,6 @@ export const auth = betterAuth({
               error: error instanceof Error ? error.message : String(error),
             });
           }
-
         },
       },
     },

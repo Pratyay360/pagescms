@@ -25,14 +25,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ArrowUpRight, ChevronsUpDown } from "lucide-react";
 
-export function RepoDropdown({
-  onClick
-}: {
-  onClick?: () => void;
-}) {
+export function RepoDropdown({ onClick }: { onClick?: () => void }) {
   const router = useRouter();
   const { owner, repo, branches, defaultBranch } = useRepo();
-  const{ config } = useConfig();
+  const { config } = useConfig();
 
   const displayBranches = useMemo(() => {
     let branchesToDisplay: string[] = [];
@@ -42,8 +38,8 @@ export function RepoDropdown({
         if (defaultBranch && config.branch !== defaultBranch) branchesToDisplay.push(defaultBranch);
         branchesToDisplay = branchesToDisplay.concat(
           branches
-            .filter(branch => branch !== config.branch && branch !== defaultBranch)
-            .slice(0, 5 - branchesToDisplay.length)
+            .filter((branch) => branch !== config.branch && branch !== defaultBranch)
+            .slice(0, 5 - branchesToDisplay.length),
         );
       }
     }
@@ -64,7 +60,11 @@ export function RepoDropdown({
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="outline" className="w-full h-15 justify-start px-3">
-            <img className="h-10 w-10 rounded-lg" src={`https://github.com/${owner}.png`} alt="Picture of the author" />
+            <img
+              className="h-10 w-10 rounded-lg"
+              src={`https://github.com/${owner}.png`}
+              alt="Picture of the author"
+            />
             <div className="text-left overflow-hidden ml-3">
               <div className="font-medium truncate">{repo}</div>
               <div className="text-xs text-muted-foreground truncate">{config?.branch}</div>
@@ -74,25 +74,32 @@ export function RepoDropdown({
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem asChild>
-            <a href={`https://github.com/${owner}/${repo}`} target="_blank" onClick={onClick} >
+            <a href={`https://github.com/${owner}/${repo}`} target="_blank" onClick={onClick}>
               View on GitHub
               <ArrowUpRight className="size-3 text-muted-foreground ml-auto" />
             </a>
           </DropdownMenuItem>
-          <DropdownMenuSeparator/>
-          <DropdownMenuLabel className="w-40 text-xs text-muted-foreground font-medium">Branches{branchesCount && ` (${branchesCount})`}</DropdownMenuLabel>
-            {displayBranches.length > 0 && (
-              <>
-                <DropdownMenuRadioGroup value={config?.branch} onValueChange={handleBranchChange}>
-                  {displayBranches.map((branch: string) => (
-                    <DropdownMenuRadioItem key={branch} value={branch} className="max-w-64" onClick={onClick}>
-                      <span className="truncate">{branch}</span>
-                    </DropdownMenuRadioItem>
-                  ))}
-                </DropdownMenuRadioGroup>
-                <DropdownMenuSeparator/>
-              </>
-            )}
+          <DropdownMenuSeparator />
+          <DropdownMenuLabel className="w-40 text-xs text-muted-foreground font-medium">
+            Branches{branchesCount && ` (${branchesCount})`}
+          </DropdownMenuLabel>
+          {displayBranches.length > 0 && (
+            <>
+              <DropdownMenuRadioGroup value={config?.branch} onValueChange={handleBranchChange}>
+                {displayBranches.map((branch: string) => (
+                  <DropdownMenuRadioItem
+                    key={branch}
+                    value={branch}
+                    className="max-w-64"
+                    onClick={onClick}
+                  >
+                    <span className="truncate">{branch}</span>
+                  </DropdownMenuRadioItem>
+                ))}
+              </DropdownMenuRadioGroup>
+              <DropdownMenuSeparator />
+            </>
+          )}
           <DialogTrigger asChild>
             <DropdownMenuItem onClick={onClick}>Manage branches</DropdownMenuItem>
           </DialogTrigger>
@@ -101,7 +108,7 @@ export function RepoDropdown({
           <DialogHeader>
             <DialogTitle>Manage branches</DialogTitle>
           </DialogHeader>
-          <RepoBranches/>
+          <RepoBranches />
         </DialogContent>
       </DropdownMenu>
     </Dialog>

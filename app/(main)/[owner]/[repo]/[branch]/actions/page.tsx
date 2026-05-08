@@ -26,16 +26,21 @@ export default function Page() {
   }
 
   const actionLabels = {
-    ...Object.fromEntries(getRootActions(config.object).map((action) => [action.name, action.label])),
+    ...Object.fromEntries(
+      getRootActions(config.object).map((action) => [action.name, action.label]),
+    ),
     ...Object.fromEntries(
       ((config.object as any).content ?? []).flatMap((item: any) =>
-        getSchemaActions(item).concat(getSchemaActions(item, "collection"), getSchemaActions(item, "entry"))
+        getSchemaActions(item)
+          .concat(getSchemaActions(item, "collection"), getSchemaActions(item, "entry"))
           .map((action) => [action.name, action.label] as const),
       ),
     ),
     ...Object.fromEntries(
       ((config.object as any).media ?? []).flatMap((item: any) =>
-        ((item.actions ?? []) as Array<{ name: string; label: string }>).map((action) => [action.name, action.label] as const),
+        ((item.actions ?? []) as Array<{ name: string; label: string }>).map(
+          (action) => [action.name, action.label] as const,
+        ),
       ),
     ),
   };

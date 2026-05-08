@@ -30,7 +30,7 @@ export const createOctokitInstance = (token: string, options?: any) => {
         }
 
         return response;
-      }
-    }
+      },
+    },
   });
 };

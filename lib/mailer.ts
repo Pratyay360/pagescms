@@ -39,7 +39,9 @@ const parseBoolean = (value: string, envName: string) => {
 const getFromEmail = () => {
   const from = getEnv("EMAIL_FROM") || getEnv("RESEND_FROM_EMAIL");
   if (!from) {
-    throw new Error("Missing sender email. Set EMAIL_FROM (or RESEND_FROM_EMAIL for compatibility).");
+    throw new Error(
+      "Missing sender email. Set EMAIL_FROM (or RESEND_FROM_EMAIL for compatibility).",
+    );
   }
   return from;
 };
@@ -67,7 +69,8 @@ const getSmtpTransporter = () => {
 
   const portRaw = getEnv("SMTP_PORT") || "587";
   const port = Number(portRaw);
-  if (!Number.isInteger(port) || port <= 0) throw new Error("SMTP_PORT must be a positive integer.");
+  if (!Number.isInteger(port) || port <= 0)
+    throw new Error("SMTP_PORT must be a positive integer.");
 
   const secureRaw = getEnv("SMTP_SECURE");
   const secure = secureRaw ? parseBoolean(secureRaw, "SMTP_SECURE") : port === 465;

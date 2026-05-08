@@ -13,13 +13,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-import {
-  ArrowUpRight,
-  EllipsisVertical,
-  Github,
-  Loader,
-  Mail,
-} from "lucide-react";
+import { ArrowUpRight, EllipsisVertical, Github, Loader, Mail } from "lucide-react";
 
 type IdentitiesProps = {
   email: string;
@@ -35,9 +29,7 @@ export function Identities({
   githubManageUrl,
 }: IdentitiesProps) {
   const router = useRouter();
-  const [pendingAction, setPendingAction] = useState<
-    "connect" | "disconnect" | null
-  >(null);
+  const [pendingAction, setPendingAction] = useState<"connect" | "disconnect" | null>(null);
 
   const handleConnectGithub = async () => {
     setPendingAction("connect");
@@ -64,8 +56,7 @@ export function Identities({
 
       const payload = await response.json().catch(() => null);
       if (!response.ok || !payload?.status) {
-        const message =
-          payload?.message || "Failed to disconnect GitHub account.";
+        const message = payload?.message || "Failed to disconnect GitHub account.";
         throw new Error(message);
       }
 
@@ -73,9 +64,7 @@ export function Identities({
       router.refresh();
     } catch (error) {
       const message =
-        error instanceof Error
-          ? error.message
-          : "Failed to disconnect GitHub account.";
+        error instanceof Error ? error.message : "Failed to disconnect GitHub account.";
       toast.error(message);
     } finally {
       setPendingAction(null);
@@ -93,10 +82,7 @@ export function Identities({
       </li>
       <li className="flex items-center gap-x-3 border first:rounded-t-md last:rounded-b-md px-3 py-2 text-sm">
         <div
-          className={cn(
-            "flex items-center gap-x-2",
-            !githubConnected && "text-muted-foreground",
-          )}
+          className={cn("flex items-center gap-x-2", !githubConnected && "text-muted-foreground")}
         >
           <Github className="h-4 w-4" />
           <span className="font-medium">GitHub</span>
@@ -115,9 +101,7 @@ export function Identities({
             disabled={pendingAction !== null}
           >
             Connect
-            {pendingAction === "connect" && (
-              <Loader className="h-4 w-4 animate-spin" />
-            )}
+            {pendingAction === "connect" && <Loader className="h-4 w-4 animate-spin" />}
           </Button>
         ) : (
           <DropdownMenu>

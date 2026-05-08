@@ -1,10 +1,14 @@
 import { db } from "@/db";
 import { cacheFileTable, collaboratorTable, githubInstallationTokenTable } from "@/db/schema";
 import { and, eq, inArray } from "drizzle-orm";
-import { clearFileCache, updateFileCacheOwner, updateFileCacheRepository } from "@/lib/github-cache-file";
+import {
+  clearFileCache,
+  updateFileCacheOwner,
+  updateFileCacheRepository,
+} from "@/lib/github-cache-file";
 import { deleteCacheFileMeta, deleteCacheFileMetaByPaths } from "@/lib/github-cache-meta";
 
-const chunkArray = <T,>(items: T[], size = 200): T[][] => {
+const chunkArray = <T>(items: T[], size = 200): T[][] => {
   const chunks: T[][] = [];
   for (let i = 0; i < items.length; i += size) {
     chunks.push(items.slice(i, i + size));
@@ -45,21 +49,13 @@ const clearScopedFileCache = async (
   );
 
   for (const pathsChunk of chunkArray(uniqueChangedPaths, 200)) {
-    await db.delete(cacheFileTable).where(
-      and(
-        whereBase,
-        inArray(cacheFileTable.path, pathsChunk),
-      ),
-    );
+    await db.delete(cacheFileTable).where(and(whereBase, inArray(cacheFileTable.path, pathsChunk)));
   }
 
   for (const parentPathsChunk of chunkArray(affectedParentPaths, 200)) {
-    await db.delete(cacheFileTable).where(
-      and(
-        whereBase,
-        inArray(cacheFileTable.parentPath, parentPathsChunk),
-      ),
-    );
+    await db
+      .delete(cacheFileTable)
+      .where(and(whereBase, inArray(cacheFileTable.parentPath, parentPathsChunk)));
   }
 };
 
@@ -76,12 +72,12 @@ const handleInstallationWebhookEvent = async (event: string | null, data: any) =
         }
 
         await Promise.all([
-          db.delete(collaboratorTable).where(
-            eq(collaboratorTable.installationId, data.installation.id),
-          ),
-          db.delete(githubInstallationTokenTable).where(
-            eq(githubInstallationTokenTable.installationId, data.installation.id),
-          ),
+          db
+            .delete(collaboratorTable)
+            .where(eq(collaboratorTable.installationId, data.installation.id)),
+          db
+            .delete(githubInstallationTokenTable)
+            .where(eq(githubInstallationTokenTable.installationId, data.installation.id)),
           clearFileCache(accountLogin),
           deleteCacheFileMeta(accountLogin),
         ]);
@@ -95,9 +91,7 @@ const handleInstallationWebhookEvent = async (event: string | null, data: any) =
         const reposIdRemoved = data.repositories_removed?.map((repo: any) => repo.id) || [];
         if (reposIdRemoved.length === 0) return true;
 
-        await db.delete(collaboratorTable).where(
-          inArray(collaboratorTable.repoId, reposIdRemoved),
-        );
+        await db.delete(collaboratorTable).where(inArray(collaboratorTable.repoId, reposIdRemoved));
 
         await Promise.all(
           (data.repositories_removed || []).map((repo: any) => {
@@ -126,9 +120,7 @@ const handleInstallationWebhookEvent = async (event: string | null, data: any) =
 
       if (data.action === "deleted") {
         await Promise.all([
-          db.delete(collaboratorTable).where(
-            eq(collaboratorTable.repoId, repoId),
-          ),
+          db.delete(collaboratorTable).where(eq(collaboratorTable.repoId, repoId)),
           clearFileCache(owner, repoName),
           deleteCacheFileMeta(owner, repoName),
         ]);
@@ -136,9 +128,7 @@ const handleInstallationWebhookEvent = async (event: string | null, data: any) =
         const oldOwner = data.changes?.owner?.from?.login || owner;
 
         await Promise.all([
-          db.delete(collaboratorTable).where(
-            eq(collaboratorTable.repoId, repoId),
-          ),
+          db.delete(collaboratorTable).where(eq(collaboratorTable.repoId, repoId)),
           clearFileCache(oldOwner, repoName),
           deleteCacheFileMeta(oldOwner, repoName),
         ]);
@@ -150,11 +140,12 @@ const handleInstallationWebhookEvent = async (event: string | null, data: any) =
         }
 
         await Promise.all([
-          db.update(collaboratorTable).set({
-            repo: repoName,
-          }).where(
-            eq(collaboratorTable.repoId, repoId),
-          ),
+          db
+            .update(collaboratorTable)
+            .set({
+              repo: repoName,
+            })
+            .where(eq(collaboratorTable.repoId, repoId)),
           updateFileCacheRepository(owner, oldName, repoName),
         ]);
       }
@@ -170,16 +161,21 @@ const handleInstallationWebhookEvent = async (event: string | null, data: any) =
         const accountId = data.account?.id;
 
         if (!oldOwner || !newOwner || !accountId) {
-          console.error("Missing account rename data in webhook", { oldOwner, newOwner, accountId });
+          console.error("Missing account rename data in webhook", {
+            oldOwner,
+            newOwner,
+            accountId,
+          });
           return true;
         }
 
         await Promise.all([
-          db.update(collaboratorTable).set({
-            owner: newOwner,
-          }).where(
-            eq(collaboratorTable.ownerId, accountId),
-          ),
+          db
+            .update(collaboratorTable)
+            .set({
+              owner: newOwner,
+            })
+            .where(eq(collaboratorTable.ownerId, accountId)),
           updateFileCacheOwner(oldOwner, newOwner),
         ]);
         return true;
@@ -194,7 +190,11 @@ const handleInstallationWebhookEvent = async (event: string | null, data: any) =
         const deleteBranch = data.ref?.replace("refs/heads/", "");
 
         if (!deleteOwner || !deleteRepo || !deleteBranch) {
-          console.error("Missing branch deletion data in webhook", { deleteOwner, deleteRepo, deleteBranch });
+          console.error("Missing branch deletion data in webhook", {
+            deleteOwner,
+            deleteRepo,
+            deleteBranch,
+          });
           return true;
         }
 

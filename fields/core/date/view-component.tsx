@@ -4,13 +4,7 @@ import { Field } from "@/types/field";
 import { CalendarIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
-const ViewComponent = ({
-  value,
-  field
-}: {
-  value: string | string[],
-  field: Field
-}) => {
+const ViewComponent = ({ value, field }: { value: string | string[]; field: Field }) => {
   if (!value) return null;
 
   const firstValue = Array.isArray(value) ? value[0] : value;
@@ -22,16 +16,18 @@ const ViewComponent = ({
   const formatDate = (date: string) => {
     const parsedDate = parse(date, inputFormat, new Date());
     if (!isValid(parsedDate)) {
-      console.warn(`Date for field '${field.name}' is saved in the wrong format or invalid: ${date}.`);
+      console.warn(
+        `Date for field '${field.name}' is saved in the wrong format or invalid: ${date}.`,
+      );
       return null;
     }
     return format(parsedDate, outputFormat);
   };
-  
+
   return (
     <span className="flex items-center gap-x-1.5">
       <Badge variant="secondary">
-        <CalendarIcon/>
+        <CalendarIcon />
         {formatDate(firstValue)}
       </Badge>
       {extraValuesCount > 0 && (
@@ -41,6 +37,6 @@ const ViewComponent = ({
       )}
     </span>
   );
-}
+};
 
 export { ViewComponent };

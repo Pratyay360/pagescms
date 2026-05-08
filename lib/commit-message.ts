@@ -99,11 +99,12 @@ const resolveCommitMessage = ({
 }): string => {
   const globalTemplates = getCommitTemplates(configObject);
   const overrideTemplate = templatesOverride?.[action];
-  const template = typeof overrideTemplate === "string" && overrideTemplate.trim()
-    ? overrideTemplate
-    : (typeof globalTemplates[action] === "string" && globalTemplates[action]?.trim()
-      ? (globalTemplates[action] as string)
-      : defaultCommitTemplates[action]);
+  const template =
+    typeof overrideTemplate === "string" && overrideTemplate.trim()
+      ? overrideTemplate
+      : typeof globalTemplates[action] === "string" && globalTemplates[action]?.trim()
+        ? (globalTemplates[action] as string)
+        : defaultCommitTemplates[action];
   return renderCommitTemplate(template, tokens).replace(/\s+/g, " ").trim().slice(0, 200);
 };
 

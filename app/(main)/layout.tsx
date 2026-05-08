@@ -39,10 +39,6 @@ export default async function Layout({
     isAdmin: hasAdminAccess(session.user as User),
     accounts,
   };
-  
-	return (
-    <UserProvider user={userWithAccounts}>
-      {children}
-    </UserProvider>
-  );
+
+  return <UserProvider user={userWithAccounts}>{children}</UserProvider>;
 }

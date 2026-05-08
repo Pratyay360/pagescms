@@ -25,7 +25,7 @@ export function FileRename({
   type,
   sha,
   name,
-  onRename
+  onRename,
 }: {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
@@ -37,33 +37,42 @@ export function FileRename({
 }) {
   const { config } = useConfig();
   if (!config) throw new Error(`Configuration not found.`);
-  
+
   if (!name) throw new Error("Name is required for FileRename");
 
   const schema = getSchemaByName(config.object, name, type);
   if (!schema) throw new Error(`Schema not found for ${name}.`);
 
-  const rootPath = useMemo(() => type === "media" ? schema.input : schema.path, [type, schema.input, schema.path]);
+  const rootPath = useMemo(
+    () => (type === "media" ? schema.input : schema.path),
+    [type, schema.input, schema.path],
+  );
   const normalizedPath = useMemo(() => normalizePath(path), [path]);
-  const relativePath = useMemo(() => getRelativePath(normalizedPath, rootPath), [normalizedPath, rootPath]);
+  const relativePath = useMemo(
+    () => getRelativePath(normalizedPath, rootPath),
+    [normalizedPath, rootPath],
+  );
 
   const [newRelativePath, setNewRelativePath] = useState(relativePath);
 
   const handleRename = async () => {
     try {
       const newPath = joinPathSegments([rootPath, normalizePath(newRelativePath)]);
-      
+
       const renamePromise = new Promise(async (resolve, reject) => {
         try {
-          const response = await fetch(`/api/${config.owner}/${config.repo}/${encodeURIComponent(config.branch)}/files/${encodeURIComponent(normalizedPath)}/rename`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              type: (type === "collection" || type === "file") ? "content" : type,
-              name,
-              newPath,
-            }),
-          });
+          const response = await fetch(
+            `/api/${config.owner}/${config.repo}/${encodeURIComponent(config.branch)}/files/${encodeURIComponent(normalizedPath)}/rename`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                type: type === "collection" || type === "file" ? "content" : type,
+                name,
+                newPath,
+              }),
+            },
+          );
           const data = await requireApiSuccess<any>(response, "Failed to rename file");
 
           resolve(data);
@@ -84,24 +93,25 @@ export function FileRename({
       console.error(error);
     }
   };
-  
+
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>      
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Rename file</DialogTitle>
           <DialogDescription></DialogDescription>
         </DialogHeader>
-        <Input
-          defaultValue={relativePath}
-          onChange={(e) => setNewRelativePath(e.target.value)}
-        />
+        <Input defaultValue={relativePath} onChange={(e) => setNewRelativePath(e.target.value)} />
         <DialogFooter className="max-sm:gap-y-2">
           <DialogClose asChild>
-            <Button type="button" variant="outline">Cancel</Button>
+            <Button type="button" variant="outline">
+              Cancel
+            </Button>
           </DialogClose>
           <DialogClose asChild>
-            <Button type="submit" onClick={handleRename}>Rename</Button>
+            <Button type="submit" onClick={handleRename}>
+              Rename
+            </Button>
           </DialogClose>
         </DialogFooter>
       </DialogContent>

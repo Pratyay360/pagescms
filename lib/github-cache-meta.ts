@@ -14,10 +14,7 @@ const normalizeScope = (scope?: CacheMetaScope) => ({
   context: scope?.context ?? "branch",
 });
 
-const CACHE_META_SYNC_STALE_MS = parseInt(
-  process.env.CACHE_META_SYNC_STALE_MS || "15000",
-  10,
-);
+const CACHE_META_SYNC_STALE_MS = parseInt(process.env.CACHE_META_SYNC_STALE_MS || "15000", 10);
 
 const upsertCacheFileMeta = async (
   owner: string,
@@ -130,10 +127,7 @@ const tryClaimCacheFileMeta = async (
     .where(
       and(
         scopeWhere,
-        or(
-          ne(cacheFileMetaTable.status, "syncing"),
-          lt(cacheFileMetaTable.updatedAt, staleBefore),
-        ),
+        or(ne(cacheFileMetaTable.status, "syncing"), lt(cacheFileMetaTable.updatedAt, staleBefore)),
       ),
     )
     .returning({ id: cacheFileMetaTable.id });
@@ -181,9 +175,7 @@ const deleteCacheFileMeta = async (
           eq(cacheFileMetaTable.context, normalizedScope.context),
         )
       : and(baseWhere, eq(cacheFileMetaTable.branch, branch));
-    await db
-      .delete(cacheFileMetaTable)
-      .where(scopedWhere);
+    await db.delete(cacheFileMetaTable).where(scopedWhere);
     return;
   }
 
@@ -199,21 +191,19 @@ const deleteCacheFileMetaByPaths = async (
   const normalizedPaths = Array.from(new Set(paths));
   if (normalizedPaths.length === 0) return;
 
-  await db.delete(cacheFileMetaTable).where(
-    and(
-      sql`lower(${cacheFileMetaTable.owner}) = lower(${owner})`,
-      sql`lower(${cacheFileMetaTable.repo}) = lower(${repo})`,
-      eq(cacheFileMetaTable.branch, branch),
-      inArray(cacheFileMetaTable.path, normalizedPaths),
-    ),
-  );
+  await db
+    .delete(cacheFileMetaTable)
+    .where(
+      and(
+        sql`lower(${cacheFileMetaTable.owner}) = lower(${owner})`,
+        sql`lower(${cacheFileMetaTable.repo}) = lower(${repo})`,
+        eq(cacheFileMetaTable.branch, branch),
+        inArray(cacheFileMetaTable.path, normalizedPaths),
+      ),
+    );
 };
 
-const listCacheFileMeta = async (
-  owner: string,
-  repo: string,
-  branch: string,
-) => {
+const listCacheFileMeta = async (owner: string, repo: string, branch: string) => {
   return db.query.cacheFileMetaTable.findMany({
     where: and(
       sql`lower(${cacheFileMetaTable.owner}) = lower(${owner})`,

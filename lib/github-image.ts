@@ -4,12 +4,7 @@
  * Runs client-side with some temporary caching.
  */
 
-import {
-  decodePathSafely,
-  getFileName,
-  getParentPath,
-  normalizePath,
-} from "@/lib/utils/file";
+import { decodePathSafely, getFileName, getParentPath, normalizePath } from "@/lib/utils/file";
 import { requireApiSuccess } from "@/lib/api-client";
 
 const ttl = 30000; // TTL for the cache (30 seconds)
@@ -28,12 +23,15 @@ const getRelativeUrl = (
   repo: string,
   branch: string,
   path: string,
-  encode = true
+  encode = true,
 ) => {
   let relativePath = path;
 
   if (path.startsWith("https://raw.githubusercontent.com/")) {
-    const pattern = new RegExp(`^https://raw\\.githubusercontent\\.com/${owner}/${repo}/${encodeURIComponent(branch)}/`, "i");
+    const pattern = new RegExp(
+      `^https://raw\\.githubusercontent\\.com/${owner}/${repo}/${encodeURIComponent(branch)}/`,
+      "i",
+    );
     relativePath = path.replace(pattern, "");
   }
 
@@ -41,7 +39,7 @@ const getRelativeUrl = (
   relativePath = decodePathSafely(relativePath);
 
   return encode ? encodePath(relativePath) : relativePath;
-}
+};
 
 // Get the raw.githubusercontent.com URL for an image.
 const getRawUrl = async (
@@ -51,19 +49,19 @@ const getRawUrl = async (
   name: string,
   path: string,
   isPrivate = false,
-  decode = false
+  decode = false,
 ) => {
   const decodedPath = decode ? decodePathSafely(path) : path;
   const normalizedInputPath = normalizeImagePathInput(decodedPath);
   if (!normalizedInputPath) return null;
-  
+
   if (isPrivate) {
     const filename = canonicalizeFileName(normalizedInputPath);
     if (!filename) return null;
     const parentPath = getParentPath(normalizedInputPath);
-    
+
     const parentFullPath = `${owner}/${repo}/${encodeURIComponent(branch)}/${parentPath}`;
-    
+
     if (requests[parentFullPath]) {
       try {
         await requests[parentFullPath];
@@ -74,21 +72,22 @@ const getRawUrl = async (
     }
 
     const cacheExists = cache[parentFullPath]?.files?.[filename];
-    const cacheExpired = !cache[parentFullPath]?.time || (Date.now() - cache[parentFullPath].time > ttl);
-    
+    const cacheExpired =
+      !cache[parentFullPath]?.time || Date.now() - cache[parentFullPath].time > ttl;
+
     if (cacheExists && !cacheExpired) {
       return cacheExists;
     }
-    
+
     if (cacheExpired || !cacheExists) {
       delete cache[parentFullPath];
-      
+
       if (!requests[parentFullPath]) {
         requests[parentFullPath] = fetch(
-          `/api/${owner}/${repo}/${encodeURIComponent(branch)}/media/${encodeURIComponent(name)}/${encodeURIComponent(parentPath)}?nocache=true`
+          `/api/${owner}/${repo}/${encodeURIComponent(branch)}/media/${encodeURIComponent(name)}/${encodeURIComponent(parentPath)}?nocache=true`,
         )
           .then((response) => requireApiSuccess<any>(response, "Failed to fetch media"))
-          .catch(err => {
+          .catch((err) => {
             delete requests[parentFullPath];
             throw err;
           });
@@ -100,11 +99,11 @@ const getRawUrl = async (
       } finally {
         delete requests[parentFullPath];
       }
-      
+
       if (!cache[parentFullPath] && response.status === "success") {
         cache[parentFullPath] = {
           time: Date.now(),
-          files: {}
+          files: {},
         };
         response.data.forEach((file: any) => {
           const canonicalName = canonicalizeFileName(
@@ -129,11 +128,7 @@ const normalizeImagePathInput = (input: string) => {
 
   const markdownMatch = value.match(/^\[.*?\]\((.+)\)$/);
   const markdownLooseMatch = value.match(/^\[.*?\]\((.+)$/);
-  let path = (
-    markdownMatch?.[1]
-    || markdownLooseMatch?.[1]?.replace(/\)$/, "")
-    || value
-  ).trim();
+  let path = (markdownMatch?.[1] || markdownLooseMatch?.[1]?.replace(/\)$/, "") || value).trim();
 
   path = path.split("#")[0]?.split("?")[0] || path;
 
@@ -151,7 +146,7 @@ const rawToRelativeUrls = (
   repo: string,
   branch: string,
   html: string,
-  encode = true
+  encode = true,
 ) => {
   const matches = getImgSrcs(html);
   if (matches.length === 0) return html;
@@ -180,7 +175,7 @@ const rawToRelativeUrls = (
   });
 
   return newHtml;
-}
+};
 
 // Convert all relative image paths in a HTML string to raw.githubusercontent.com URLs.
 const relativeToRawUrls = async (
@@ -190,16 +185,23 @@ const relativeToRawUrls = async (
   name: string,
   html: string,
   isPrivate = false,
-  decode = false
+  decode = false,
 ) => {
   const matches = getImgSrcs(html);
   if (matches.length === 0) return html;
 
-  const uniqueSources = Array.from(new Set(
-    matches
-      .map((match) => match[1] || match[2])
-      .filter((src) => !src.startsWith("http://") && !src.startsWith("https://") && !src.startsWith("data:image/")),
-  ));
+  const uniqueSources = Array.from(
+    new Set(
+      matches
+        .map((match) => match[1] || match[2])
+        .filter(
+          (src) =>
+            !src.startsWith("http://") &&
+            !src.startsWith("https://") &&
+            !src.startsWith("data:image/"),
+        ),
+    ),
+  );
 
   if (uniqueSources.length === 0) return html;
 
@@ -218,82 +220,83 @@ const relativeToRawUrls = async (
   }
 
   return newHtml;
-}
+};
 
 // Swap the prefix of an image path (raw.githubusercontent.com url <> relative path)
-const swapPrefix = (
-  path: string,
-  from: string,
-  to: string,
-  relative = false
-) => {
+const swapPrefix = (path: string, from: string, to: string, relative = false) => {
   if (
-    path == null
-    || from == null
-    || to == null
-    || (from === to)
-    || path.startsWith("//")
-    || path.startsWith("http://")
-    || path.startsWith("https://")
-    || path.startsWith("data:image/")
-    || !path.startsWith(from)
-  ) return path;
-  
+    path == null ||
+    from == null ||
+    to == null ||
+    from === to ||
+    path.startsWith("//") ||
+    path.startsWith("http://") ||
+    path.startsWith("https://") ||
+    path.startsWith("data:image/") ||
+    !path.startsWith(from)
+  )
+    return path;
+
   let newPath;
-  
+
   if (from === "" && to !== "/") {
     newPath = `${to}/${path}`;
   } else if (from === "" && to === "/") {
     newPath = `/${path}`;
   } else {
     const remainingPath = path.slice(from.length);
-    newPath = to === "/" 
-      ? `/${remainingPath.replace(/^\//, '')}` 
-      : `${to}/${remainingPath.replace(/^\//, '')}`;
+    newPath =
+      to === "/"
+        ? `/${remainingPath.replace(/^\//, "")}`
+        : `${to}/${remainingPath.replace(/^\//, "")}`;
   }
 
   if (newPath && newPath.startsWith("/") && relative) newPath = newPath.substring(1);
 
   return newPath;
-}
+};
 
 // Swap the prefix of all images in a HTML string.
-const htmlSwapPrefix = (
-  html: string,
-  from: string,
-  to: string,
-  relative = false
-) => {
+const htmlSwapPrefix = (html: string, from: string, to: string, relative = false) => {
   if (from === to || html == null || from == null || to == null) return html;
-  
+
   let newHtml = html;
   const matches = getImgSrcs(newHtml);
-  
-  matches.forEach(match => {
+
+  matches.forEach((match) => {
     const src = match[1] || match[2];
-    const quote = match[1] ? "\"" : "'";
-    
+    const quote = match[1] ? '"' : "'";
+
     const newSrc = swapPrefix(src, from, to, relative);
     if (newSrc !== src) {
       // Use a regex with global flag to replace all occurrences
       const escapedSrc = escapeRegex(src); // Escape special regex chars
-      const regex = new RegExp(`src=${quote}${escapedSrc}${quote}`, 'g');
+      const regex = new RegExp(`src=${quote}${escapedSrc}${quote}`, "g");
       newHtml = newHtml.replace(regex, `src=${quote}${newSrc}${quote}`);
     }
   });
 
   return newHtml;
-}
+};
 
 // Encode a path for use in a URL.
 const encodePath = (path: string) => {
   return path.split("/").map(encodeURIComponent).join("/");
-}
+};
 
 // Get all image sources from an HTML string.
 const getImgSrcs = (html: string) => {
   const regex = /<img [^>]*src=(?:"([^"]+)"|'([^']+)')[^>]*>/g;
   return Array.from(html.matchAll(regex));
-}
+};
 
-export { getRelativeUrl, getRawUrl, relativeToRawUrls, rawToRelativeUrls, swapPrefix, htmlSwapPrefix, encodePath, getImgSrcs };
+export {
+  getRelativeUrl,
+  getRawUrl,
+  relativeToRawUrls,
+  rawToRelativeUrls,
+  swapPrefix,
+  htmlSwapPrefix,
+  encodePath,
+  getImgSrcs,
+};

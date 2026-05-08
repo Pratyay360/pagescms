@@ -12,7 +12,7 @@ import { hasGithubIdentity } from "@/lib/authz-shared";
 import { collaboratorMatchesUser } from "@/lib/collaborator-access";
 
 const getAccounts = async (user: User) => {
-	let accounts: Array<{
+  let accounts: Array<{
     login: string;
     type: string;
     repositorySelection: string;
@@ -20,35 +20,35 @@ const getAccounts = async (user: User) => {
   }> = [];
   const githubAccount = await getGithubAccount(user.id);
 
-	if (githubAccount?.accessToken && hasGithubIdentity(user)) {
-		const token = await requireGithubUserToken(user);
-		
-		const installations = await getInstallations(token);
+  if (githubAccount?.accessToken && hasGithubIdentity(user)) {
+    const token = await requireGithubUserToken(user);
 
-		accounts = [
-			...installations.map((installation: any) => ({
-				login: installation.account.login,
-				type: installation.account.type === "User" ? "user" : "org",
-				repositorySelection: installation.repository_selection,
-        installationId: installation.id
-			}))
-		];
-	}
+    const installations = await getInstallations(token);
+
+    accounts = [
+      ...installations.map((installation: any) => ({
+        login: installation.account.login,
+        type: installation.account.type === "User" ? "user" : "org",
+        repositorySelection: installation.repository_selection,
+        installationId: installation.id,
+      })),
+    ];
+  }
 
   const groupedRepos = await db
     .selectDistinct({
       owner: collaboratorTable.owner,
       type: collaboratorTable.type,
-      installationId: collaboratorTable.installationId
+      installationId: collaboratorTable.installationId,
     })
     .from(collaboratorTable)
     .where(collaboratorMatchesUser(user));
 
-  const collaboratorAccounts = groupedRepos.map(collaborator => ({
+  const collaboratorAccounts = groupedRepos.map((collaborator) => ({
     login: collaborator.owner,
     type: collaborator.type,
     repositorySelection: "selected",
-    installationId: collaborator.installationId
+    installationId: collaborator.installationId,
   }));
 
   const dedupedAccounts = new Map<string, (typeof accounts)[number]>();
@@ -67,7 +67,7 @@ const getAccounts = async (user: User) => {
 
   accounts = Array.from(dedupedAccounts.values());
 
-	if (accounts.length === 0) return [];
+  if (accounts.length === 0) return [];
 
   return accounts;
 };

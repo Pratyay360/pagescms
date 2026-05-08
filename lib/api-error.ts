@@ -31,21 +31,23 @@ const getErrorStatus = (error: unknown): number => {
   const message = getErrorMessage(error).toLowerCase();
 
   if (
-    message.includes("permission")
-    || message.includes("no access")
-    || message.includes("forbidden")
-    || message.includes("only github users")
-  ) return 403;
+    message.includes("permission") ||
+    message.includes("no access") ||
+    message.includes("forbidden") ||
+    message.includes("only github users")
+  )
+    return 403;
   if (message.includes("not found")) return 404;
   if (message.includes("unauthorized") || message.includes("not signed in")) return 401;
   if (message.includes("conflict") || message.includes("changed since you last loaded")) return 409;
   if (message.includes("rate limit")) return 429;
   if (message.includes("too many clients already")) return 503;
   if (
-    message.includes("invalid")
-    || message.includes("required")
-    || message.includes("validation failed")
-  ) return 400;
+    message.includes("invalid") ||
+    message.includes("required") ||
+    message.includes("validation failed")
+  )
+    return 400;
 
   return 500;
 };

@@ -2,17 +2,17 @@
 
 import { use } from "react";
 import { useSearchParams } from "next/navigation";
-import { MediaView} from "@/components/media/media-view";
+import { MediaView } from "@/components/media/media-view";
 import { DocumentTitle, formatRepoBranchTitle } from "@/components/document-title";
 import { useConfig } from "@/contexts/config-context";
 import { getSchemaByName } from "@/lib/schema";
 
 export default function Page({
-  params
+  params,
 }: {
   params: Promise<{
     name: string;
-  }>
+  }>;
 }) {
   const resolvedParams = use(params);
   const { config } = useConfig();
@@ -21,7 +21,7 @@ export default function Page({
   const path = searchParams.get("path") || "";
   const schema = getSchemaByName(config.object, decodeURIComponent(resolvedParams.name), "media");
   const displayName = schema?.label || schema?.name || decodeURIComponent(resolvedParams.name);
-  
+
   return (
     <div className="max-w-screen-xl mx-auto flex-1 flex flex-col h-full">
       <DocumentTitle

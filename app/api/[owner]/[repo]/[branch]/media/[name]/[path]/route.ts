@@ -7,23 +7,33 @@ import { createHttpError, toErrorResponse } from "@/lib/api-error";
  * Get the list of media files in a directory.
  *
  * GET /api/[owner]/[repo]/[branch]/media/[path]
- * 
+ *
  * Requires authentication.
  */
 
 export async function GET(
   request: Request,
-  context: { params: Promise<{ owner: string, repo: string, branch: string, name: string, path: string }> }
+  context: {
+    params: Promise<{ owner: string; repo: string; branch: string; name: string; path: string }>;
+  },
 ) {
   try {
     const params = await context.params;
     const { token, config } = await getRepoReadContext(params);
-    
-    const mediaConfig = config.object.media.find((item: any) => item.name === params.name) || config.object.media[0];
+
+    const mediaConfig =
+      config.object.media.find((item: any) => item.name === params.name) || config.object.media[0];
 
     if (!mediaConfig) {
-      if (params.name) throw createHttpError(`No media configuration named "${params.name}" found for ${params.owner}/${params.repo}/${params.branch}.`, 404);
-      throw createHttpError(`No media configuration found for ${params.owner}/${params.repo}/${params.branch}.`, 404);
+      if (params.name)
+        throw createHttpError(
+          `No media configuration named "${params.name}" found for ${params.owner}/${params.repo}/${params.branch}.`,
+          404,
+        );
+      throw createHttpError(
+        `No media configuration found for ${params.owner}/${params.repo}/${params.branch}.`,
+        404,
+      );
     }
 
     const normalizedPath = normalizeMediaPath(
@@ -32,14 +42,22 @@ export async function GET(
       params.repo,
       params.branch,
     );
-    if (!normalizedPath.startsWith(mediaConfig.input)) throw createHttpError(`Invalid path "${params.path}" for media "${params.name}".`, 400);
+    if (!normalizedPath.startsWith(mediaConfig.input))
+      throw createHttpError(`Invalid path "${params.path}" for media "${params.name}".`, 400);
 
     const { searchParams } = new URL(request.url);
-    const nocache = searchParams.get('nocache');
+    const nocache = searchParams.get("nocache");
 
     let results;
     try {
-      results = await getMediaCache(params.owner, params.repo, params.branch, normalizedPath, token, !!nocache);
+      results = await getMediaCache(
+        params.owner,
+        params.repo,
+        params.branch,
+        normalizedPath,
+        token,
+        !!nocache,
+      );
     } catch (error: any) {
       if (error?.status === 404) {
         results = [];
@@ -74,7 +92,7 @@ export async function GET(
           path: item.path,
           extension: item.type === "dir" ? undefined : getFileExtension(item.name),
           size: item.size,
-          url: item.downloadUrl
+          url: item.downloadUrl,
         };
       }),
     });
@@ -84,21 +102,16 @@ export async function GET(
   }
 }
 
-const normalizeMediaPath = (
-  rawPath: string,
-  owner: string,
-  repo: string,
-  branch: string,
-) => {
+const normalizeMediaPath = (rawPath: string, owner: string, repo: string, branch: string) => {
   const decodedPath = decodeURIComponent(rawPath || "");
 
   // Handle markdown-link wrappers: [label](target)
   const markdownMatch = decodedPath.match(/^\[.*?\]\((.+)\)$/);
   const markdownLooseMatch = decodedPath.match(/^\[.*?\]\((.+)$/);
   const candidate = (
-    markdownMatch?.[1]
-    || markdownLooseMatch?.[1]?.replace(/\)$/, "")
-    || decodedPath
+    markdownMatch?.[1] ||
+    markdownLooseMatch?.[1]?.replace(/\)$/, "") ||
+    decodedPath
   ).trim();
 
   // If caller accidentally passes a raw.githubusercontent URL, map it back to repo-relative path.

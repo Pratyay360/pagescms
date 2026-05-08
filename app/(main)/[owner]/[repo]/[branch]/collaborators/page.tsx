@@ -28,7 +28,7 @@ export default function Page() {
         title={formatRepoBranchTitle("Collaborators", config.owner, config.repo, config.branch)}
       />
       <div className="flex flex-col relative flex-1">
-        <Collaborators owner={config.owner} repo={config.repo} branch={config?.branch}/>
+        <Collaborators owner={config.owner} repo={config.repo} branch={config?.branch} />
       </div>
     </div>
   );

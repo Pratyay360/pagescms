@@ -12,7 +12,7 @@ export function FilePath({
   sha,
   type,
   name,
-  onRename
+  onRename,
 }: {
   path: string;
   sha: string;
@@ -28,17 +28,19 @@ export function FilePath({
     <>
       <div className="flex items-center w-full">
         <div className="flex-1 flex items-center gap-x-1 overflow-hidden rounded-md rounded-r-none border-l border-y border-input  bg-muted px-3 py-1 text-muted-foreground h-10 max-sm:hidden">
-          {pathSegments.length > 3 &&
+          {pathSegments.length > 3 && (
             <>
               <Ellipsis className="h-4 w-4 shrink-0" />
               <ChevronRight className="h-4 w-4 shrink-0" />
             </>
-          }
+          )}
           {pathSegments.slice(pathSegments.length > 3 ? -2 : 0).map((segment, index, array) => (
             <Fragment key={index}>
               <div className="flex items-center gap-x-1.5 truncate">
                 {index !== array.length - 1 && <Folder className="h-4 w-4 shrink-0" />}
-                <span className={cn("truncate", index === array.length - 1 && "text-foreground")}>{segment}</span>
+                <span className={cn("truncate", index === array.length - 1 && "text-foreground")}>
+                  {segment}
+                </span>
               </div>
               {index !== array.length - 1 && <ChevronRight className="h-4 w-4 shrink-0" />}
             </Fragment>
@@ -49,13 +51,17 @@ export function FilePath({
         </div>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button type="button" variant="outline" className="rounded-l-none" size="icon" onClick={() => setIsRenameOpen(true)}>
+            <Button
+              type="button"
+              variant="outline"
+              className="rounded-l-none"
+              size="icon"
+              onClick={() => setIsRenameOpen(true)}
+            >
               <Pencil className="h-4 w-4" />
             </Button>
           </TooltipTrigger>
-          <TooltipContent>
-            Rename
-          </TooltipContent>
+          <TooltipContent>Rename</TooltipContent>
         </Tooltip>
       </div>
 

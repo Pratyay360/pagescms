@@ -8,7 +8,7 @@ const stripHtml = (text: string) =>
     .replace(/<[^>]*>/g, " ")
     .replace(/&nbsp;/gi, " ")
     .replace(/&amp;/gi, "&")
-    .replace(/&quot;/gi, "\"")
+    .replace(/&quot;/gi, '"')
     .replace(/&#39;|&apos;/gi, "'")
     .replace(/&lt;/gi, "<")
     .replace(/&gt;/gi, ">")
@@ -95,19 +95,13 @@ const markdownToPlainText = (input: string): string => {
   }
 };
 
-const ViewComponent = ({
-  value,
-  field
-}: {
-  value: string,
-  field: Field
-}) => {
+const ViewComponent = ({ value, field }: { value: string; field: Field }) => {
   if (!value) return null;
   void field;
-  
+
   return Array.isArray(value)
     ? value.map(markdownToPlainText).join(", ")
     : markdownToPlainText(value);
-}
+};
 
 export { ViewComponent };

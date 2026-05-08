@@ -41,12 +41,7 @@ export function SignInFromInvite({
   );
 
   useEffect(() => {
-    if (
-      !verifyUrl ||
-      !isSignedIn ||
-      isEmailMismatch ||
-      hasAutoContinuedRef.current
-    ) {
+    if (!verifyUrl || !isSignedIn || isEmailMismatch || hasAutoContinuedRef.current) {
       return;
     }
 
@@ -82,12 +77,9 @@ export function SignInFromInvite({
         errorCallbackURL: "/sign-in",
       });
       if (result.error?.message) throw new Error(result.error.message);
-      toast.success(
-        "We sent you a sign-in link. Check your inbox (and spam folder).",
-        {
-          duration: 10000,
-        },
-      );
+      toast.success("We sent you a sign-in link. Check your inbox (and spam folder).", {
+        duration: 10000,
+      });
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : "Failed to sign in");
     } finally {
@@ -128,30 +120,17 @@ export function SignInFromInvite({
                     disabled={isLoading}
                   >
                     {email ? `Continue as ${email}` : "Continue"}
-                    {isLoading && (
-                      <Loader className="ml-2 h-4 w-4 animate-spin" />
-                    )}
+                    {isLoading && <Loader className="ml-2 h-4 w-4 animate-spin" />}
                   </Button>
                 ) : (
-                  <Button
-                    variant="default"
-                    onClick={handleContinueWithInvite}
-                    disabled={isLoading}
-                  >
+                  <Button variant="default" onClick={handleContinueWithInvite} disabled={isLoading}>
                     Continue
-                    {isLoading && (
-                      <Loader className="ml-2 h-4 w-4 animate-spin" />
-                    )}
+                    {isLoading && <Loader className="ml-2 h-4 w-4 animate-spin" />}
                   </Button>
                 )}
                 {redirectTo && (
-                  <Link
-                    href={redirectTo}
-                    className={buttonVariants({ variant: "outline" })}
-                  >
-                    <span className="truncate">
-                      Open &quot;{redirectTo}&quot;
-                    </span>
+                  <Link href={redirectTo} className={buttonVariants({ variant: "outline" })}>
+                    <span className="truncate">Open &quot;{redirectTo}&quot;</span>
                   </Link>
                 )}
               </EmptyContent>
@@ -159,19 +138,11 @@ export function SignInFromInvite({
           ) : (
             <>
               <EmptyTitle>Continue with invite</EmptyTitle>
-              <EmptyDescription>
-                Continue as {email} to open this invitation.
-              </EmptyDescription>
+              <EmptyDescription>Continue as {email} to open this invitation.</EmptyDescription>
               <EmptyContent>
-                <Button
-                  variant="default"
-                  onClick={handleContinueWithInvite}
-                  disabled={isLoading}
-                >
+                <Button variant="default" onClick={handleContinueWithInvite} disabled={isLoading}>
                   Continue
-                  {isLoading && (
-                    <Loader className="ml-2 h-4 w-4 animate-spin" />
-                  )}
+                  {isLoading && <Loader className="ml-2 h-4 w-4 animate-spin" />}
                 </Button>
               </EmptyContent>
             </>
@@ -203,13 +174,8 @@ export function SignInFromInvite({
                 {isLoading && <Loader className="ml-2 h-4 w-4 animate-spin" />}
               </Button>
               {redirectTo && (
-                <Link
-                  href={redirectTo}
-                  className={buttonVariants({ variant: "outline" })}
-                >
-                  <span className="truncate">
-                    Open &quot;{redirectTo}&quot;
-                  </span>
+                <Link href={redirectTo} className={buttonVariants({ variant: "outline" })}>
+                  <span className="truncate">Open &quot;{redirectTo}&quot;</span>
                 </Link>
               )}
             </EmptyContent>
@@ -221,11 +187,7 @@ export function SignInFromInvite({
               Send a sign-in link to {email} to continue with this invitation.
             </EmptyDescription>
             <EmptyContent>
-              <Button
-                variant="default"
-                onClick={handleSignIn}
-                disabled={isLoading}
-              >
+              <Button variant="default" onClick={handleSignIn} disabled={isLoading}>
                 Send sign-in link
                 {isLoading && <Loader className="ml-2 h-4 w-4 animate-spin" />}
               </Button>

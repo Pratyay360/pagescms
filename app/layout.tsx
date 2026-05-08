@@ -1,4 +1,4 @@
-import { Toaster } from "@/components/ui/sonner"
+import { Toaster } from "@/components/ui/sonner";
 import { Providers } from "@/components/providers";
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
@@ -56,8 +56,8 @@ export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
-}>) {  
-	return (
+}>) {
+  return (
     <html lang="en" suppressHydrationWarning>
       <body
         className={cn(
@@ -66,10 +66,8 @@ export default async function RootLayout({
           jetbrainsMono.variable,
         )}
       >
-        <Providers user={null}>
-          {children}
-        </Providers>
-        <Toaster/>
+        <Providers user={null}>{children}</Providers>
+        <Toaster />
       </body>
     </html>
   );

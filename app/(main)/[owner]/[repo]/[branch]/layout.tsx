@@ -5,7 +5,13 @@ import { ConfigProvider } from "@/contexts/config-context";
 import { RepoLayout } from "@/components/repo/repo-layout";
 import { getServerSession } from "@/lib/session-server";
 import { getToken } from "@/lib/token";
-import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyTitle,
+} from "@/components/ui/empty";
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 
@@ -14,7 +20,7 @@ export default async function Layout({
   params,
 }: {
   children: React.ReactNode;
-  params: Promise<{ owner: string; repo: string; branch: string; }>;
+  params: Promise<{ owner: string; repo: string; branch: string }>;
 }) {
   const { owner, repo, branch } = await params;
   const requestHeaders = await headers();
@@ -35,21 +41,16 @@ export default async function Layout({
     branch: decodedBranch,
     sha: "",
     version: "",
-    object: {}
-  }
-  
+    object: {},
+  };
+
   let errorMessage = null;
 
   try {
     const { token } = await getToken(user, owner, repo);
-    const syncedConfig = await getConfig(
-      owner,
-      repo,
-      decodedBranch,
-      {
-        getToken: async () => token,
-      },
-    );
+    const syncedConfig = await getConfig(owner, repo, decodedBranch, {
+      getToken: async () => token,
+    });
 
     if (syncedConfig) {
       config = syncedConfig;
@@ -79,7 +80,9 @@ export default async function Layout({
         <Empty className="absolute inset-0 border-0 rounded-none">
           <EmptyHeader>
             <EmptyTitle>Access denied</EmptyTitle>
-            <EmptyDescription>You do not have permission to access this repository.</EmptyDescription>
+            <EmptyDescription>
+              You do not have permission to access this repository.
+            </EmptyDescription>
           </EmptyHeader>
           <EmptyContent>
             <Link className={buttonVariants({ variant: "default" })} href="/">

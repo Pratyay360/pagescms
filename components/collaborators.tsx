@@ -47,11 +47,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { requireApiSuccess } from "@/lib/api-client";
 import { toast } from "sonner";
 import { BookText, EllipsisVertical, Loader } from "lucide-react";
@@ -117,8 +113,7 @@ function InviteCollaboratorsDialog({
         <DialogHeader>
           <DialogTitle>Invite collaborators</DialogTitle>
           <DialogDescription>
-            Enter one or multiple email addresses, separated by commas or new
-            lines.
+            Enter one or multiple email addresses, separated by commas or new lines.
           </DialogDescription>
         </DialogHeader>
         <form action={action} className="space-y-4">
@@ -133,15 +128,10 @@ function InviteCollaboratorsDialog({
             rows={6}
           />
           {state?.error ? (
-            <p className="text-sm font-medium text-destructive">
-              {state.error}
-            </p>
+            <p className="text-sm font-medium text-destructive">{state.error}</p>
           ) : null}
           <DialogFooter>
-            <SubmitButton
-              type="submit"
-              disabled={parsedInviteEmails.length === 0}
-            >
+            <SubmitButton type="submit" disabled={parsedInviteEmails.length === 0}>
               Send invite{parsedInviteEmails.length > 1 ? "s" : ""}
             </SubmitButton>
           </DialogFooter>
@@ -175,9 +165,7 @@ export function Collaborators({
 
   const addNewCollaborator = useCallback((newCollaborators: Collaborator[]) => {
     setCollaborators((prevCollaborators) => {
-      const seenIds = new Set(
-        prevCollaborators.map((collaborator) => collaborator.id),
-      );
+      const seenIds = new Set(prevCollaborators.map((collaborator) => collaborator.id));
       const uniqueCollaborators = newCollaborators.filter(
         (collaborator) => !seenIds.has(collaborator.id),
       );
@@ -205,9 +193,7 @@ export function Collaborators({
       } catch (err: unknown) {
         if (err instanceof DOMException && err.name === "AbortError") return;
         console.error(err);
-        setError(
-          err instanceof Error ? err.message : "Failed to fetch collaborators",
-        );
+        setError(err instanceof Error ? err.message : "Failed to fetch collaborators");
       } finally {
         // In React Strict Mode, an aborted first pass can race with the active request.
         // Keep the loading state until the non-aborted request finishes.
@@ -224,18 +210,12 @@ export function Collaborators({
 
   useEffect(() => {
     if (addCollaboratorState?.message) {
-      if (
-        Array.isArray(addCollaboratorState.data) &&
-        addCollaboratorState.data.length > 0
-      ) {
+      if (Array.isArray(addCollaboratorState.data) && addCollaboratorState.data.length > 0) {
         addNewCollaborator(addCollaboratorState.data);
       }
 
       toast.success(addCollaboratorState.message, { duration: 10000 });
-      if (
-        Array.isArray(addCollaboratorState.errors) &&
-        addCollaboratorState.errors.length > 0
-      ) {
+      if (Array.isArray(addCollaboratorState.errors) && addCollaboratorState.errors.length > 0) {
         toast.error(addCollaboratorState.errors.join("\n"), {
           duration: 10000,
         });
@@ -249,11 +229,7 @@ export function Collaborators({
     setRemoving((prev) => [...prev, collaboratorId]);
 
     try {
-      const removed = await handleRemoveCollaborator(
-        collaboratorId,
-        owner,
-        repo,
-      );
+      const removed = await handleRemoveCollaborator(collaboratorId, owner, repo);
 
       if (removed.error) {
         toast.error(removed.error);
@@ -275,11 +251,7 @@ export function Collaborators({
     setResending((prev) => [...prev, collaboratorId]);
 
     try {
-      const resent = await handleResendCollaboratorInvite(
-        collaboratorId,
-        owner,
-        repo,
-      );
+      const resent = await handleResendCollaboratorInvite(collaboratorId, owner, repo);
       if (resent.error) {
         toast.error(resent.error);
       } else {
@@ -361,12 +333,7 @@ export function Collaborators({
           >
             <Skeleton className="h-6 w-6 rounded-full" />
             <Skeleton className="h-5 w-24 text-left rounded" />
-            <Button
-              variant="outline"
-              size="icon-xs"
-              className="ml-auto"
-              disabled
-            >
+            <Button variant="outline" size="icon-xs" className="ml-auto" disabled>
               <EllipsisVertical />
             </Button>
           </li>
@@ -382,9 +349,7 @@ export function Collaborators({
         <Empty className="max-w-[420px] flex-none">
           <EmptyHeader>
             <EmptyTitle>Something went wrong</EmptyTitle>
-            <EmptyDescription>
-              We couldn&apos;t load the list of collaborators.
-            </EmptyDescription>
+            <EmptyDescription>We couldn&apos;t load the list of collaborators.</EmptyDescription>
           </EmptyHeader>
         </Empty>
       </div>
@@ -394,9 +359,7 @@ export function Collaborators({
   const collaboratorToRemove =
     pendingRemoveId === null
       ? null
-      : collaborators.find(
-          (collaborator) => collaborator.id === pendingRemoveId,
-        ) || null;
+      : collaborators.find((collaborator) => collaborator.id === pendingRemoveId) || null;
 
   return (
     <div className="h-full flex flex-col gap-4">
@@ -419,9 +382,7 @@ export function Collaborators({
                     {collaborator.email.split("@")[0].substring(0, 2)}
                   </AvatarFallback>
                 </Avatar>
-                <div className="font-medium text-left truncate">
-                  {collaborator.email}
-                </div>
+                <div className="font-medium text-left truncate">{collaborator.email}</div>
 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -430,12 +391,10 @@ export function Collaborators({
                       variant="outline"
                       className="ml-auto"
                       disabled={
-                        removing.includes(collaborator.id) ||
-                        resending.includes(collaborator.id)
+                        removing.includes(collaborator.id) || resending.includes(collaborator.id)
                       }
                     >
-                      {removing.includes(collaborator.id) ||
-                      resending.includes(collaborator.id) ? (
+                      {removing.includes(collaborator.id) || resending.includes(collaborator.id) ? (
                         <Loader className="animate-spin" />
                       ) : (
                         <EllipsisVertical />
@@ -447,8 +406,7 @@ export function Collaborators({
                     <DropdownMenuItem
                       onClick={() => void handleResendInvite(collaborator.id)}
                       disabled={
-                        removing.includes(collaborator.id) ||
-                        resending.includes(collaborator.id)
+                        removing.includes(collaborator.id) || resending.includes(collaborator.id)
                       }
                     >
                       Resend invitation
@@ -458,8 +416,7 @@ export function Collaborators({
                       variant="destructive"
                       onClick={() => setPendingRemoveId(collaborator.id)}
                       disabled={
-                        removing.includes(collaborator.id) ||
-                        resending.includes(collaborator.id)
+                        removing.includes(collaborator.id) || resending.includes(collaborator.id)
                       }
                     >
                       Remove
@@ -480,8 +437,8 @@ export function Collaborators({
               <AlertDialogHeader>
                 <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  This will remove access to &quot;{owner}/{repo}&quot; for
-                  &quot;{collaboratorToRemove?.email}&quot;.
+                  This will remove access to &quot;{owner}/{repo}&quot; for &quot;
+                  {collaboratorToRemove?.email}&quot;.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>

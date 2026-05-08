@@ -27,17 +27,19 @@ const toSummary = (
   workflowRunId: row.workflowRunId,
   triggeredByName: (row.triggeredBy as { name?: string | null } | null)?.name ?? null,
   triggeredByEmail: (row.triggeredBy as { email?: string | null } | null)?.email ?? null,
-  triggeredByGithubUsername: (row.triggeredBy as { githubUsername?: string | null } | null)?.githubUsername ?? null,
+  triggeredByGithubUsername:
+    (row.triggeredBy as { githubUsername?: string | null } | null)?.githubUsername ?? null,
   triggeredByImage: (row.triggeredBy as { image?: string | null } | null)?.image ?? null,
   canCancel: Boolean(
-    (hasGithubIdentity(user)
-      || (row.triggeredBy as { userId?: string | null } | null)?.userId === user.id)
-    && row.status !== "completed"
-    && row.workflowRunId
-    && ((row.payload as { action?: { cancelable?: boolean } } | null)?.action?.cancelable ?? true),
+    (hasGithubIdentity(user) ||
+      (row.triggeredBy as { userId?: string | null } | null)?.userId === user.id) &&
+    row.status !== "completed" &&
+    row.workflowRunId &&
+    ((row.payload as { action?: { cancelable?: boolean } } | null)?.action?.cancelable ?? true),
   ),
   canRerun: hasGithubIdentity(user),
-  cancelable: (row.payload as { action?: { cancelable?: boolean } } | null)?.action?.cancelable ?? true,
+  cancelable:
+    (row.payload as { action?: { cancelable?: boolean } } | null)?.action?.cancelable ?? true,
   createdAt: row.createdAt?.toISOString() ?? null,
   updatedAt: row.updatedAt?.toISOString() ?? null,
   completedAt: row.completedAt?.toISOString() ?? null,
@@ -62,10 +64,10 @@ const findWorkflowRun = async (
     });
 
     const run = response.data.workflow_runs
-      .filter((item) => (
-        Date.parse(item.created_at) >= startedAtMs - 30_000
-        && !claimedRunIdsSet.has(item.id)
-      ))
+      .filter(
+        (item) =>
+          Date.parse(item.created_at) >= startedAtMs - 30_000 && !claimedRunIdsSet.has(item.id),
+      )
       .sort((left, right) => Date.parse(right.created_at) - Date.parse(left.created_at))[0];
 
     if (run) return run;
@@ -76,16 +78,21 @@ const findWorkflowRun = async (
 };
 
 const getClaimedWorkflowRunIds = async (row: typeof actionRunTable.$inferSelect) => {
-  const rows = await db.select({
-    workflowRunId: actionRunTable.workflowRunId,
-  }).from(actionRunTable).where(and(
-    eq(actionRunTable.owner, row.owner),
-    eq(actionRunTable.repo, row.repo),
-    eq(actionRunTable.workflow, row.workflow),
-    eq(actionRunTable.workflowRef, row.workflowRef),
-    isNotNull(actionRunTable.workflowRunId),
-    ne(actionRunTable.id, row.id),
-  ));
+  const rows = await db
+    .select({
+      workflowRunId: actionRunTable.workflowRunId,
+    })
+    .from(actionRunTable)
+    .where(
+      and(
+        eq(actionRunTable.owner, row.owner),
+        eq(actionRunTable.repo, row.repo),
+        eq(actionRunTable.workflow, row.workflow),
+        eq(actionRunTable.workflowRef, row.workflowRef),
+        isNotNull(actionRunTable.workflowRunId),
+        ne(actionRunTable.id, row.id),
+      ),
+    );
 
   return rows
     .map((claimedRow) => claimedRow.workflowRunId)
@@ -141,12 +148,17 @@ export async function GET(
       throw createHttpError("Invalid action run id.", 400);
     }
 
-    const [row] = await db.select().from(actionRunTable).where(and(
-      eq(actionRunTable.id, runId),
-      eq(actionRunTable.owner, params.owner),
-      eq(actionRunTable.repo, params.repo),
-      eq(actionRunTable.ref, params.branch),
-    ));
+    const [row] = await db
+      .select()
+      .from(actionRunTable)
+      .where(
+        and(
+          eq(actionRunTable.id, runId),
+          eq(actionRunTable.owner, params.owner),
+          eq(actionRunTable.repo, params.repo),
+          eq(actionRunTable.ref, params.branch),
+        ),
+      );
 
     if (!row) {
       throw createHttpError("Action run not found.", 404);
@@ -165,16 +177,19 @@ export async function GET(
         );
 
         if (workflowRun) {
-          const [updated] = await db.update(actionRunTable).set({
-            workflowRunId: workflowRun.id,
-            status: workflowRun.status ?? "queued",
-            conclusion: workflowRun.conclusion,
-            htmlUrl: workflowRun.html_url,
-            updatedAt: new Date(),
-            completedAt: workflowRun.status === "completed"
-              ? new Date(workflowRun.updated_at)
-              : null,
-          }).where(eq(actionRunTable.id, row.id)).returning();
+          const [updated] = await db
+            .update(actionRunTable)
+            .set({
+              workflowRunId: workflowRun.id,
+              status: workflowRun.status ?? "queued",
+              conclusion: workflowRun.conclusion,
+              htmlUrl: workflowRun.html_url,
+              updatedAt: new Date(),
+              completedAt:
+                workflowRun.status === "completed" ? new Date(workflowRun.updated_at) : null,
+            })
+            .where(eq(actionRunTable.id, row.id))
+            .returning();
 
           if (updated) syncedRow = updated;
         }
@@ -185,15 +200,20 @@ export async function GET(
           run_id: row.workflowRunId,
         });
 
-        const [updated] = await db.update(actionRunTable).set({
-          status: workflowRunResponse.data.status ?? row.status,
-          conclusion: workflowRunResponse.data.conclusion,
-          htmlUrl: workflowRunResponse.data.html_url,
-          updatedAt: new Date(),
-          completedAt: workflowRunResponse.data.status === "completed"
-            ? new Date(workflowRunResponse.data.updated_at)
-            : null,
-        }).where(eq(actionRunTable.id, row.id)).returning();
+        const [updated] = await db
+          .update(actionRunTable)
+          .set({
+            status: workflowRunResponse.data.status ?? row.status,
+            conclusion: workflowRunResponse.data.conclusion,
+            htmlUrl: workflowRunResponse.data.html_url,
+            updatedAt: new Date(),
+            completedAt:
+              workflowRunResponse.data.status === "completed"
+                ? new Date(workflowRunResponse.data.updated_at)
+                : null,
+          })
+          .where(eq(actionRunTable.id, row.id))
+          .returning();
 
         if (updated) syncedRow = updated;
       }
@@ -230,12 +250,17 @@ export async function POST(
       throw createHttpError("Invalid action intent.", 400);
     }
 
-    const [row] = await db.select().from(actionRunTable).where(and(
-      eq(actionRunTable.id, runId),
-      eq(actionRunTable.owner, params.owner),
-      eq(actionRunTable.repo, params.repo),
-      eq(actionRunTable.ref, params.branch),
-    ));
+    const [row] = await db
+      .select()
+      .from(actionRunTable)
+      .where(
+        and(
+          eq(actionRunTable.id, runId),
+          eq(actionRunTable.owner, params.owner),
+          eq(actionRunTable.repo, params.repo),
+          eq(actionRunTable.ref, params.branch),
+        ),
+      );
 
     if (!row) {
       throw createHttpError("Action run not found.", 404);
@@ -245,7 +270,8 @@ export async function POST(
     const octokit = createOctokitInstance(token);
     const isGithubUser = hasGithubIdentity(user);
     const isOwnRun = (row.triggeredBy as { userId?: string | null } | null)?.userId === user.id;
-    const isCancelable = ((row.payload as { action?: { cancelable?: boolean } } | null)?.action?.cancelable ?? true);
+    const isCancelable =
+      (row.payload as { action?: { cancelable?: boolean } } | null)?.action?.cancelable ?? true;
 
     if (body.intent === "cancel") {
       if (!isCancelable) {
@@ -264,12 +290,16 @@ export async function POST(
         run_id: row.workflowRunId,
       });
 
-      const [updated] = await db.update(actionRunTable).set({
-        status: "completed",
-        conclusion: "cancelled",
-        updatedAt: new Date(),
-        completedAt: new Date(),
-      }).where(eq(actionRunTable.id, row.id)).returning();
+      const [updated] = await db
+        .update(actionRunTable)
+        .set({
+          status: "completed",
+          conclusion: "cancelled",
+          updatedAt: new Date(),
+          completedAt: new Date(),
+        })
+        .where(eq(actionRunTable.id, row.id))
+        .returning();
 
       return Response.json({
         status: "success",
@@ -285,11 +315,19 @@ export async function POST(
     const originalPayload = row.payload as {
       action?: { name?: string; label?: string; cancelable?: boolean };
       repository?: { ref?: string; workflowRef?: string };
-      context?: { type?: string; name?: string | null; path?: string | null; data?: Record<string, unknown> };
+      context?: {
+        type?: string;
+        name?: string | null;
+        path?: string | null;
+        data?: Record<string, unknown>;
+      };
       inputs?: Record<string, string | number | boolean>;
     } | null;
 
-    const workflowRef = resolveActionRef(originalPayload?.repository?.workflowRef ?? row.workflowRef, params.branch);
+    const workflowRef = resolveActionRef(
+      originalPayload?.repository?.workflowRef ?? row.workflowRef,
+      params.branch,
+    );
     const sha = await resolveWorkflowSha(octokit, params.owner, params.repo, workflowRef);
     const timestamp = new Date();
     const payload = {
@@ -325,23 +363,26 @@ export async function POST(
       inputs: originalPayload?.inputs ?? {},
     };
 
-    const [createdRun] = await db.insert(actionRunTable).values({
-      owner: params.owner,
-      repo: params.repo,
-      ref: payload.repository.ref,
-      workflowRef,
-      sha,
-      actionName: payload.action.name,
-      contextType: payload.context.type,
-      contextName: payload.context.name,
-      contextPath: payload.context.path,
-      workflow: row.workflow,
-      status: "dispatching",
-      triggeredBy: payload.triggeredBy,
-      payload,
-      createdAt: timestamp,
-      updatedAt: timestamp,
-    }).returning();
+    const [createdRun] = await db
+      .insert(actionRunTable)
+      .values({
+        owner: params.owner,
+        repo: params.repo,
+        ref: payload.repository.ref,
+        workflowRef,
+        sha,
+        actionName: payload.action.name,
+        contextType: payload.context.type,
+        contextName: payload.context.name,
+        contextPath: payload.context.path,
+        workflow: row.workflow,
+        status: "dispatching",
+        triggeredBy: payload.triggeredBy,
+        payload,
+        createdAt: timestamp,
+        updatedAt: timestamp,
+      })
+      .returning();
 
     await octokit.rest.actions.createWorkflowDispatch({
       owner: params.owner,
@@ -360,19 +401,25 @@ export async function POST(
     );
 
     if (workflowRun) {
-      await db.update(actionRunTable).set({
-        workflowRunId: workflowRun.id,
-        status: workflowRun.status ?? "queued",
-        conclusion: workflowRun.conclusion,
-        htmlUrl: workflowRun.html_url,
-        updatedAt: new Date(),
-        completedAt: workflowRun.status === "completed" ? new Date(workflowRun.updated_at) : null,
-      }).where(eq(actionRunTable.id, createdRun.id));
+      await db
+        .update(actionRunTable)
+        .set({
+          workflowRunId: workflowRun.id,
+          status: workflowRun.status ?? "queued",
+          conclusion: workflowRun.conclusion,
+          htmlUrl: workflowRun.html_url,
+          updatedAt: new Date(),
+          completedAt: workflowRun.status === "completed" ? new Date(workflowRun.updated_at) : null,
+        })
+        .where(eq(actionRunTable.id, createdRun.id));
     } else {
-      await db.update(actionRunTable).set({
-        status: "queued",
-        updatedAt: new Date(),
-      }).where(eq(actionRunTable.id, createdRun.id));
+      await db
+        .update(actionRunTable)
+        .set({
+          status: "queued",
+          updatedAt: new Date(),
+        })
+        .where(eq(actionRunTable.id, createdRun.id));
     }
 
     return Response.json({

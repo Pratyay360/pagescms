@@ -68,13 +68,17 @@ const mergeUsers = async (
       }
 
       const patch: Partial<typeof existing> = {};
-      if (!existing.accessToken && fromAccount.accessToken) patch.accessToken = fromAccount.accessToken;
-      if (!existing.refreshToken && fromAccount.refreshToken) patch.refreshToken = fromAccount.refreshToken;
+      if (!existing.accessToken && fromAccount.accessToken)
+        patch.accessToken = fromAccount.accessToken;
+      if (!existing.refreshToken && fromAccount.refreshToken)
+        patch.refreshToken = fromAccount.refreshToken;
       if (!existing.idToken && fromAccount.idToken) patch.idToken = fromAccount.idToken;
       if (!existing.scope && fromAccount.scope) patch.scope = fromAccount.scope;
       if (!existing.password && fromAccount.password) patch.password = fromAccount.password;
-      if (!existing.accessTokenExpiresAt && fromAccount.accessTokenExpiresAt) patch.accessTokenExpiresAt = fromAccount.accessTokenExpiresAt;
-      if (!existing.refreshTokenExpiresAt && fromAccount.refreshTokenExpiresAt) patch.refreshTokenExpiresAt = fromAccount.refreshTokenExpiresAt;
+      if (!existing.accessTokenExpiresAt && fromAccount.accessTokenExpiresAt)
+        patch.accessTokenExpiresAt = fromAccount.accessTokenExpiresAt;
+      if (!existing.refreshTokenExpiresAt && fromAccount.refreshTokenExpiresAt)
+        patch.refreshTokenExpiresAt = fromAccount.refreshTokenExpiresAt;
 
       if (Object.keys(patch).length > 0) {
         await tx
@@ -124,10 +128,7 @@ const repairLegacyGithubStubOnGithubSignIn = async (userId: string) => {
   if (!signedInUser) return;
 
   const signedInGithubAccount = await db.query.accountTable.findFirst({
-    where: and(
-      eq(accountTable.userId, userId),
-      eq(accountTable.providerId, "github"),
-    ),
+    where: and(eq(accountTable.userId, userId), eq(accountTable.providerId, "github")),
   });
   if (!signedInGithubAccount) return;
 
@@ -181,10 +182,7 @@ const repairLegacyGithubStubOnGithubSignIn = async (userId: string) => {
   if (!legacyStub) return;
 
   const stubGithubAccount = await db.query.accountTable.findFirst({
-    where: and(
-      eq(accountTable.userId, legacyStub.id),
-      eq(accountTable.providerId, "github"),
-    ),
+    where: and(eq(accountTable.userId, legacyStub.id), eq(accountTable.providerId, "github")),
   });
 
   if (stubGithubAccount && stubGithubAccount.accountId !== signedInGithubAccount.accountId) {

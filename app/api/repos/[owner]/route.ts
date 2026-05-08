@@ -14,16 +14,13 @@ export const dynamic = "force-dynamic";
 
 /**
  * Fetches repositories for a user.
- * 
+ *
  * GET /api/repos/[owner]
- * 
+ *
  * Requires authentication.
  */
 
-export async function GET(
-  request: NextRequest,
-  context: { params: Promise<{ owner: string }> }
-) {
+export async function GET(request: NextRequest, context: { params: Promise<{ owner: string }> }) {
   try {
     const params = await context.params;
     const sessionResult = await requireApiUserSession();
@@ -42,7 +39,7 @@ export async function GET(
 
       const repositorySelection = searchParams.get("repository_selection");
 
-      if (repositorySelection === "selected") {  
+      if (repositorySelection === "selected") {
         // Only some repos are selected
         // TODO: investigate why it's slow
         const installations = await getInstallations(token, [params.owner]);
@@ -52,32 +49,34 @@ export async function GET(
       } else {
         // All repos are selected, we search for the repos based on parameters
         const keyword = searchParams.get("keyword");
-        
+
         const octokit = createOctokitInstance(token);
         const query = `${keyword} in:name ${type}:${params.owner} fork:true`;
         const response = await octokit.rest.search.repos({
           q: query,
           sort: "updated",
           order: "desc",
-          per_page: 5
+          per_page: 5,
         });
         githubRepos = response.data.items;
       }
 
-      githubRepos = githubRepos.filter(repo => repo.permissions.push).map(repo => ({
-        owner: repo.owner.login,
-        repo: repo.name,
-        private: repo.private,
-        defaultBranch: repo.default_branch,
-        updatedAt: repo.updated_at,
-      }));
+      githubRepos = githubRepos
+        .filter((repo) => repo.permissions.push)
+        .map((repo) => ({
+          owner: repo.owner.login,
+          repo: repo.name,
+          private: repo.private,
+          defaultBranch: repo.default_branch,
+          updatedAt: repo.updated_at,
+        }));
     }
 
     collaboratorRepos = await db.query.collaboratorTable.findMany({
       where: and(
         collaboratorMatchesUser(user),
-        sql`lower(${collaboratorTable.owner}) = lower(${params.owner})`
-      )
+        sql`lower(${collaboratorTable.owner}) = lower(${params.owner})`,
+      ),
     });
 
     const reposByKey = new Map<string, any>();

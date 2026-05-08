@@ -7,28 +7,36 @@ import { DocumentTitle, formatRepoBranchTitle } from "@/components/document-titl
 import { getSchemaByName } from "@/lib/schema";
 
 export default function Page({
-  params
+  params,
 }: {
   params: Promise<{
     owner: string;
     repo: string;
     branch: string;
     name: string;
-  }>
+  }>;
 }) {
   const resolvedParams = use(params);
   const { config } = useConfig();
   if (!config) throw new Error(`Configuration not found.`);
-  
-  const schema = useMemo(() => getSchemaByName(config?.object, decodeURIComponent(resolvedParams.name)), [config, resolvedParams.name]);
+
+  const schema = useMemo(
+    () => getSchemaByName(config?.object, decodeURIComponent(resolvedParams.name)),
+    [config, resolvedParams.name],
+  );
   if (!schema) throw new Error(`Schema not found for ${decodeURIComponent(resolvedParams.name)}.`);
-  
+
   return (
     <>
       <DocumentTitle
-        title={formatRepoBranchTitle(schema.label || schema.name, config.owner, config.repo, config.branch)}
+        title={formatRepoBranchTitle(
+          schema.label || schema.name,
+          config.owner,
+          config.repo,
+          config.branch,
+        )}
       />
-      <Entry name={resolvedParams.name} path={schema.path} title={schema.label || schema.name}/>
+      <Entry name={resolvedParams.name} path={schema.path} title={schema.label || schema.name} />
     </>
   );
 }

@@ -9,19 +9,14 @@ import { parseAndValidateConfig } from "@/lib/config";
 import { resolveContentOperations } from "@/lib/operations";
 import { requireApiSuccess } from "@/lib/api-client";
 import { getSchemaActions } from "@/lib/actions";
-import {
-  generateFilename,
-  getPrimaryField,
-  getSchemaByName,
-  safeAccess,
-} from "@/lib/schema";
+import { generateFilename, getPrimaryField, getSchemaByName, safeAccess } from "@/lib/schema";
 import {
   getFileExtension,
   getFileName,
   getParentPath,
   getRelativePath,
   joinPathSegments,
-  normalizePath
+  normalizePath,
 } from "@/lib/utils/file";
 import type { ApiSuccess, EntryData, EntryHistoryItem } from "@/types/api";
 import { EntryForm } from "./entry-form";
@@ -61,7 +56,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Skeleton } from "@/components/ui/skeleton"
+import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { EllipsisVertical, History, Lock, LockOpen, Save } from "lucide-react";
 import useSWR, { useSWRConfig } from "swr";
@@ -113,23 +108,20 @@ export function Entry({
   const { mutate } = useSWRConfig();
 
   const router = useRouter();
-  
+
   const { config } = useConfig();
   if (!config) throw new Error(`Configuration not found.`);
-  
+
   const schema = useMemo(() => {
     if (!name) return;
-    return getSchemaByName(config?.object, name)
+    return getSchemaByName(config?.object, name);
   }, [config, name]);
   const schemaType = schema?.type;
   const operations = useMemo(
     () =>
       resolveContentOperations({
         schema,
-        scope:
-          path === ".pages.yml" || initialPath === ".pages.yml"
-            ? "settings"
-            : undefined,
+        scope: path === ".pages.yml" || initialPath === ".pages.yml" ? "settings" : undefined,
       }),
     [initialPath, path, schema],
   );
@@ -152,31 +144,39 @@ export function Entry({
   }, [filenameFieldMode, path, schemaType]);
   const [filenameValue, setFilenameValue] = useState("");
   const [isFilenameUnlocked, setIsFilenameUnlocked] = useState(false);
-  
+
   const entryFields = useMemo(() => {
     return !schema?.fields || schema.fields.length === 0
-      ? [{
-          name: "body",
-          type: "code",
-          label: showFilenameField ? "Content" : false,
-          options: {
-            format: schema?.extension || (entry?.name && getFileExtension(entry.name)) || "markdown",
-            lintFn: path === ".pages.yml"
-              ? (view: LintView) => {
-                  const {parseErrors, validationErrors} = parseAndValidateConfig(view.state.doc.toString());
-                  return [...parseErrors, ...validationErrors];
-                }
-              : undefined
-          }
-        }]
+      ? [
+          {
+            name: "body",
+            type: "code",
+            label: showFilenameField ? "Content" : false,
+            options: {
+              format:
+                schema?.extension || (entry?.name && getFileExtension(entry.name)) || "markdown",
+              lintFn:
+                path === ".pages.yml"
+                  ? (view: LintView) => {
+                      const { parseErrors, validationErrors } = parseAndValidateConfig(
+                        view.state.doc.toString(),
+                      );
+                      return [...parseErrors, ...validationErrors];
+                    }
+                  : undefined,
+            },
+          },
+        ]
       : schema?.list === true
-        ? [{
-            name: "listWrapper",
-            label: false,
-            type: "object",
-            list: true,
-            fields: schema.fields
-          }]
+        ? [
+            {
+              name: "listWrapper",
+              label: false,
+              type: "object",
+              list: true,
+              fields: schema.fields,
+            },
+          ]
         : schema.fields;
   }, [schema, entry, path, showFilenameField]);
 
@@ -199,23 +199,26 @@ export function Entry({
       return;
     }
 
-    const generated = generateFilename(schema.filename, schema, entryContentObject as Record<string, unknown>);
+    const generated = generateFilename(
+      schema.filename,
+      schema,
+      entryContentObject as Record<string, unknown>,
+    );
     setFilenameValue(generated || "untitled");
     setIsFilenameUnlocked(true);
   }, [entryContentObject, path, schema, schemaType, showFilenameField]);
 
-  const entryApiUrl = useMemo(() => (
-    path
-      ? `/api/${config.owner}/${config.repo}/${encodeURIComponent(config.branch)}/entries/${encodeURIComponent(path)}?name=${encodeURIComponent(name)}`
-      : null
-  ), [config.branch, config.owner, config.repo, name, path]);
+  const entryApiUrl = useMemo(
+    () =>
+      path
+        ? `/api/${config.owner}/${config.repo}/${encodeURIComponent(config.branch)}/entries/${encodeURIComponent(path)}?name=${encodeURIComponent(name)}`
+        : null,
+    [config.branch, config.owner, config.repo, name, path],
+  );
 
   const fetchEntryByUrl = useCallback(async (apiUrl: string): Promise<EntryData> => {
     const response = await fetch(apiUrl);
-    const data = await requireApiSuccess<any>(
-      response,
-      "Failed to fetch entry",
-    );
+    const data = await requireApiSuccess<any>(response, "Failed to fetch entry");
     return data.data as EntryData;
   }, []);
 
@@ -224,15 +227,11 @@ export function Entry({
     error: swrEntryError,
     isLoading: swrEntryLoading,
     mutate: mutateEntry,
-  } = useSWR<EntryData>(
-    entryApiUrl,
-    fetchEntryByUrl,
-    {
-      revalidateOnFocus: true,
-      revalidateOnReconnect: true,
-      dedupingInterval: 2000,
-    },
-  );
+  } = useSWR<EntryData>(entryApiUrl, fetchEntryByUrl, {
+    revalidateOnFocus: true,
+    revalidateOnReconnect: true,
+    dedupingInterval: 2000,
+  });
 
   useEffect(() => {
     if (!path) return;
@@ -252,12 +251,9 @@ export function Entry({
       const primaryValue = primaryField
         ? safeAccess(swrEntryData.contentObject ?? {}, primaryField)
         : undefined;
-      const hasPrimaryValue = typeof primaryValue === "string"
-        ? primaryValue !== ""
-        : primaryValue != null;
-      const titleValue = hasPrimaryValue
-        ? String(primaryValue)
-        : getFileName(normalizePath(path));
+      const hasPrimaryValue =
+        typeof primaryValue === "string" ? primaryValue !== "" : primaryValue != null;
+      const titleValue = hasPrimaryValue ? String(primaryValue) : getFileName(normalizePath(path));
       setDisplayTitle(`Editing "${titleValue}"`);
     } else if (!title && path && path !== ".pages.yml") {
       setDisplayTitle(`Editing "${getFileName(normalizePath(path))}"`);
@@ -266,48 +262,45 @@ export function Entry({
 
   useEffect(() => {
     if (!swrEntryError) return;
-    const message = swrEntryError instanceof Error ? swrEntryError.message : "Failed to fetch entry.";
+    const message =
+      swrEntryError instanceof Error ? swrEntryError.message : "Failed to fetch entry.";
     setError(message);
     setIsLoading(false);
   }, [swrEntryError]);
 
-  const historyApiUrl = useMemo(() => (
-    path
-      ? `/api/${config.owner}/${config.repo}/${encodeURIComponent(config.branch)}/entries/${encodeURIComponent(path)}/history?name=${encodeURIComponent(name)}`
-      : null
-  ), [config.branch, config.owner, config.repo, name, path]);
+  const historyApiUrl = useMemo(
+    () =>
+      path
+        ? `/api/${config.owner}/${config.repo}/${encodeURIComponent(config.branch)}/entries/${encodeURIComponent(path)}/history?name=${encodeURIComponent(name)}`
+        : null,
+    [config.branch, config.owner, config.repo, name, path],
+  );
 
   const historyKey = useMemo(
-    () => historyApiUrl ? [historyApiUrl, sha ?? ""] as const : null,
+    () => (historyApiUrl ? ([historyApiUrl, sha ?? ""] as const) : null),
     [historyApiUrl, sha],
   );
 
-  const fetchEntryHistory = useCallback(async ([apiUrl]: readonly [string, string]): Promise<EntryHistoryItem[]> => {
-    const response = await fetch(apiUrl);
-    const data = await requireApiSuccess<any>(
-      response,
-      "Failed to fetch entry's history",
-    );
-    return data.data as EntryHistoryItem[];
-  }, []);
-
-  const { data: historyData } = useSWR<EntryHistoryItem[]>(
-    historyKey,
-    fetchEntryHistory,
-    {
-      revalidateOnFocus: true,
-      revalidateOnReconnect: true,
-      dedupingInterval: 2000,
+  const fetchEntryHistory = useCallback(
+    async ([apiUrl]: readonly [string, string]): Promise<EntryHistoryItem[]> => {
+      const response = await fetch(apiUrl);
+      const data = await requireApiSuccess<any>(response, "Failed to fetch entry's history");
+      return data.data as EntryHistoryItem[];
     },
+    [],
   );
 
-  const currentFilename = useMemo(
-    () => path ? getFileName(normalizePath(path)) : "",
-    [path],
-  );
-  const filenameChanged = showFilenameField
-    && filenameValue.trim().length > 0
-    && filenameValue.trim() !== currentFilename;
+  const { data: historyData } = useSWR<EntryHistoryItem[]>(historyKey, fetchEntryHistory, {
+    revalidateOnFocus: true,
+    revalidateOnReconnect: true,
+    dedupingInterval: 2000,
+  });
+
+  const currentFilename = useMemo(() => (path ? getFileName(normalizePath(path)) : ""), [path]);
+  const filenameChanged =
+    showFilenameField &&
+    filenameValue.trim().length > 0 &&
+    filenameValue.trim() !== currentFilename;
 
   const onSubmit = async (contentObject: Record<string, unknown>) => {
     setIsSaving(true);
@@ -335,11 +328,11 @@ export function Entry({
         } else if (filenameChanged && !canRename && schemaType === "collection") {
           throw new Error("Renaming this entry isn't allowed.");
         } else if (
-          showFilenameField
-          && filenameFieldMode === "enabled"
-          && isFilenameUnlocked
-          && filenameChanged
-          && schemaType === "collection"
+          showFilenameField &&
+          filenameFieldMode === "enabled" &&
+          isFilenameUnlocked &&
+          filenameChanged &&
+          schemaType === "collection"
         ) {
           const newPath = joinPathSegments([getParentPath(savePath), normalizedFilename]);
           const renameResponse = await fetch(
@@ -358,35 +351,38 @@ export function Entry({
           savePath = newPath;
           setPath(newPath);
           setIsFilenameUnlocked(false);
-          router.replace(`/${config.owner}/${config.repo}/${encodeURIComponent(config.branch)}/collection/${encodeURIComponent(name)}/edit/${encodeURIComponent(newPath)}`);
+          router.replace(
+            `/${config.owner}/${config.repo}/${encodeURIComponent(config.branch)}/collection/${encodeURIComponent(name)}/edit/${encodeURIComponent(newPath)}`,
+          );
 
           const collectionKeyPrefix = `/api/${config.owner}/${config.repo}/${encodeURIComponent(config.branch)}/collections/${encodeURIComponent(name)}?`;
           void mutate((key) => typeof key === "string" && key.startsWith(collectionKeyPrefix));
         }
 
-        const response = await fetch(`/api/${config.owner}/${config.repo}/${encodeURIComponent(config.branch)}/files/${encodeURIComponent(savePath)}`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            type: path === ".pages.yml" ? "settings" : "content",
-            name,
-            content: schema?.list === true
-              ? contentObject.listWrapper
-              : contentObject,
-            sha: sha
-          }),
-        });
-        const data = await requireApiSuccess<any>(
-          response,
-          "Failed to save file",
+        const response = await fetch(
+          `/api/${config.owner}/${config.repo}/${encodeURIComponent(config.branch)}/files/${encodeURIComponent(savePath)}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              type: path === ".pages.yml" ? "settings" : "content",
+              name,
+              content: schema?.list === true ? contentObject.listWrapper : contentObject,
+              sha: sha,
+            }),
+          },
         );
-        
+        const data = await requireApiSuccess<any>(response, "Failed to save file");
+
         if (data.data.sha !== sha) setSha(data.data.sha);
         if (submitStartChangeVersion === changeVersionRef.current) {
           setHasRegisteredChanges(false);
         }
 
-        if (!path && schemaType === "collection") router.push(`/${config.owner}/${config.repo}/${encodeURIComponent(config.branch)}/collection/${encodeURIComponent(name)}/edit/${encodeURIComponent(data.data.path)}`);
+        if (!path && schemaType === "collection")
+          router.push(
+            `/${config.owner}/${config.repo}/${encodeURIComponent(config.branch)}/collection/${encodeURIComponent(name)}/edit/${encodeURIComponent(data.data.path)}`,
+          );
         if (schemaType === "collection") {
           const collectionKeyPrefix = `/api/${config.owner}/${config.repo}/${encodeURIComponent(config.branch)}/collections/${encodeURIComponent(name)}?`;
           void mutate((key) => typeof key === "string" && key.startsWith(collectionKeyPrefix));
@@ -404,7 +400,7 @@ export function Entry({
         if (onSave) onSave(response.data);
         return response.message;
       },
-      error: (error: unknown) => error instanceof Error ? error.message : "Failed to save file.",
+      error: (error: unknown) => (error instanceof Error ? error.message : "Failed to save file."),
     });
 
     try {
@@ -444,42 +440,60 @@ export function Entry({
     return () => window.removeEventListener("keydown", handleSaveShortcut);
   }, [isBusy]);
 
-  const handleDelete = useCallback((path: string) => {
-    // TODO: disable save button or freeze form while deleting?
-    if (schemaType === "collection") {
-      const collectionKeyPrefix = `/api/${config.owner}/${config.repo}/${encodeURIComponent(config.branch)}/collections/${encodeURIComponent(name)}?`;
-      void mutate((key) => typeof key === "string" && key.startsWith(collectionKeyPrefix));
-    }
-    if (schemaType === "collection") {
-      router.push(`/${config.owner}/${config.repo}/${encodeURIComponent(config.branch)}/collection/${encodeURIComponent(name)}`);
-    } else {
-      if (entryApiUrl) {
-        void mutate(entryApiUrl, undefined, { revalidate: true });
+  const handleDelete = useCallback(
+    (path: string) => {
+      // TODO: disable save button or freeze form while deleting?
+      if (schemaType === "collection") {
+        const collectionKeyPrefix = `/api/${config.owner}/${config.repo}/${encodeURIComponent(config.branch)}/collections/${encodeURIComponent(name)}?`;
+        void mutate((key) => typeof key === "string" && key.startsWith(collectionKeyPrefix));
       }
-      void mutateEntry();
-    }
-  }, [config.branch, config.owner, config.repo, entryApiUrl, mutate, mutateEntry, name, router, schemaType]);
+      if (schemaType === "collection") {
+        router.push(
+          `/${config.owner}/${config.repo}/${encodeURIComponent(config.branch)}/collection/${encodeURIComponent(name)}`,
+        );
+      } else {
+        if (entryApiUrl) {
+          void mutate(entryApiUrl, undefined, { revalidate: true });
+        }
+        void mutateEntry();
+      }
+    },
+    [
+      config.branch,
+      config.owner,
+      config.repo,
+      entryApiUrl,
+      mutate,
+      mutateEntry,
+      name,
+      router,
+      schemaType,
+    ],
+  );
 
-  const handleRename = useCallback((oldPath: string, newPath: string) => {
-    if (schemaType === "collection") {
-      const collectionKeyPrefix = `/api/${config.owner}/${config.repo}/${encodeURIComponent(config.branch)}/collections/${encodeURIComponent(name)}?`;
-      void mutate((key) => typeof key === "string" && key.startsWith(collectionKeyPrefix));
-    }
-    if (entryApiUrl) {
-      void mutate(entryApiUrl, undefined, { revalidate: false });
-    }
-    setPath(newPath);
-    router.replace(`/${config.owner}/${config.repo}/${encodeURIComponent(config.branch)}/collection/${encodeURIComponent(name)}/edit/${encodeURIComponent(newPath)}`);
-  }, [config.branch, config.owner, config.repo, entryApiUrl, mutate, name, router, schemaType]);
+  const handleRename = useCallback(
+    (oldPath: string, newPath: string) => {
+      if (schemaType === "collection") {
+        const collectionKeyPrefix = `/api/${config.owner}/${config.repo}/${encodeURIComponent(config.branch)}/collections/${encodeURIComponent(name)}?`;
+        void mutate((key) => typeof key === "string" && key.startsWith(collectionKeyPrefix));
+      }
+      if (entryApiUrl) {
+        void mutate(entryApiUrl, undefined, { revalidate: false });
+      }
+      setPath(newPath);
+      router.replace(
+        `/${config.owner}/${config.repo}/${encodeURIComponent(config.branch)}/collection/${encodeURIComponent(name)}/edit/${encodeURIComponent(newPath)}`,
+      );
+    },
+    [config.branch, config.owner, config.repo, entryApiUrl, mutate, name, router, schemaType],
+  );
 
   const breadcrumbNode = useMemo(() => {
     if (!schema) {
       return <BreadcrumbPage className="font-semibold truncate">{displayTitle}</BreadcrumbPage>;
     }
 
-    const groupTrail: GroupTrailItem[] = Array.isArray(schema.groupTrail)
-      ? schema.groupTrail
-      : [];
+    const groupTrail: GroupTrailItem[] = Array.isArray(schema.groupTrail) ? schema.groupTrail : [];
 
     if (schemaType !== "collection") {
       return (
@@ -514,7 +528,9 @@ export function Entry({
           ))}
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
-              <Link href={`/${config.owner}/${config.repo}/${encodeURIComponent(config.branch)}/collection/${encodeURIComponent(name)}`}>
+              <Link
+                href={`/${config.owner}/${config.repo}/${encodeURIComponent(config.branch)}/collection/${encodeURIComponent(name)}`}
+              >
                 {rootLabel}
               </Link>
             </BreadcrumbLink>
@@ -537,7 +553,8 @@ export function Entry({
       path: joinPathSegments([rootPath, segments.slice(0, index + 1).join("/")]),
     }));
 
-    const immediateParent = parentEntries.length > 0 ? parentEntries[parentEntries.length - 1] : null;
+    const immediateParent =
+      parentEntries.length > 0 ? parentEntries[parentEntries.length - 1] : null;
     const middleEntries = parentEntries.length > 1 ? parentEntries.slice(0, -1) : [];
 
     return (
@@ -552,7 +569,9 @@ export function Entry({
         ))}
         <BreadcrumbItem>
           <BreadcrumbLink asChild>
-            <Link href={`/${config.owner}/${config.repo}/${encodeURIComponent(config.branch)}/collection/${encodeURIComponent(name)}`}>
+            <Link
+              href={`/${config.owner}/${config.repo}/${encodeURIComponent(config.branch)}/collection/${encodeURIComponent(name)}`}
+            >
               {rootLabel}
             </Link>
           </BreadcrumbLink>
@@ -570,7 +589,9 @@ export function Entry({
                 <DropdownMenuContent align="start">
                   {middleEntries.map((entry) => (
                     <DropdownMenuItem key={entry.path} asChild>
-                      <Link href={`/${config.owner}/${config.repo}/${encodeURIComponent(config.branch)}/collection/${encodeURIComponent(name)}?path=${encodeURIComponent(entry.path)}`}>
+                      <Link
+                        href={`/${config.owner}/${config.repo}/${encodeURIComponent(config.branch)}/collection/${encodeURIComponent(name)}?path=${encodeURIComponent(entry.path)}`}
+                      >
                         {entry.name}
                       </Link>
                     </DropdownMenuItem>
@@ -586,7 +607,9 @@ export function Entry({
           <>
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
-                <Link href={`/${config.owner}/${config.repo}/${encodeURIComponent(config.branch)}/collection/${encodeURIComponent(name)}?path=${encodeURIComponent(immediateParent.path)}`}>
+                <Link
+                  href={`/${config.owner}/${config.repo}/${encodeURIComponent(config.branch)}/collection/${encodeURIComponent(name)}?path=${encodeURIComponent(immediateParent.path)}`}
+                >
                   {immediateParent.name}
                 </Link>
               </BreadcrumbLink>
@@ -654,60 +677,57 @@ export function Entry({
     return null;
   }, [config.branch, config.owner, config.repo, entry, path, schema, schemaType, sha]);
 
-  const headerNode = useMemo(() => (
-    <div className="flex min-w-0 items-center gap-2">
-      <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden">
-        <Breadcrumb className="min-w-0 overflow-hidden">
-          <BreadcrumbList className="min-w-0 flex-nowrap font-semibold text-lg">
-            {breadcrumbNode}
-          </BreadcrumbList>
-        </Breadcrumb>
-        {headerMeta}
-      </div>
-      {showHeaderActions && (
-        <div className="flex shrink-0 items-center gap-x-2">
-          {headerActionsNode}
-          {path && (
-            historyData && historyData.length > 0 && !isLoading
-              ? (
+  const headerNode = useMemo(
+    () => (
+      <div className="flex min-w-0 items-center gap-2">
+        <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden">
+          <Breadcrumb className="min-w-0 overflow-hidden">
+            <BreadcrumbList className="min-w-0 flex-nowrap font-semibold text-lg">
+              {breadcrumbNode}
+            </BreadcrumbList>
+          </Breadcrumb>
+          {headerMeta}
+        </div>
+        {showHeaderActions && (
+          <div className="flex shrink-0 items-center gap-x-2">
+            {headerActionsNode}
+            {path &&
+              (historyData && historyData.length > 0 && !isLoading ? (
                 <EntryHistoryDropdown
                   history={historyData}
                   path={path}
                   triggerVariant="outline"
                   triggerSize="icon"
                 />
-              )
-              : <Button variant="outline" size="icon" className="shrink-0" disabled><History /></Button>
-          )}
-          <Button
-            type="submit"
-            form="entry-form"
-            disabled={
-              isBusy ||
-              (showFilenameField && filenameValue.trim().length === 0) ||
-              (
-                Boolean(path) &&
-                !(
-                  isFormDirty
-                  || hasRegisteredChanges
-                  || (
-                    showFilenameField
-                    && filenameFieldMode === "enabled"
-                    && isFilenameUnlocked
-                    && filenameChanged
-                  )
-                )
-              )
-            }
-            aria-label="Save"
-          >
-            <Save className="size-4 sm:hidden" />
-            <span className="hidden sm:inline">Save</span>
-          </Button>
-          {path && (
-            <ButtonGroup>
-              {sha
-                ? (
+              ) : (
+                <Button variant="outline" size="icon" className="shrink-0" disabled>
+                  <History />
+                </Button>
+              ))}
+            <Button
+              type="submit"
+              form="entry-form"
+              disabled={
+                isBusy ||
+                (showFilenameField && filenameValue.trim().length === 0) ||
+                (Boolean(path) &&
+                  !(
+                    isFormDirty ||
+                    hasRegisteredChanges ||
+                    (showFilenameField &&
+                      filenameFieldMode === "enabled" &&
+                      isFilenameUnlocked &&
+                      filenameChanged)
+                  ))
+              }
+              aria-label="Save"
+            >
+              <Save className="size-4 sm:hidden" />
+              <span className="hidden sm:inline">Save</span>
+            </Button>
+            {path && (
+              <ButtonGroup>
+                {sha ? (
                   <FileOptions
                     path={path}
                     sha={sha}
@@ -722,22 +742,49 @@ export function Entry({
                       <EllipsisVertical />
                     </Button>
                   </FileOptions>
-                )
-                : <Button variant="outline" size="icon" disabled><EllipsisVertical /></Button>
-              }
-            </ButtonGroup>
-          )}
-        </div>
-      )}
-    </div>
-  ), [breadcrumbNode, canDelete, canRename, filenameChanged, filenameFieldMode, filenameValue, handleDelete, handleRename, hasRegisteredChanges, headerActionsNode, headerMeta, historyData, isBusy, isFilenameUnlocked, isFormDirty, isLoading, name, path, schemaType, sha, showFilenameField, showHeaderActions]);
+                ) : (
+                  <Button variant="outline" size="icon" disabled>
+                    <EllipsisVertical />
+                  </Button>
+                )}
+              </ButtonGroup>
+            )}
+          </div>
+        )}
+      </div>
+    ),
+    [
+      breadcrumbNode,
+      canDelete,
+      canRename,
+      filenameChanged,
+      filenameFieldMode,
+      filenameValue,
+      handleDelete,
+      handleRename,
+      hasRegisteredChanges,
+      headerActionsNode,
+      headerMeta,
+      historyData,
+      isBusy,
+      isFilenameUnlocked,
+      isFormDirty,
+      isLoading,
+      name,
+      path,
+      schemaType,
+      sha,
+      showFilenameField,
+      showHeaderActions,
+    ],
+  );
 
   useRepoHeader({ header: headerNode });
 
-  const loadingSkeleton = useMemo(() => (
-    <div className="w-full max-w-screen-md mx-auto grid items-start gap-6">
-      {path !== ".pages.yml"
-        ? 
+  const loadingSkeleton = useMemo(
+    () => (
+      <div className="w-full max-w-screen-md mx-auto grid items-start gap-6">
+        {path !== ".pages.yml" ? (
           <>
             <div className="space-y-2">
               <Skeleton className="w-24 h-5 rounded" />
@@ -760,12 +807,14 @@ export function Entry({
               <Skeleton className="w-full h-60 rounded-md" />
             </div>
           </>
-        : <Skeleton className="w-full h-96 rounded-md" />
-      }
-    </div>
-  ), [path]);
+        ) : (
+          <Skeleton className="w-full h-96 rounded-md" />
+        )}
+      </div>
+    ),
+    [path],
+  );
 
-  
   if (error) {
     // TODO: should we use a custom error class with code?
     // TODO: errors show no header (unlike collection and media). Consider standardizing templates.
@@ -775,10 +824,12 @@ export function Entry({
         <div className="absolute inset-0 p-4 md:p-6 flex items-center justify-center">
           <Empty className="max-w-[420px] flex-none">
             <EmptyHeader>
-              <EmptyTitle>{isSettingsPage ? "Configuration not found" : "File not found"}</EmptyTitle>
+              <EmptyTitle>
+                {isSettingsPage ? "Configuration not found" : "File not found"}
+              </EmptyTitle>
               <EmptyDescription>
                 {isSettingsPage
-                  ? "The configuration file \".pages.yml\" does not exist yet."
+                  ? 'The configuration file ".pages.yml" does not exist yet.'
                   : `The file "${path ?? schema?.path ?? "unknown"}" does not exist yet.`}
               </EmptyDescription>
             </EmptyHeader>
@@ -786,7 +837,9 @@ export function Entry({
               {isSettingsPage ? (
                 <EmptyCreate type="settings">Create configuration file</EmptyCreate>
               ) : canCreate ? (
-                <EmptyCreate type="content" name={schema?.name ?? name}>Create file</EmptyCreate>
+                <EmptyCreate type="content" name={schema?.name ?? name}>
+                  Create file
+                </EmptyCreate>
               ) : null}
             </EmptyContent>
           </Empty>
@@ -820,9 +873,7 @@ export function Entry({
         <Empty className="max-w-[420px] flex-none">
           <EmptyHeader>
             <EmptyTitle>Creating entries is disabled</EmptyTitle>
-            <EmptyDescription>
-              New entries are not allowed for this collection.
-            </EmptyDescription>
+            <EmptyDescription>New entries are not allowed for this collection.</EmptyDescription>
           </EmptyHeader>
           <EmptyContent>
             <Link
@@ -836,54 +887,56 @@ export function Entry({
       </div>
     );
   }
-  
-  return (
-    isLoading
-      ? loadingSkeleton
-      : <EntryForm
-        fields={entryFields}
-        contentObject={entryContentObject}
-        onSubmit={onSubmit}
-        filePath={
-          showFilenameField
-            ? <InputGroup data-disabled={path ? !isFilenameUnlocked : false}>
-                <InputGroupInput
-                  value={filenameValue}
-                  onChange={(event) => setFilenameValue(event.target.value)}
-                  placeholder="Filename"
-                  disabled={path ? !isFilenameUnlocked : false}
-                  aria-label="Filename"
-                />
-                {path && filenameFieldMode === "enabled" && canRename && (
-                  <InputGroupAddon align="inline-end">
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <InputGroupButton
-                          type="button"
-                          variant="ghost"
-                          size="icon-xs"
-                          onClick={() => setIsFilenameUnlocked((prev) => !prev)}
-                          aria-label={isFilenameUnlocked ? "Lock filename" : "Unlock filename"}
-                        >
-                          {isFilenameUnlocked
-                            ? <LockOpen className="size-3.5" />
-                            : <Lock className="size-3.5" />}
-                        </InputGroupButton>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        {isFilenameUnlocked ? "Lock filename" : "Unlock to edit"}
-                      </TooltipContent>
-                    </Tooltip>
-                  </InputGroupAddon>
-                )}
-              </InputGroup>
-            : undefined
-        }
-        onDirtyChange={setIsFormDirty}
-        onChangeRegistered={() => {
-          changeVersionRef.current += 1;
-          setHasRegisteredChanges(true);
-        }}
-      />
+
+  return isLoading ? (
+    loadingSkeleton
+  ) : (
+    <EntryForm
+      fields={entryFields}
+      contentObject={entryContentObject}
+      onSubmit={onSubmit}
+      filePath={
+        showFilenameField ? (
+          <InputGroup data-disabled={path ? !isFilenameUnlocked : false}>
+            <InputGroupInput
+              value={filenameValue}
+              onChange={(event) => setFilenameValue(event.target.value)}
+              placeholder="Filename"
+              disabled={path ? !isFilenameUnlocked : false}
+              aria-label="Filename"
+            />
+            {path && filenameFieldMode === "enabled" && canRename && (
+              <InputGroupAddon align="inline-end">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <InputGroupButton
+                      type="button"
+                      variant="ghost"
+                      size="icon-xs"
+                      onClick={() => setIsFilenameUnlocked((prev) => !prev)}
+                      aria-label={isFilenameUnlocked ? "Lock filename" : "Unlock filename"}
+                    >
+                      {isFilenameUnlocked ? (
+                        <LockOpen className="size-3.5" />
+                      ) : (
+                        <Lock className="size-3.5" />
+                      )}
+                    </InputGroupButton>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {isFilenameUnlocked ? "Lock filename" : "Unlock to edit"}
+                  </TooltipContent>
+                </Tooltip>
+              </InputGroupAddon>
+            )}
+          </InputGroup>
+        ) : undefined
+      }
+      onDirtyChange={setIsFormDirty}
+      onChangeRegistered={() => {
+        changeVersionRef.current += 1;
+        setHasRegisteredChanges(true);
+      }}
+    />
   );
-};
+}

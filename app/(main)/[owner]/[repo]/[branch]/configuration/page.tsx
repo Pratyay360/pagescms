@@ -2,25 +2,13 @@
 
 import Link from "next/link";
 import { Entry } from "@/components/entry/entry";
-import {
-  DocumentTitle,
-  formatRepoBranchTitle,
-} from "@/components/document-title";
+import { DocumentTitle, formatRepoBranchTitle } from "@/components/document-title";
 import { useConfig } from "@/contexts/config-context";
 import { useUser } from "@/contexts/user-context";
 import { hasGithubIdentity } from "@/lib/authz-shared";
 import { Button } from "@/components/ui/button";
-import {
-  Empty,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyTitle,
-} from "@/components/ui/empty";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { BookText } from "lucide-react";
 
 export default function Page() {
@@ -48,12 +36,7 @@ export default function Page() {
     <>
       {config && (
         <DocumentTitle
-          title={formatRepoBranchTitle(
-            "Configuration",
-            config.owner,
-            config.repo,
-            config.branch,
-          )}
+          title={formatRepoBranchTitle("Configuration", config.owner, config.repo, config.branch)}
         />
       )}
       <Entry
