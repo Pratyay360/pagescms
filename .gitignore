@@ -40,4 +40,5 @@ local.db
 # Added by ggshield
 .cache_ggshield
 
-.env.local
+.env.*
+!next*
