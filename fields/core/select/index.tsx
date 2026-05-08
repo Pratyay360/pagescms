@@ -11,14 +11,12 @@ const schema = (field: Field) => {
   const min = typeof field.options?.min === "number" ? field.options.min : undefined;
   const max = typeof field.options?.max === "number" ? field.options.max : undefined;
 
-  const optionSchema = z
-    .string()
-    .refine((value) => normalizedValues.includes(value), {
-      message:
-        normalizedValues.length === 0
-          ? "This select field requires options.values"
-          : "Invalid option",
-    });
+  const optionSchema = z.string().refine((value) => normalizedValues.includes(value), {
+    message:
+      normalizedValues.length === 0
+        ? "This select field requires options.values"
+        : "Invalid option",
+  });
 
   if (field.options?.multiple) {
     let zodSchema = z.array(optionSchema);
