@@ -13,7 +13,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-import { ArrowUpRight, EllipsisVertical, Github, Loader, Mail } from "lucide-react";
+import { ArrowUpRight, EllipsisVertical, GitHub, Loader, Mail } from "lucide-react";
 
 type IdentitiesProps = {
   email: string;
@@ -84,7 +84,7 @@ export function Identities({
         <div
           className={cn("flex items-center gap-x-2", !githubConnected && "text-muted-foreground")}
         >
-          <Github className="h-4 w-4" />
+          <GitHub className="h-4 w-4" />
           <span className="font-medium">GitHub</span>
         </div>
         {githubConnected && (
