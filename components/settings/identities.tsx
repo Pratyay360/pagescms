@@ -16,7 +16,7 @@ import { cn } from "../../lib/utils.ts";
 import {
   ArrowUpRight,
   EllipsisVertical,
-  GitHub,
+  Github,
   Loader,
   Mail,
 } from "lucide-react";
@@ -97,7 +97,7 @@ export function Identities({
             !githubConnected && "text-muted-foreground",
           )}
         >
-          <GitHub className="h-4 w-4" />
+          <Github className="h-4 w-4" />
           <span className="font-medium">GitHub</span>
         </div>
         {githubConnected && (
