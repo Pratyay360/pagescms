@@ -1,10 +1,13 @@
 "use client";
 
 import { use, useMemo } from "react";
-import { DocumentTitle, formatRepoBranchTitle } from "@/components/document-title";
-import { useConfig } from "@/contexts/config-context";
-import { getSchemaByName } from "@/lib/schema";
-import { Entry } from "@/components/entry/entry";
+import {
+  DocumentTitle,
+  formatRepoBranchTitle,
+} from "../../../../../../../../../components/document-title.tsx";
+import { useConfig } from "../../../../../../../../../contexts/config-context.tsx";
+import { getSchemaByName } from "../../../../../../../../../lib/schema.ts";
+import { Entry } from "../../../../../../../../../components/entry/entry.tsx";
 
 export default function Page({
   params,
@@ -22,7 +25,10 @@ export default function Page({
   if (!config) throw new Error(`Configuration not found.`);
 
   const schemaName = decodeURIComponent(resolvedParams.name);
-  const schema = useMemo(() => getSchemaByName(config.object, schemaName), [config, schemaName]);
+  const schema = useMemo(() => getSchemaByName(config.object, schemaName), [
+    config,
+    schemaName,
+  ]);
   if (!schema) throw new Error(`Schema not found for ${schemaName}.`);
   const decodedPath = decodeURIComponent(resolvedParams.path);
   const filename = decodedPath.split("/").pop() || decodedPath;

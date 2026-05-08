@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import process from "node:process";
 
 export const GET = async () => {
   const appName = process.env.GITHUB_APP_NAME?.trim();
@@ -10,5 +11,7 @@ export const GET = async () => {
     );
   }
 
-  return NextResponse.redirect(`https://github.com/apps/${appName}/installations/new`);
+  return NextResponse.redirect(
+    `https://github.com/apps/${appName}/installations/new`,
+  );
 };

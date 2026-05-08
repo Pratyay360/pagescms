@@ -1,12 +1,12 @@
 "use client";
 
-import { useMemo, Fragment, useState } from "react";
-import { FileRename } from "@/components/file/file-rename";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Fragment, useMemo, useState } from "react";
+import { FileRename } from "./file-rename.tsx";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip.tsx";
 import { Pencil } from "lucide-react";
-import { Ellipsis, ChevronRight, Folder } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+import { ChevronRight, Ellipsis, Folder } from "lucide-react";
+import { cn } from "../../lib/utils.ts";
+import { Button } from "../ui/button.tsx";
 export function FilePath({
   path,
   sha,
@@ -34,15 +34,28 @@ export function FilePath({
               <ChevronRight className="h-4 w-4 shrink-0" />
             </>
           )}
-          {pathSegments.slice(pathSegments.length > 3 ? -2 : 0).map((segment, index, array) => (
+          {pathSegments.slice(pathSegments.length > 3 ? -2 : 0).map((
+            segment,
+            index,
+            array,
+          ) => (
             <Fragment key={index}>
               <div className="flex items-center gap-x-1.5 truncate">
-                {index !== array.length - 1 && <Folder className="h-4 w-4 shrink-0" />}
-                <span className={cn("truncate", index === array.length - 1 && "text-foreground")}>
+                {index !== array.length - 1 && (
+                  <Folder className="h-4 w-4 shrink-0" />
+                )}
+                <span
+                  className={cn(
+                    "truncate",
+                    index === array.length - 1 && "text-foreground",
+                  )}
+                >
                   {segment}
                 </span>
               </div>
-              {index !== array.length - 1 && <ChevronRight className="h-4 w-4 shrink-0" />}
+              {index !== array.length - 1 && (
+                <ChevronRight className="h-4 w-4 shrink-0" />
+              )}
             </Fragment>
           ))}
         </div>

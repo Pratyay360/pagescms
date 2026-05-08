@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { Field } from "@/types/field";
-import { EditComponent } from "./edit-component";
-import { ViewComponent } from "./view-component";
+import { Field } from "../../../types/field.ts";
+import { EditComponent } from "./edit-component.tsx";
+import { ViewComponent } from "./view-component.tsx";
 
 const schema = (field: Field) => {
   let zodSchema = z.coerce.boolean();
@@ -12,4 +12,4 @@ const schema = (field: Field) => {
 const defaultValue = false;
 const label = "Boolean";
 
-export { label, schema, defaultValue, EditComponent, ViewComponent };
+export { defaultValue, EditComponent, label, schema, ViewComponent };

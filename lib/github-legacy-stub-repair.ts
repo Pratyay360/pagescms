@@ -1,10 +1,16 @@
 import { and, eq, like, ne } from "drizzle-orm";
-import { db } from "@/db";
-import { accountTable, collaboratorTable, sessionTable, userTable } from "@/db/schema";
-import { createOctokitInstance } from "@/lib/utils/octokit";
+import { db } from "../db/index.ts";
+import {
+  accountTable,
+  collaboratorTable,
+  sessionTable,
+  userTable,
+} from "../db/schema.ts";
+import { createOctokitInstance } from "./utils/octokit.ts";
 
 const isLegacyEmail = (email: string | null | undefined) => {
-  return typeof email === "string" && email.toLowerCase().endsWith("@local.invalid");
+  return typeof email === "string" &&
+    email.toLowerCase().endsWith("@local.invalid");
 };
 
 const getVerifiedGithubProfile = async (accessToken: string) => {
@@ -68,17 +74,27 @@ const mergeUsers = async (
       }
 
       const patch: Partial<typeof existing> = {};
-      if (!existing.accessToken && fromAccount.accessToken)
+      if (!existing.accessToken && fromAccount.accessToken) {
         patch.accessToken = fromAccount.accessToken;
-      if (!existing.refreshToken && fromAccount.refreshToken)
+      }
+      if (!existing.refreshToken && fromAccount.refreshToken) {
         patch.refreshToken = fromAccount.refreshToken;
-      if (!existing.idToken && fromAccount.idToken) patch.idToken = fromAccount.idToken;
+      }
+      if (!existing.idToken && fromAccount.idToken) {
+        patch.idToken = fromAccount.idToken;
+      }
       if (!existing.scope && fromAccount.scope) patch.scope = fromAccount.scope;
-      if (!existing.password && fromAccount.password) patch.password = fromAccount.password;
-      if (!existing.accessTokenExpiresAt && fromAccount.accessTokenExpiresAt)
+      if (!existing.password && fromAccount.password) {
+        patch.password = fromAccount.password;
+      }
+      if (!existing.accessTokenExpiresAt && fromAccount.accessTokenExpiresAt) {
         patch.accessTokenExpiresAt = fromAccount.accessTokenExpiresAt;
-      if (!existing.refreshTokenExpiresAt && fromAccount.refreshTokenExpiresAt)
+      }
+      if (
+        !existing.refreshTokenExpiresAt && fromAccount.refreshTokenExpiresAt
+      ) {
         patch.refreshTokenExpiresAt = fromAccount.refreshTokenExpiresAt;
+      }
 
       if (Object.keys(patch).length > 0) {
         await tx
@@ -128,21 +144,29 @@ const repairLegacyGithubStubOnGithubSignIn = async (userId: string) => {
   if (!signedInUser) return;
 
   const signedInGithubAccount = await db.query.accountTable.findFirst({
-    where: and(eq(accountTable.userId, userId), eq(accountTable.providerId, "github")),
+    where: and(
+      eq(accountTable.userId, userId),
+      eq(accountTable.providerId, "github"),
+    ),
   });
   if (!signedInGithubAccount) return;
 
   if (isLegacyEmail(signedInUser.email)) {
     if (!signedInGithubAccount.accessToken) return;
 
-    const githubProfile = await getVerifiedGithubProfile(signedInGithubAccount.accessToken);
+    const githubProfile = await getVerifiedGithubProfile(
+      signedInGithubAccount.accessToken,
+    );
     if (!githubProfile) return;
     if (signedInGithubAccount.accountId !== githubProfile.githubId) {
-      console.warn("[auth] legacy github stub repair skipped due to mismatched github profile", {
-        signedInUserId: userId,
-        signedInGithubAccountId: signedInGithubAccount.accountId,
-        authenticatedGithubAccountId: githubProfile.githubId,
-      });
+      console.warn(
+        "[auth] legacy github stub repair skipped due to mismatched github profile",
+        {
+          signedInUserId: userId,
+          signedInGithubAccountId: signedInGithubAccount.accountId,
+          authenticatedGithubAccountId: githubProfile.githubId,
+        },
+      );
       return;
     }
 
@@ -153,7 +177,8 @@ const repairLegacyGithubStubOnGithubSignIn = async (userId: string) => {
     if (existingUser) {
       await mergeUsers(userId, existingUser.id, {
         preferredEmail: existingUser.email,
-        emailVerified: existingUser.emailVerified || githubProfile.emailVerified,
+        emailVerified: existingUser.emailVerified ||
+          githubProfile.emailVerified,
       });
       return;
     }
@@ -182,17 +207,26 @@ const repairLegacyGithubStubOnGithubSignIn = async (userId: string) => {
   if (!legacyStub) return;
 
   const stubGithubAccount = await db.query.accountTable.findFirst({
-    where: and(eq(accountTable.userId, legacyStub.id), eq(accountTable.providerId, "github")),
+    where: and(
+      eq(accountTable.userId, legacyStub.id),
+      eq(accountTable.providerId, "github"),
+    ),
   });
 
-  if (stubGithubAccount && stubGithubAccount.accountId !== signedInGithubAccount.accountId) {
-    console.warn("[auth] legacy github stub repair skipped due to ambiguous github account", {
-      signedInUserId: userId,
-      legacyStubUserId: legacyStub.id,
-      githubUsername: signedInUser.githubUsername,
-      signedInGithubAccountId: signedInGithubAccount.accountId,
-      legacyStubGithubAccountId: stubGithubAccount.accountId,
-    });
+  if (
+    stubGithubAccount &&
+    stubGithubAccount.accountId !== signedInGithubAccount.accountId
+  ) {
+    console.warn(
+      "[auth] legacy github stub repair skipped due to ambiguous github account",
+      {
+        signedInUserId: userId,
+        legacyStubUserId: legacyStub.id,
+        githubUsername: signedInUser.githubUsername,
+        signedInGithubAccountId: signedInGithubAccount.accountId,
+        legacyStubGithubAccountId: stubGithubAccount.accountId,
+      },
+    );
     return;
   }
 
@@ -202,7 +236,10 @@ const repairLegacyGithubStubOnGithubSignIn = async (userId: string) => {
   });
 };
 
-const repairLegacyGithubStubOnLogin = async (_sessionId: string, userId: string) => {
+const repairLegacyGithubStubOnLogin = async (
+  _sessionId: string,
+  userId: string,
+) => {
   try {
     await repairLegacyGithubStubOnGithubSignIn(userId);
   } catch (error) {

@@ -4,7 +4,7 @@
  */
 
 import { Octokit } from "@octokit/rest";
-import { createHttpError } from "@/lib/api-error";
+import { createHttpError } from "../api-error.ts";
 
 export const createOctokitInstance = (token: string, options?: any) => {
   if (!token) throw new Error("Auth token is required to initialize Octokit");

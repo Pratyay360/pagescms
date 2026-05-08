@@ -2,14 +2,14 @@
  * Get the list of GitHub accounts the user (incl. collaborators) has access to.
  */
 
-import { db } from "@/db";
-import { collaboratorTable } from "@/db/schema";
-import { getInstallations } from "@/lib/github-app";
-import { User } from "@/types/user";
-import { getGithubAccount } from "@/lib/github-account";
-import { requireGithubUserToken } from "@/lib/authz-server";
-import { hasGithubIdentity } from "@/lib/authz-shared";
-import { collaboratorMatchesUser } from "@/lib/collaborator-access";
+import { db } from "../db/index.ts";
+import { collaboratorTable } from "../db/schema.ts";
+import { getInstallations } from "./github-app.ts";
+import { User } from "../types/user.ts";
+import { getGithubAccount } from "./github-account.ts";
+import { requireGithubUserToken } from "./authz-server.ts";
+import { hasGithubIdentity } from "./authz-shared.ts";
+import { collaboratorMatchesUser } from "./collaborator-access.ts";
 
 const getAccounts = async (user: User) => {
   let accounts: Array<{

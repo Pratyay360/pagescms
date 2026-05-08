@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { Settings } from "lucide-react";
-import { useUser } from "@/contexts/user-context";
-import { Button } from "@/components/ui/button";
+import { useUser } from "../contexts/user-context.tsx";
+import { Button } from "./ui/button.tsx";
 
 export function AdminButton() {
   const { user } = useUser();

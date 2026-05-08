@@ -1,18 +1,18 @@
 "use client";
 
 import { formatDistanceToNow } from "date-fns";
-import { getInitialsFromName } from "@/lib/utils/avatar";
-import { useConfig } from "@/contexts/config-context";
-import type { EntryHistoryItem } from "@/types/api";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
+import { getInitialsFromName } from "../../lib/utils/avatar.ts";
+import { useConfig } from "../../contexts/config-context.tsx";
+import type { EntryHistoryItem } from "../../types/api.ts";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar.tsx";
+import { Button } from "../ui/button.tsx";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "../ui/dropdown-menu.tsx";
 import { ArrowUpRight, History } from "lucide-react";
 
 function HistoryItemContent({
@@ -22,22 +22,35 @@ function HistoryItemContent({
   item: EntryHistoryItem;
   compact?: boolean;
 }) {
-  const authorName = item.commit.author?.name || item.author?.login || "Unknown author";
-  const authorDate = item.commit.author?.date ? new Date(item.commit.author.date) : null;
+  const authorName = item.commit.author?.name || item.author?.login ||
+    "Unknown author";
+  const authorDate = item.commit.author?.date
+    ? new Date(item.commit.author.date)
+    : null;
 
   return (
     <>
       <Avatar className={compact ? "size-7" : "h-8 w-8"}>
         <AvatarImage
-          src={item.author?.login ? `https://github.com/${item.author.login}.png` : undefined}
+          src={item.author?.login
+            ? `https://github.com/${item.author.login}.png`
+            : undefined}
           alt={`${authorName}'s avatar`}
         />
         <AvatarFallback>{getInitialsFromName(authorName)}</AvatarFallback>
       </Avatar>
-      <div className={compact ? "text-left overflow-hidden" : "text-left overflow-hidden ml-3"}>
-        <div className={compact ? "truncate" : "text-sm font-medium truncate"}>{authorName}</div>
+      <div
+        className={compact
+          ? "text-left overflow-hidden"
+          : "text-left overflow-hidden ml-3"}
+      >
+        <div className={compact ? "truncate" : "text-sm font-medium truncate"}>
+          {authorName}
+        </div>
         <div className="text-xs text-muted-foreground truncate">
-          {authorDate ? `${formatDistanceToNow(authorDate)} ago` : "Unknown date"}
+          {authorDate
+            ? `${formatDistanceToNow(authorDate)} ago`
+            : "Unknown date"}
         </div>
       </div>
     </>
@@ -70,7 +83,9 @@ export function EntryHistoryBlock({
       ))}
       {history.length > 3 && (
         <a
-          href={`https://github.com/${config?.owner}/${config?.repo}/commits/${encodeURIComponent(config!.branch)}/${path}`}
+          href={`https://github.com/${config?.owner}/${config?.repo}/commits/${
+            encodeURIComponent(config!.branch)
+          }/${path}`}
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center rounded-lg px-3 py-2 transition-all hover:bg-accent ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
@@ -121,7 +136,9 @@ export function EntryHistoryDropdown({
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
           <a
-            href={`https://github.com/${config?.owner}/${config?.repo}/commits/${encodeURIComponent(config!.branch)}/${path}`}
+            href={`https://github.com/${config?.owner}/${config?.repo}/commits/${
+              encodeURIComponent(config!.branch)
+            }/${path}`}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center w-full"

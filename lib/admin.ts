@@ -1,9 +1,10 @@
 import "server-only";
 
 import { headers } from "next/headers";
-import { auth } from "@/lib/auth";
-import { createHttpError } from "@/lib/api-error";
-import type { User } from "@/types/user";
+import { auth } from "./auth.ts";
+import { createHttpError } from "./api-error.ts";
+import type { User } from "../types/user.ts";
+import process from "node:process";
 
 const getAdminEmails = () => {
   return new Set(
@@ -40,4 +41,9 @@ const requireAdminSession = async () => {
   return { session, user };
 };
 
-export { getAdminEmails, hasAdminAccess, isBootstrapAdminEmail, requireAdminSession };
+export {
+  getAdminEmails,
+  hasAdminAccess,
+  isBootstrapAdminEmail,
+  requireAdminSession,
+};

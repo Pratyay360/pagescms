@@ -1,13 +1,13 @@
 import { eq } from "drizzle-orm";
-import { db } from "@/db";
-import { sessionTable } from "@/db/schema";
+import { db } from "../db/index.ts";
+import { sessionTable } from "../db/schema.ts";
 
 type AuthSession =
   | {
-      session?: {
-        id?: string | null;
-      } | null;
-    }
+    session?: {
+      id?: string | null;
+    } | null;
+  }
   | null
   | undefined;
 

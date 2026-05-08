@@ -1,17 +1,17 @@
-import { Field } from "@/types/field";
+import { Field } from "../types/field.ts";
 import { z } from "zod";
-import * as booleanField from "@/fields/core/boolean";
-import * as codeField from "@/fields/core/code";
-import * as dateField from "@/fields/core/date";
-import * as fileField from "@/fields/core/file";
-import * as imageField from "@/fields/core/image";
-import * as numberField from "@/fields/core/number";
-import * as referenceField from "@/fields/core/reference";
-import * as richTextField from "@/fields/core/rich-text";
-import * as selectField from "@/fields/core/select";
-import * as stringField from "@/fields/core/string";
-import * as textField from "@/fields/core/text";
-import * as uuidField from "@/fields/core/uuid";
+import * as booleanField from "./core/boolean/index.tsx";
+import * as codeField from "./core/code/index.ts";
+import * as dateField from "./core/date/index.ts";
+import * as fileField from "./core/file/index.tsx";
+import * as imageField from "./core/image/index.tsx";
+import * as numberField from "./core/number/index.tsx";
+import * as referenceField from "./core/reference/index.tsx";
+import * as richTextField from "./core/rich-text/index.tsx";
+import * as selectField from "./core/select/index.tsx";
+import * as stringField from "./core/string/index.tsx";
+import * as textField from "./core/text/index.tsx";
+import * as uuidField from "./core/uuid/index.tsx";
 
 type FieldModule = {
   label?: string;
@@ -25,8 +25,10 @@ type FieldModule = {
 
 const fieldTypes = new Set<string>();
 const labels: Record<string, string> = {};
-const schemas: Record<string, (field: Field, configObject?: Record<string, any>) => z.ZodTypeAny> =
-  {};
+const schemas: Record<
+  string,
+  (field: Field, configObject?: Record<string, any>) => z.ZodTypeAny
+> = {};
 const defaultValues: Record<string, any> = {};
 const readFns: Record<
   string,
@@ -44,11 +46,17 @@ const registerField = (fieldName: string, fieldModule: FieldModule) => {
 
   if (fieldModule.label) labels[fieldName] = fieldModule.label;
   if (fieldModule.schema) schemas[fieldName] = fieldModule.schema;
-  if (fieldModule.defaultValue !== undefined) defaultValues[fieldName] = fieldModule.defaultValue;
+  if (fieldModule.defaultValue !== undefined) {
+    defaultValues[fieldName] = fieldModule.defaultValue;
+  }
   if (fieldModule.read) readFns[fieldName] = fieldModule.read;
   if (fieldModule.write) writeFns[fieldName] = fieldModule.write;
-  if (fieldModule.EditComponent) editComponents[fieldName] = fieldModule.EditComponent;
-  if (fieldModule.ViewComponent) viewComponents[fieldName] = fieldModule.ViewComponent;
+  if (fieldModule.EditComponent) {
+    editComponents[fieldName] = fieldModule.EditComponent;
+  }
+  if (fieldModule.ViewComponent) {
+    viewComponents[fieldName] = fieldModule.ViewComponent;
+  }
 };
 
 registerField("boolean", booleanField);
@@ -65,12 +73,12 @@ registerField("text", textField);
 registerField("uuid", uuidField);
 
 export {
-  labels,
-  schemas,
-  readFns,
-  writeFns,
   defaultValues,
   editComponents,
-  viewComponents,
   fieldTypes,
+  labels,
+  readFns,
+  schemas,
+  viewComponents,
+  writeFns,
 };

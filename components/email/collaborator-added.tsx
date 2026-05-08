@@ -10,10 +10,11 @@ import {
   Link,
   Preview,
   Section,
-  Text,
   Tailwind,
+  Text,
 } from "@react-email/components";
-import { emailTheme } from "@/components/email/theme";
+import { emailTheme } from "./theme.ts";
+import process from "node:process";
 
 export const CollaboratorAddedEmailTemplate = ({
   email,
@@ -31,8 +32,8 @@ export const CollaboratorAddedEmailTemplate = ({
   const baseUrl = process.env.BASE_URL
     ? process.env.BASE_URL
     : process.env.VERCEL_PROJECT_PRODUCTION_URL
-      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-      : "";
+    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    : "";
 
   return (
     <Html>
@@ -62,7 +63,10 @@ export const CollaboratorAddedEmailTemplate = ({
             >
               You were added to &quot;{repoName}&quot;
             </Heading>
-            <Text className="text-[16px] leading-[24px]" style={{ color: emailTheme.foreground }}>
+            <Text
+              className="text-[16px] leading-[24px]"
+              style={{ color: emailTheme.foreground }}
+            >
               <Link
                 href={invitedByUrl}
                 className="underline rounded-md"
@@ -70,8 +74,8 @@ export const CollaboratorAddedEmailTemplate = ({
               >
                 {invitedByName}
               </Link>{" "}
-              added you to the &quot;{repoName}&quot; project on Pages CMS. You already have access,
-              so there is nothing to accept.
+              added you to the &quot;{repoName}&quot; project on Pages CMS. You
+              already have access, so there is nothing to accept.
             </Text>
             <Section className="text-center mt-[24px] mb-[24px]">
               <Button

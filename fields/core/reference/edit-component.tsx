@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Loader } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "../../../lib/utils.ts";
 import {
   Combobox,
   ComboboxChip,
@@ -15,9 +15,9 @@ import {
   ComboboxList,
   ComboboxValue,
   useComboboxAnchor,
-} from "@/components/ui/combobox";
-import { useConfig } from "@/contexts/config-context";
-import { getSchemaByName } from "@/lib/schema";
+} from "../../../components/ui/combobox.tsx";
+import { useConfig } from "../../../contexts/config-context.tsx";
+import { getSchemaByName } from "../../../lib/schema.ts";
 
 type Option = {
   value: string;
@@ -36,17 +36,25 @@ const optionsEqual = (a: Option[], b: Option[]) =>
 
 const normalizeInputValues = (input: any, multiple: boolean): string[] => {
   const normalizeOne = (item: any) =>
-    typeof item === "object" && item !== null ? String(item.value ?? "") : String(item ?? "");
+    typeof item === "object" && item !== null
+      ? String(item.value ?? "")
+      : String(item ?? "");
 
   if (multiple) {
-    return (Array.isArray(input) ? input : []).map(normalizeOne).filter(Boolean);
+    return (Array.isArray(input) ? input : []).map(normalizeOne).filter(
+      Boolean,
+    );
   }
 
   if (input == null || input === "") return [];
   return [normalizeOne(input)].filter(Boolean);
 };
 
-const normalizeSelected = (input: any, options: Option[], multiple: boolean) => {
+const normalizeSelected = (
+  input: any,
+  options: Option[],
+  multiple: boolean,
+) => {
   const normalizeOne = (item: any): Option => {
     if (typeof item === "object" && item !== null) {
       const value = String(item.value ?? "");
@@ -61,7 +69,8 @@ const normalizeSelected = (input: any, options: Option[], multiple: boolean) => 
 
     const value = String(item ?? "");
     return (
-      options.find((option) => option.value === value) ?? { value, label: value, resolved: false }
+      options.find((option) => option.value === value) ??
+        { value, label: value, resolved: false }
     );
   };
 
@@ -79,17 +88,26 @@ const EditComponent = (props: any) => {
   const anchor = useComboboxAnchor();
   const isReadonly = Boolean(field?.readonly);
   const multiple = Boolean(field.options?.multiple);
-  const collectionName =
-    typeof field.options?.collection === "string" ? field.options.collection : null;
-  const collectionPath =
-    config && collectionName ? getSchemaByName(config.object, collectionName)?.path || null : null;
-  const url =
-    config && collectionName
-      ? `/api/${config.owner}/${config.repo}/${encodeURIComponent(config.branch)}/references/${collectionName}`
-      : null;
-  const searchFields = typeof field.options?.search === "string" ? field.options.search : "name";
-  const valueTemplate = typeof field.options?.value === "string" ? field.options.value : "{path}";
-  const labelTemplate = typeof field.options?.label === "string" ? field.options.label : "{name}";
+  const collectionName = typeof field.options?.collection === "string"
+    ? field.options.collection
+    : null;
+  const collectionPath = config && collectionName
+    ? getSchemaByName(config.object, collectionName)?.path || null
+    : null;
+  const url = config && collectionName
+    ? `/api/${config.owner}/${config.repo}/${
+      encodeURIComponent(config.branch)
+    }/references/${collectionName}`
+    : null;
+  const searchFields = typeof field.options?.search === "string"
+    ? field.options.search
+    : "name";
+  const valueTemplate = typeof field.options?.value === "string"
+    ? field.options.value
+    : "{path}";
+  const labelTemplate = typeof field.options?.label === "string"
+    ? field.options.label
+    : "{name}";
 
   const [searchTerm, setSearchTerm] = useState("");
   const [options, setOptions] = useState<Option[]>([]);
@@ -100,7 +118,7 @@ const EditComponent = (props: any) => {
     if (!url || !collectionPath) return;
 
     let cancelled = false;
-    const timeoutId = window.setTimeout(async () => {
+    const timeoutId = globalThis.setTimeout(async () => {
       if (!cancelled) setIsLoading(true);
 
       const searchParams = new URLSearchParams({
@@ -115,7 +133,9 @@ const EditComponent = (props: any) => {
         if (!response.ok) throw new Error("Fetch failed");
 
         const json = await response.json();
-        const contents = Array.isArray(json?.data?.options) ? json.data.options : [];
+        const contents = Array.isArray(json?.data?.options)
+          ? json.data.options
+          : [];
         if (cancelled) return;
 
         const nextOptions = contents.map((item: any) => ({
@@ -123,7 +143,9 @@ const EditComponent = (props: any) => {
           label: String(item.label ?? item.value ?? ""),
           resolved: true,
         }));
-        setOptions((previous) => (optionsEqual(previous, nextOptions) ? previous : nextOptions));
+        setOptions((
+          previous,
+        ) => (optionsEqual(previous, nextOptions) ? previous : nextOptions));
       } catch (error) {
         console.error("Error loading references:", error);
         if (!cancelled) setOptions([]);
@@ -134,16 +156,30 @@ const EditComponent = (props: any) => {
 
     return () => {
       cancelled = true;
-      window.clearTimeout(timeoutId);
+      globalThis.clearTimeout(timeoutId);
     };
-  }, [url, collectionPath, searchTerm, searchFields, valueTemplate, labelTemplate]);
+  }, [
+    url,
+    collectionPath,
+    searchTerm,
+    searchFields,
+    valueTemplate,
+    labelTemplate,
+  ]);
 
-  const selectedValues = useMemo(() => normalizeInputValues(value, multiple), [value, multiple]);
-  const selectedValuesKey = useMemo(() => selectedValues.join("\u0000"), [selectedValues]);
+  const selectedValues = useMemo(() => normalizeInputValues(value, multiple), [
+    value,
+    multiple,
+  ]);
+  const selectedValuesKey = useMemo(() => selectedValues.join("\u0000"), [
+    selectedValues,
+  ]);
 
   useEffect(() => {
     if (!url || !collectionPath) return;
-    const selectedValuesForRequest = selectedValuesKey ? selectedValuesKey.split("\u0000") : [];
+    const selectedValuesForRequest = selectedValuesKey
+      ? selectedValuesKey.split("\u0000")
+      : [];
 
     if (selectedValuesForRequest.length === 0) {
       setSelectedOptions([]);
@@ -166,7 +202,9 @@ const EditComponent = (props: any) => {
         if (!response.ok) throw new Error("Fetch failed");
 
         const json = await response.json();
-        const contents = Array.isArray(json?.data?.options) ? json.data.options : [];
+        const contents = Array.isArray(json?.data?.options)
+          ? json.data.options
+          : [];
         if (cancelled) return;
 
         const nextSelectedOptions = contents.map((item: any) => ({
@@ -175,7 +213,9 @@ const EditComponent = (props: any) => {
           resolved: true,
         }));
         setSelectedOptions((previous) =>
-          optionsEqual(previous, nextSelectedOptions) ? previous : nextSelectedOptions,
+          optionsEqual(previous, nextSelectedOptions)
+            ? previous
+            : nextSelectedOptions
         );
       } catch (error) {
         console.error("Error resolving selected references:", error);
@@ -207,13 +247,19 @@ const EditComponent = (props: any) => {
   );
 
   const singleSelected =
-    !multiple && selectedValue && !Array.isArray(selectedValue) ? selectedValue : null;
-  const placeholder = isReadonly ? undefined : field.options?.placeholder || "Select...";
+    !multiple && selectedValue && !Array.isArray(selectedValue)
+      ? selectedValue
+      : null;
+  const placeholder = isReadonly
+    ? undefined
+    : field.options?.placeholder || "Select...";
 
   const handleValueChange = (nextValue: Option[] | Option | null) => {
     if (isReadonly) return;
     if (multiple) {
-      onChange(Array.isArray(nextValue) ? nextValue.map((option) => option.value) : []);
+      onChange(
+        Array.isArray(nextValue) ? nextValue.map((option) => option.value) : [],
+      );
       return;
     }
 
@@ -234,80 +280,86 @@ const EditComponent = (props: any) => {
       autoHighlight
       filter={null}
     >
-      {multiple ? (
-        <>
-          <ComboboxChips
-            ref={anchor}
-            className={cn(isReadonly && "focus-within:border-input focus-within:ring-0")}
-          >
-            <ComboboxValue>
-              {(values: Option[]) => (
-                <>
-                  {values.map((option) => (
-                    <ComboboxChip
-                      key={option.value}
-                      showRemove={!isReadonly}
-                      className={option.resolved === false ? "animate-pulse" : undefined}
-                    >
-                      {option.label}
-                    </ComboboxChip>
-                  ))}
-                  <ComboboxChipsInput
-                    placeholder={placeholder}
-                    readOnly={isReadonly}
-                    className={cn(isReadonly && "cursor-default")}
-                  />
-                </>
+      {multiple
+        ? (
+          <>
+            <ComboboxChips
+              ref={anchor}
+              className={cn(
+                isReadonly && "focus-within:border-input focus-within:ring-0",
               )}
-            </ComboboxValue>
-          </ComboboxChips>
-          <ComboboxContent anchor={anchor}>
-            {!isLoading && <ComboboxEmpty>No options found.</ComboboxEmpty>}
-            {isLoading && (
-              <div className="flex items-center justify-center gap-2 py-2 text-center text-sm text-muted-foreground">
-                <Loader className="h-4 w-4 animate-spin" />
-                Loading options...
-              </div>
-            )}
-            <ComboboxList>
-              {(option: Option) => (
-                <ComboboxItem key={option.value} value={option}>
-                  {option.label}
-                </ComboboxItem>
+            >
+              <ComboboxValue>
+                {(values: Option[]) => (
+                  <>
+                    {values.map((option) => (
+                      <ComboboxChip
+                        key={option.value}
+                        showRemove={!isReadonly}
+                        className={option.resolved === false
+                          ? "animate-pulse"
+                          : undefined}
+                      >
+                        {option.label}
+                      </ComboboxChip>
+                    ))}
+                    <ComboboxChipsInput
+                      placeholder={placeholder}
+                      readOnly={isReadonly}
+                      className={cn(isReadonly && "cursor-default")}
+                    />
+                  </>
+                )}
+              </ComboboxValue>
+            </ComboboxChips>
+            <ComboboxContent anchor={anchor}>
+              {!isLoading && <ComboboxEmpty>No options found.</ComboboxEmpty>}
+              {isLoading && (
+                <div className="flex items-center justify-center gap-2 py-2 text-center text-sm text-muted-foreground">
+                  <Loader className="h-4 w-4 animate-spin" />
+                  Loading options...
+                </div>
               )}
-            </ComboboxList>
-          </ComboboxContent>
-        </>
-      ) : (
-        <>
-          <ComboboxInput
-            placeholder={placeholder}
-            className={cn(
-              singleSelected?.resolved === false && "animate-pulse",
-              isReadonly &&
-                "has-[[data-slot=input-group-control]:focus-visible]:border-input has-[[data-slot=input-group-control]:focus-visible]:ring-0",
-            )}
-            showTrigger={!isReadonly}
-            readOnly={isReadonly}
-          />
-          <ComboboxContent>
-            {!isLoading && <ComboboxEmpty>No options found.</ComboboxEmpty>}
-            {isLoading && (
-              <div className="flex items-center justify-center gap-2 py-2 text-center text-sm text-muted-foreground">
-                <Loader className="h-4 w-4 animate-spin" />
-                Loading options...
-              </div>
-            )}
-            <ComboboxList>
-              {(option: Option) => (
-                <ComboboxItem key={option.value} value={option}>
-                  {option.label}
-                </ComboboxItem>
+              <ComboboxList>
+                {(option: Option) => (
+                  <ComboboxItem key={option.value} value={option}>
+                    {option.label}
+                  </ComboboxItem>
+                )}
+              </ComboboxList>
+            </ComboboxContent>
+          </>
+        )
+        : (
+          <>
+            <ComboboxInput
+              placeholder={placeholder}
+              className={cn(
+                singleSelected?.resolved === false && "animate-pulse",
+                isReadonly &&
+                  "has-[[data-slot=input-group-control]:focus-visible]:border-input has-[[data-slot=input-group-control]:focus-visible]:ring-0",
               )}
-            </ComboboxList>
-          </ComboboxContent>
-        </>
-      )}
+              showTrigger={!isReadonly}
+              readOnly={isReadonly}
+            />
+            <ComboboxContent>
+              {!isLoading && <ComboboxEmpty>No options found.</ComboboxEmpty>}
+              {isLoading && (
+                <div className="flex items-center justify-center gap-2 py-2 text-center text-sm text-muted-foreground">
+                  <Loader className="h-4 w-4 animate-spin" />
+                  Loading options...
+                </div>
+              )}
+              <ComboboxList>
+                {(option: Option) => (
+                  <ComboboxItem key={option.value} value={option}>
+                    {option.label}
+                  </ComboboxItem>
+                )}
+              </ComboboxList>
+            </ComboboxContent>
+          </>
+        )}
     </Combobox>
   );
 };

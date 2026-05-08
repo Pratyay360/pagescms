@@ -1,11 +1,11 @@
-import { createHttpError } from "@/lib/api-error";
-import { getConfig } from "@/lib/config-store";
-import { getGithubId } from "@/lib/github-account";
-import { checkRepoAccess } from "@/lib/github-cache-permissions";
-import { requireApiUserSession } from "@/lib/session-server";
-import { getToken } from "@/lib/token";
-import type { Config } from "@/types/config";
-import type { User } from "@/types/user";
+import { createHttpError } from "./api-error.ts";
+import { getConfig } from "./config-store.ts";
+import { getGithubId } from "./github-account.ts";
+import { checkRepoAccess } from "./github-cache-permissions.ts";
+import { requireApiUserSession } from "./session-server.ts";
+import { getToken } from "./token.ts";
+import type { Config } from "../types/config.ts";
+import type { User } from "../types/user.ts";
 
 type RepoRef = {
   owner: string;
@@ -19,10 +19,15 @@ type RepoReadContext = {
   config: Config;
 };
 
-const getRepoReadContext = async ({ owner, repo, branch }: RepoRef): Promise<RepoReadContext> => {
+const getRepoReadContext = async (
+  { owner, repo, branch }: RepoRef,
+): Promise<RepoReadContext> => {
   const sessionResult = await requireApiUserSession();
   if ("response" in sessionResult) {
-    throw createHttpError("Not signed in.", sessionResult.response?.status ?? 401);
+    throw createHttpError(
+      "Not signed in.",
+      sessionResult.response?.status ?? 401,
+    );
   }
 
   const user = sessionResult.user as User;
@@ -32,14 +37,20 @@ const getRepoReadContext = async ({ owner, repo, branch }: RepoRef): Promise<Rep
   const githubId = await getGithubId(user.id);
   if (githubId && source === "user") {
     const hasAccess = await checkRepoAccess(token, owner, repo, githubId);
-    if (!hasAccess) throw createHttpError(`No access to repository ${owner}/${repo}.`, 403);
+    if (!hasAccess) {
+      throw createHttpError(`No access to repository ${owner}/${repo}.`, 403);
+    }
   }
 
   const config = await getConfig(owner, repo, branch, {
     getToken: async () => token,
   });
-  if (!config)
-    throw createHttpError(`Configuration not found for ${owner}/${repo}/${branch}.`, 404);
+  if (!config) {
+    throw createHttpError(
+      `Configuration not found for ${owner}/${repo}/${branch}.`,
+      404,
+    );
+  }
 
   return { user, token, config };
 };

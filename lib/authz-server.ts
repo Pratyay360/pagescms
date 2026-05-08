@@ -1,9 +1,9 @@
 import "server-only";
 
-import type { User } from "@/types/user";
-import { assertGithubIdentity } from "@/lib/authz-shared";
-import { getUserToken } from "@/lib/token";
-import { createOctokitInstance } from "@/lib/utils/octokit";
+import type { User } from "../types/user.ts";
+import { assertGithubIdentity } from "./authz-shared.ts";
+import { getUserToken } from "./token.ts";
+import { createOctokitInstance } from "./utils/octokit.ts";
 
 const requireGithubUserToken = async (
   user: Pick<User, "id" | "githubUsername">,
@@ -38,4 +38,4 @@ const requireGithubRepoWriteAccess = async (
   return { token, repoAccess };
 };
 
-export { requireGithubUserToken, requireGithubRepoWriteAccess };
+export { requireGithubRepoWriteAccess, requireGithubUserToken };

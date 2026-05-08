@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { Field } from "@/types/field";
-import { EditComponent } from "./edit-component";
+import { Field } from "../../../types/field.ts";
+import { EditComponent } from "./edit-component.tsx";
 
 const schema = (field: Field, configObject?: Record<string, any>) => {
   let zodSchema = z.string();
@@ -16,20 +16,22 @@ const schema = (field: Field, configObject?: Record<string, any>) => {
       );
     }
   }
-  if (field.options?.minlength)
+  if (field.options?.minlength) {
     zodSchema = zodSchema.min(
       field.options.minlength as number,
       `Minimum length is ${field.options.minlength} characters`,
     );
-  if (field.options?.maxlength)
+  }
+  if (field.options?.maxlength) {
     zodSchema = zodSchema.max(
       field.options.maxlength as number,
       `Maximum length is ${field.options.maxlength} characters`,
     );
+  }
 
   return zodSchema;
 };
 
 const label = "Text";
 
-export { label, schema, EditComponent };
+export { EditComponent, label, schema };

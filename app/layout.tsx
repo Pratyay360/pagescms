@@ -1,9 +1,9 @@
-import { Toaster } from "@/components/ui/sonner";
-import { Providers } from "@/components/providers";
+import { Toaster } from "../components/ui/sonner.tsx";
+import { Providers } from "../components/providers.tsx";
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
-import { getBaseUrl } from "@/lib/base-url";
-import { cn } from "@/lib/utils";
+import { getBaseUrl } from "../lib/base-url.ts";
+import { cn } from "../lib/utils.ts";
 import "./globals.css";
 
 const inter = Inter({

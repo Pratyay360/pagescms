@@ -1,14 +1,21 @@
 import { type NextRequest } from "next/server";
-import { createOctokitInstance } from "@/lib/utils/octokit";
-import { readFns } from "@/fields/registry";
-import { deepMap, getSchemaByName } from "@/lib/schema";
-import { parse } from "@/lib/serialization";
-import { getConfig } from "@/lib/config-store";
-import { getFileExtension, normalizePath } from "@/lib/utils/file";
-import { assertGithubIdentity } from "@/lib/authz-shared";
-import { getToken } from "@/lib/token";
-import { createHttpError, toErrorResponse } from "@/lib/api-error";
-import { requireApiUserSession } from "@/lib/session-server";
+import { createOctokitInstance } from "../../../../../../../lib/utils/octokit.ts";
+import { readFns } from "../../../../../../../fields/registry.ts";
+import { deepMap, getSchemaByName } from "../../../../../../../lib/schema.ts";
+import { parse } from "../../../../../../../lib/serialization.ts";
+import { getConfig } from "../../../../../../../lib/config-store.ts";
+import {
+  getFileExtension,
+  normalizePath,
+} from "../../../../../../../lib/utils/file.ts";
+import { assertGithubIdentity } from "../../../../../../../lib/authz-shared.ts";
+import { getToken } from "../../../../../../../lib/token.ts";
+import {
+  createHttpError,
+  toErrorResponse,
+} from "../../../../../../../lib/api-error.ts";
+import { requireApiUserSession } from "../../../../../../../lib/session-server.ts";
+import { Buffer } from "node:buffer";
 
 /**
  * Fetches and parses individual file contents from GitHub repositories
@@ -22,7 +29,11 @@ import { requireApiUserSession } from "@/lib/session-server";
 
 export async function GET(
   request: NextRequest,
-  context: { params: Promise<{ owner: string; repo: string; branch: string; path: string }> },
+  context: {
+    params: Promise<
+      { owner: string; repo: string; branch: string; path: string }
+    >;
+  },
 ) {
   try {
     const params = await context.params;
@@ -35,7 +46,8 @@ export async function GET(
 
     const searchParams = request.nextUrl.searchParams;
     const name = searchParams.get("name");
-    const metaOnly = searchParams.get("meta") === "true" || searchParams.get("meta") === "1";
+    const metaOnly = searchParams.get("meta") === "true" ||
+      searchParams.get("meta") === "1";
 
     const normalizedPath = normalizePath(params.path);
     if (normalizedPath === ".pages.yml") {
@@ -50,9 +62,14 @@ export async function GET(
     }
 
     if (!name && normalizedPath === ".pages.yml" && metaOnly) {
-      const cachedConfig = await getConfig(params.owner, params.repo, params.branch, {
-        getToken: async () => token,
-      });
+      const cachedConfig = await getConfig(
+        params.owner,
+        params.repo,
+        params.branch,
+        {
+          getToken: async () => token,
+        },
+      );
       return Response.json({
         status: "success",
         data: {
@@ -70,22 +87,29 @@ export async function GET(
       config = await getConfig(params.owner, params.repo, params.branch, {
         getToken: async () => token,
       });
-      if (!config)
+      if (!config) {
         throw createHttpError(
           `Configuration not found for ${params.owner}/${params.repo}/${params.branch}.`,
           404,
         );
+      }
 
       schema = getSchemaByName(config.object, name);
       if (!schema) throw createHttpError(`Schema not found for ${name}.`, 404);
 
-      if (!normalizedPath.startsWith(schema.path))
-        throw createHttpError(`Invalid path "${params.path}" for ${schema.type} "${name}".`, 400);
+      if (!normalizedPath.startsWith(schema.path)) {
+        throw createHttpError(
+          `Invalid path "${params.path}" for ${schema.type} "${name}".`,
+          400,
+        );
+      }
 
       const extension = schema.extension ?? "";
       if (getFileExtension(normalizedPath) !== extension) {
         throw createHttpError(
-          `Invalid extension "${getFileExtension(normalizedPath)}" for ${schema.type} "${name}".`,
+          `Invalid extension "${
+            getFileExtension(normalizedPath)
+          }" for ${schema.type} "${name}".`,
           400,
         );
       }
@@ -116,7 +140,9 @@ export async function GET(
     }
 
     const content = Buffer.from(response.data.content, "base64").toString();
-    const contentObject = name ? parseContent(content, schema, config) : { body: content };
+    const contentObject = name
+      ? parseContent(content, schema, config)
+      : { body: content };
 
     return Response.json({
       status: "success",
@@ -157,7 +183,10 @@ const parseContent = (
   ) {
     // If we are dealing with a serialized format and we have fields defined
     try {
-      contentObject = parse(content, { format: schema.format, delimiters: schema.delimiters });
+      contentObject = parse(content, {
+        format: schema.format,
+        delimiters: schema.delimiters,
+      });
       // We resort to the same trick as with the client, wrapping things in a listWrapper object if we're dealing with a list at the root
       let entryFields;
       if (schema.list) {

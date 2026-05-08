@@ -2,10 +2,10 @@
 
 import { forwardRef, useCallback, useImperativeHandle, useState } from "react";
 import { flushSync } from "react-dom";
-import { useConfig } from "@/contexts/config-context";
-import { MediaView } from "@/components/media/media-view";
-import { Button } from "@/components/ui/button";
-import type { FileSaveData } from "@/types/api";
+import { useConfig } from "../../contexts/config-context.tsx";
+import { MediaView } from "./media-view.tsx";
+import { Button } from "../ui/button.tsx";
+import type { FileSaveData } from "../../types/api.ts";
 import { Loader } from "lucide-react";
 import {
   Dialog,
@@ -15,8 +15,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { getSchemaByName } from "@/lib/schema";
+} from "../ui/dialog.tsx";
+import { getSchemaByName } from "../../lib/schema.ts";
 
 export interface MediaDialogHandle {
   open: () => void;

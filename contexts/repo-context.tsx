@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState } from "react";
-import { Repo } from "@/types/repo";
+import { Repo } from "../types/repo.ts";
 
 interface RepoContextType extends Repo {
   setBranches: (branches: string[]) => void;
@@ -17,7 +17,9 @@ export const useRepo = () => {
   return context;
 };
 
-export const RepoProvider = ({ repo, children }: { repo: Repo; children: React.ReactNode }) => {
+export const RepoProvider = (
+  { repo, children }: { repo: Repo; children: React.ReactNode },
+) => {
   const [branches, setBranches] = useState<string[]>(repo?.branches || []);
 
   return (

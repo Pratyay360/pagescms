@@ -3,9 +3,9 @@
  */
 
 import slugify from "slugify";
-import { defaultValues, schemas } from "@/fields/registry";
+import { defaultValues, schemas } from "../fields/registry.ts";
 import { z } from "zod";
-import { Field } from "@/types/field";
+import { Field } from "../types/field.ts";
 import { format } from "date-fns";
 
 type SchemaGroupTrailItem = {
@@ -39,22 +39,24 @@ const deepMap = (
         } else {
           result[field.name] = Array.isArray(value)
             ? value.map((item) => {
-                if (field.type === "object") {
-                  return traverse(item, field.fields || []);
-                } else if (field.type === "block") {
-                  const blockKey = field.blockKey || "_block";
-                  const blockName = item?.[blockKey];
-                  const blockDef = field.blocks?.find((b) => b.name === blockName);
-                  if (blockDef) {
-                    const innerResult = traverse(item, blockDef.fields || []);
-                    // Merge discriminator back after processing inner fields
-                    return { [blockKey]: blockName, ...innerResult };
-                  }
-                  return item;
-                } else {
-                  return apply(item, field);
+              if (field.type === "object") {
+                return traverse(item, field.fields || []);
+              } else if (field.type === "block") {
+                const blockKey = field.blockKey || "_block";
+                const blockName = item?.[blockKey];
+                const blockDef = field.blocks?.find((b) =>
+                  b.name === blockName
+                );
+                if (blockDef) {
+                  const innerResult = traverse(item, blockDef.fields || []);
+                  // Merge discriminator back after processing inner fields
+                  return { [blockKey]: blockName, ...innerResult };
                 }
-              })
+                return item;
+              } else {
+                return apply(item, field);
+              }
+            })
             : [];
         }
       } else if (field.type === "object") {
@@ -99,8 +101,7 @@ const initializeState = (
           ? field.list.default
           : []
         : getDefaultValue(field);
-    }
-    // Handle potential null values passed from traverse if the object didn't exist
+    } // Handle potential null values passed from traverse if the object didn't exist
     else if (appliedValue === null && field.type !== "object" && !field.list) {
       appliedValue = getDefaultValue(field);
     }
@@ -121,8 +122,8 @@ const getDefaultValue = (field: Record<string, any>) => {
     return defaultValue instanceof Function
       ? defaultValue(field)
       : defaultValue !== undefined
-        ? defaultValue
-        : "";
+      ? defaultValue
+      : "";
   }
 };
 
@@ -131,14 +132,16 @@ const isEffectivelyEmpty = (value: unknown): boolean => {
   if (value == null || value === "") return true;
 
   if (Array.isArray(value)) {
-    return value.length === 0 || value.every((item) => isEffectivelyEmpty(item));
+    return value.length === 0 ||
+      value.every((item) => isEffectivelyEmpty(item));
   }
 
   if (value instanceof Date) return false;
 
   if (typeof value === "object") {
     const entries = Object.values(value as Record<string, unknown>);
-    return entries.length === 0 || entries.every((item) => isEffectivelyEmpty(item));
+    return entries.length === 0 ||
+      entries.every((item) => isEffectivelyEmpty(item));
   }
 
   // Booleans and numbers are meaningful values (`false`/`0` included).
@@ -146,8 +149,13 @@ const isEffectivelyEmpty = (value: unknown): boolean => {
 };
 
 // Generate a Zod schema for validation
-const generateZodSchema = (fields: Field[], ignoreHidden: boolean = false): z.ZodTypeAny => {
-  const buildSchemaObject = (currentFields: Field[]): Record<string, z.ZodTypeAny> => {
+const generateZodSchema = (
+  fields: Field[],
+  ignoreHidden: boolean = false,
+): z.ZodTypeAny => {
+  const buildSchemaObject = (
+    currentFields: Field[],
+  ): Record<string, z.ZodTypeAny> => {
     return currentFields.reduce((acc: Record<string, z.ZodTypeAny>, field) => {
       if (ignoreHidden && field.hidden) return acc;
 
@@ -156,16 +164,16 @@ const generateZodSchema = (fields: Field[], ignoreHidden: boolean = false): z.Zo
       if (field.type === "object") {
         // Optional objects should only be validated when they are meaningfully present.
         const objectSchema = z.object(buildSchemaObject(field.fields || []));
-        fieldSchema = field.required
-          ? objectSchema
-          : z.preprocess(
-              (value) => (isEffectivelyEmpty(value) ? undefined : value),
-              objectSchema.optional(),
-            );
+        fieldSchema = field.required ? objectSchema : z.preprocess(
+          (value) => (isEffectivelyEmpty(value) ? undefined : value),
+          objectSchema.optional(),
+        );
       } else if (field.type === "block") {
         // Block field
         if (!field.blocks || field.blocks.length === 0) {
-          console.warn(`Block field "${field.name}" has no 'blocks' defined. Allowing any object.`);
+          console.warn(
+            `Block field "${field.name}" has no 'blocks' defined. Allowing any object.`,
+          );
           fieldSchema = z.object({}).passthrough();
         } else {
           const discriminator = field.blockKey || "_block";
@@ -180,7 +188,9 @@ const generateZodSchema = (fields: Field[], ignoreHidden: boolean = false): z.Zo
               const base = z.object({
                 [discriminator]: z.literal(blockDef.name),
               });
-              const blockFieldsSchema = z.object(buildSchemaObject(blockDef.fields || []));
+              const blockFieldsSchema = z.object(
+                buildSchemaObject(blockDef.fields || []),
+              );
               return base.merge(blockFieldsSchema);
             })
             .filter((schema) => schema !== null) as z.ZodObject<any>[];
@@ -196,7 +206,11 @@ const generateZodSchema = (fields: Field[], ignoreHidden: boolean = false): z.Zo
             fieldSchema = z
               .discriminatedUnion(
                 discriminator,
-                blockTypeSchemas as [z.ZodObject<any>, z.ZodObject<any>, ...z.ZodObject<any>[]],
+                blockTypeSchemas as [
+                  z.ZodObject<any>,
+                  z.ZodObject<any>,
+                  ...z.ZodObject<any>[],
+                ],
               )
               .optional()
               .nullable();
@@ -217,15 +231,23 @@ const generateZodSchema = (fields: Field[], ignoreHidden: boolean = false): z.Zo
       if (field.list) {
         let arraySchema = z.array(fieldSchema);
         if (typeof field.list === "object") {
-          if (field.list.min && typeof field.list.min === "number" && field.list.min > 0) {
+          if (
+            field.list.min && typeof field.list.min === "number" &&
+            field.list.min > 0
+          ) {
             arraySchema = arraySchema.min(field.list.min);
           }
-          if (field.list.max && typeof field.list.max === "number" && field.list.max > 0) {
+          if (
+            field.list.max && typeof field.list.max === "number" &&
+            field.list.max > 0
+          ) {
             arraySchema = arraySchema.max(field.list.max);
           }
         }
         if (field.required) {
-          arraySchema = arraySchema.min(1, { message: `Field requires at least one item.` });
+          arraySchema = arraySchema.min(1, {
+            message: `Field requires at least one item.`,
+          });
           fieldSchema = arraySchema;
         } else {
           fieldSchema = arraySchema.optional();
@@ -238,7 +260,9 @@ const generateZodSchema = (fields: Field[], ignoreHidden: boolean = false): z.Zo
         } else {
           if (field.type === "block") {
             fieldSchema = fieldSchema.refine(
-              (val) => val != null && typeof val === "object" && Object.keys(val).length > 0,
+              (val) =>
+                val != null && typeof val === "object" &&
+                Object.keys(val).length > 0,
               { message: "Please select a block." },
             );
           }
@@ -260,7 +284,9 @@ const sanitizeObject = (object: any): any => {
   if (Array.isArray(object)) {
     return object
       .map((val) =>
-        val && typeof val === "object" && !(val instanceof Date) ? sanitizeObject(val) : val,
+        val && typeof val === "object" && !(val instanceof Date)
+          ? sanitizeObject(val)
+          : val
       )
       .filter((val) => !isEmpty(val));
   }
@@ -298,7 +324,9 @@ const getSchemaGroupTrail = (
   config: Record<string, any> | null | undefined,
   name: string,
 ): SchemaGroupTrailItem[] => {
-  const navigation = config?.navigation?.content as NavigationNode[] | undefined;
+  const navigation = config?.navigation?.content as
+    | NavigationNode[]
+    | undefined;
   if (!navigation?.length || !name) return [];
 
   const visit = (
@@ -337,13 +365,13 @@ const getSchemaByName = (
     (type === "media" && !config.media) ||
     (type === "content" && !config.content) ||
     !name
-  )
+  ) {
     return null;
+  }
 
-  const schema =
-    type === "media"
-      ? config.media.find((item: Record<string, any>) => item.name === name)
-      : config.content.find((item: Record<string, any>) => item.name === name);
+  const schema = type === "media"
+    ? config.media.find((item: Record<string, any>) => item.name === name)
+    : config.content.find((item: Record<string, any>) => item.name === name);
 
   // We deep clone the object to avoid mutating config if schema is modified.
   if (!schema) return null;
@@ -372,7 +400,11 @@ function safeAccess(obj: Record<string, any>, path: string) {
 }
 
 // Interpolate a string with a data object, with optional prefix fallback (e.g. "fields")
-function interpolate(input: string, data: Record<string, any>, prefixFallback?: string): string {
+function interpolate(
+  input: string,
+  data: Record<string, any>,
+  prefixFallback?: string,
+): string {
   return input
     .replace(/(?<!\\)\{([^}]+)\}/g, (_, token) => {
       // First try direct access
@@ -396,10 +428,10 @@ function getFieldByPath(schema: Field[], path: string): Field | undefined {
   return !field
     ? undefined
     : rest.length === 0
-      ? field
-      : field.type === "object" && field.fields
-        ? getFieldByPath(field.fields, rest.join("."))
-        : undefined;
+    ? field
+    : field.type === "object" && field.fields
+    ? getFieldByPath(field.fields, rest.join("."))
+    : undefined;
 }
 
 function findNestedFieldPath(
@@ -457,8 +489,14 @@ const generateFilename = (
   // `{slug}` is kept as an alias for compatibility with existing configs.
   const primaryField = getPrimaryField(schema);
   pattern = pattern
-    .replace(/\{primary\}/g, primaryField ? `{fields.${primaryField}}` : "untitled")
-    .replace(/\{slug\}/g, primaryField ? `{fields.${primaryField}}` : "untitled");
+    .replace(
+      /\{primary\}/g,
+      primaryField ? `{fields.${primaryField}}` : "untitled",
+    )
+    .replace(
+      /\{slug\}/g,
+      primaryField ? `{fields.${primaryField}}` : "untitled",
+    );
 
   // Replace field placeholders, accepting both `{fields.title}` and `{title}`.
   return pattern.replace(/\{(?:fields\.)?([^}]+)\}/g, (_, fieldName) => {
@@ -485,15 +523,15 @@ function getDateFromFilename(filename: string) {
 
 export {
   deepMap,
-  initializeState,
+  generateFilename,
+  generateZodSchema,
+  getDateFromFilename,
   getDefaultValue,
-  sanitizeObject,
-  getSchemaByName,
   getFieldByPath,
   getPrimaryField,
-  generateFilename,
-  getDateFromFilename,
-  generateZodSchema,
-  safeAccess,
+  getSchemaByName,
+  initializeState,
   interpolate,
+  safeAccess,
+  sanitizeObject,
 };

@@ -1,14 +1,17 @@
 import { type NextRequest } from "next/server";
-import { createOctokitInstance } from "@/lib/utils/octokit";
-import { getInstallations, getInstallationRepos } from "@/lib/github-app";
-import { db } from "@/db";
+import { createOctokitInstance } from "../../../../lib/utils/octokit.ts";
+import {
+  getInstallationRepos,
+  getInstallations,
+} from "../../../../lib/github-app.ts";
+import { db } from "../../../../db/index.ts";
 import { and, sql } from "drizzle-orm";
-import { collaboratorTable } from "@/db/schema";
-import { getGithubAccount } from "@/lib/github-account";
-import { hasGithubIdentity } from "@/lib/authz-shared";
-import { toErrorResponse } from "@/lib/api-error";
-import { requireApiUserSession } from "@/lib/session-server";
-import { collaboratorMatchesUser } from "@/lib/collaborator-access";
+import { collaboratorTable } from "../../../../db/schema.ts";
+import { getGithubAccount } from "../../../../lib/github-account.ts";
+import { hasGithubIdentity } from "../../../../lib/authz-shared.ts";
+import { toErrorResponse } from "../../../../lib/api-error.ts";
+import { requireApiUserSession } from "../../../../lib/session-server.ts";
+import { collaboratorMatchesUser } from "../../../../lib/collaborator-access.ts";
 
 export const dynamic = "force-dynamic";
 
@@ -20,7 +23,10 @@ export const dynamic = "force-dynamic";
  * Requires authentication.
  */
 
-export async function GET(request: NextRequest, context: { params: Promise<{ owner: string }> }) {
+export async function GET(
+  request: NextRequest,
+  context: { params: Promise<{ owner: string }> },
+) {
   try {
     const params = await context.params;
     const sessionResult = await requireApiUserSession();
@@ -81,7 +87,10 @@ export async function GET(request: NextRequest, context: { params: Promise<{ own
 
     const reposByKey = new Map<string, any>();
     for (const repo of githubRepos) {
-      reposByKey.set(`${repo.owner.toLowerCase()}::${repo.repo.toLowerCase()}`, repo);
+      reposByKey.set(
+        `${repo.owner.toLowerCase()}::${repo.repo.toLowerCase()}`,
+        repo,
+      );
     }
     for (const repo of collaboratorRepos) {
       const key = `${repo.owner.toLowerCase()}::${repo.repo.toLowerCase()}`;

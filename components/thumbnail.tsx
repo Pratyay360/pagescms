@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { getRawUrl } from "@/lib/github-image";
-import { useRepo } from "@/contexts/repo-context";
-import { useConfig } from "@/contexts/config-context";
-import { cn } from "@/lib/utils";
+import { useEffect, useState } from "react";
+import { getRawUrl } from "../lib/github-image.ts";
+import { useRepo } from "../contexts/repo-context.tsx";
+import { useConfig } from "../contexts/config-context.tsx";
+import { cn } from "../lib/utils.ts";
 import { Ban, ImageOff, Loader } from "lucide-react";
 
 export function Thumbnail({
@@ -30,10 +30,19 @@ export function Thumbnail({
         setError(null);
         if (!rawUrl) setRawUrl(null);
         try {
-          const url = await getRawUrl(owner, repo, branch, name, path, isPrivate);
+          const url = await getRawUrl(
+            owner,
+            repo,
+            branch,
+            name,
+            path,
+            isPrivate,
+          );
           setRawUrl(url);
         } catch (error: any) {
-          const errorMessage = error instanceof Error ? error.message : "Unknown error";
+          const errorMessage = error instanceof Error
+            ? error.message
+            : "Unknown error";
           console.warn(errorMessage);
           setError(error.message);
         }
@@ -44,38 +53,49 @@ export function Thumbnail({
   }, [path, owner, repo, branch, isPrivate, name, rawUrl]);
 
   return (
-    <div className={cn("bg-muted w-full aspect-square overflow-hidden relative", className)}>
-      {path ? (
-        rawUrl ? (
-          <img
-            src={rawUrl}
-            alt={path.split("/").pop() || "thumbnail"}
-            loading="lazy"
-            className="absolute inset-0 w-full h-full object-cover"
-          />
-        ) : error ? (
-          <div
-            className="flex justify-center items-center absolute inset-0 text-muted-foreground"
-            title={error}
-          >
-            <Ban className="h-4 w-4" />
-          </div>
-        ) : (
-          <div
-            className="flex justify-center items-center absolute inset-0 text-muted-foreground"
-            title="Loading..."
-          >
-            <Loader className="h-4 w-4 animate-spin" />
-          </div>
-        )
-      ) : (
-        <div
-          className="flex justify-center items-center absolute inset-0 text-muted-foreground"
-          title="No image"
-        >
-          <ImageOff className="h-4 w-4" />
-        </div>
+    <div
+      className={cn(
+        "bg-muted w-full aspect-square overflow-hidden relative",
+        className,
       )}
+    >
+      {path
+        ? (
+          rawUrl
+            ? (
+              <img
+                src={rawUrl}
+                alt={path.split("/").pop() || "thumbnail"}
+                loading="lazy"
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+            )
+            : error
+            ? (
+              <div
+                className="flex justify-center items-center absolute inset-0 text-muted-foreground"
+                title={error}
+              >
+                <Ban className="h-4 w-4" />
+              </div>
+            )
+            : (
+              <div
+                className="flex justify-center items-center absolute inset-0 text-muted-foreground"
+                title="Loading..."
+              >
+                <Loader className="h-4 w-4 animate-spin" />
+              </div>
+            )
+        )
+        : (
+          <div
+            className="flex justify-center items-center absolute inset-0 text-muted-foreground"
+            title="No image"
+          >
+            <ImageOff className="h-4 w-4" />
+          </div>
+        )}
     </div>
   );
 }

@@ -6,33 +6,53 @@
  */
 
 // Import the key from the CRYPTO_KEY environment variable
+import process from "node:process";
 const importKey = async (base64Key: string) => {
   const rawKey = Uint8Array.from(atob(base64Key), (c) => c.charCodeAt(0));
-  return crypto.subtle.importKey("raw", rawKey, { name: "AES-GCM", length: 256 }, true, [
-    "encrypt",
-    "decrypt",
-  ]);
+  return crypto.subtle.importKey(
+    "raw",
+    rawKey,
+    { name: "AES-GCM", length: 256 },
+    true,
+    [
+      "encrypt",
+      "decrypt",
+    ],
+  );
 };
 
 const encrypt = async (text: string) => {
-  if (process.env.CRYPTO_KEY === undefined) throw new Error("Crypto key is not set.");
+  if (process.env.CRYPTO_KEY === undefined) {
+    throw new Error("Crypto key is not set.");
+  }
   const key = await importKey(process.env.CRYPTO_KEY);
   const iv = crypto.getRandomValues(new Uint8Array(12));
   const encodedText = new TextEncoder().encode(text);
 
-  const encryptedData = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, encodedText);
+  const encryptedData = await crypto.subtle.encrypt(
+    { name: "AES-GCM", iv },
+    key,
+    encodedText,
+  );
 
   return {
-    ciphertext: btoa(String.fromCharCode(...Array.from(new Uint8Array(encryptedData)))),
+    ciphertext: btoa(
+      String.fromCharCode(...Array.from(new Uint8Array(encryptedData))),
+    ),
     iv: btoa(String.fromCharCode(...Array.from(iv))),
   };
 };
 
 const decrypt = async (ciphertext: string, iv: string) => {
-  if (process.env.CRYPTO_KEY === undefined) throw new Error("Crypto key is not set.");
+  if (process.env.CRYPTO_KEY === undefined) {
+    throw new Error("Crypto key is not set.");
+  }
   const key = await importKey(process.env.CRYPTO_KEY);
   const ivArray = Uint8Array.from(atob(iv), (c) => c.charCodeAt(0));
-  const encryptedDataArray = Uint8Array.from(atob(ciphertext), (c) => c.charCodeAt(0));
+  const encryptedDataArray = Uint8Array.from(
+    atob(ciphertext),
+    (c) => c.charCodeAt(0),
+  );
 
   const decryptedData = await crypto.subtle.decrypt(
     { name: "AES-GCM", iv: ivArray },
@@ -43,4 +63,4 @@ const decrypt = async (ciphertext: string, iv: string) => {
   return new TextDecoder().decode(decryptedData);
 };
 
-export { encrypt, decrypt };
+export { decrypt, encrypt };

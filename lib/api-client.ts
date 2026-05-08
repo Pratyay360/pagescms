@@ -3,7 +3,9 @@ type ApiResponseLike = {
   message?: string;
 };
 
-const parseJsonSafely = async <T = unknown>(response: Response): Promise<T | null> => {
+const parseJsonSafely = async <T = unknown>(
+  response: Response,
+): Promise<T | null> => {
   try {
     return (await response.json()) as T;
   } catch {
@@ -18,8 +20,8 @@ const requireApiSuccess = async <T = any>(
   const payload = await parseJsonSafely<T & ApiResponseLike>(response);
 
   if (!response.ok) {
-    const message =
-      payload?.message || `${fallbackMessage}: ${response.status} ${response.statusText}`;
+    const message = payload?.message ||
+      `${fallbackMessage}: ${response.status} ${response.statusText}`;
     throw new Error(message);
   }
 

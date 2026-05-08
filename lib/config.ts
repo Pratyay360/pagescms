@@ -5,8 +5,8 @@
  */
 
 import YAML from "yaml";
-import { getFileExtension, extensionCategories } from "@/lib/utils/file";
-import { ConfigSchema } from "@/lib/config-schema";
+import { extensionCategories, getFileExtension } from "./utils/file.ts";
+import { ConfigSchema } from "./config-schema.ts";
 import { z } from "zod";
 import mergeWith from "lodash.mergewith";
 
@@ -38,8 +38,9 @@ const isCacheEnabled = (configObject?: Record<string, any>) => {
   const settings = resolveSettingsObject(configObject);
 
   if (typeof settings.cache === "boolean") return settings.cache;
-  if (typeof (configObject as any)?.cache === "boolean")
+  if (typeof (configObject as any)?.cache === "boolean") {
     return Boolean((configObject as any).cache);
+  }
   return false;
 };
 
@@ -73,20 +74,32 @@ const normalizeConfig = (configObject: any) => {
   // Normalize legacy root toggles into settings.
   if (configObjectCopy.settings === false) {
     configObjectCopy.settings = { config: false };
-  } else if (typeof configObjectCopy.settings !== "object" || configObjectCopy.settings == null) {
+  } else if (
+    typeof configObjectCopy.settings !== "object" ||
+    configObjectCopy.settings == null
+  ) {
     configObjectCopy.settings = {};
   }
-  if (typeof configObjectCopy.cache === "boolean" && configObjectCopy.settings.cache == null) {
+  if (
+    typeof configObjectCopy.cache === "boolean" &&
+    configObjectCopy.settings.cache == null
+  ) {
     configObjectCopy.settings.cache = configObjectCopy.cache;
   }
-  if (typeof configObjectCopy.hide === "boolean" && configObjectCopy.settings.config == null) {
+  if (
+    typeof configObjectCopy.hide === "boolean" &&
+    configObjectCopy.settings.config == null
+  ) {
     configObjectCopy.settings.config = !configObjectCopy.hide;
   }
   delete configObjectCopy.cache;
   delete configObjectCopy.hide;
 
   // Resolve component references in `components`
-  if (configObjectCopy.components && typeof configObjectCopy.components === "object") {
+  if (
+    configObjectCopy.components &&
+    typeof configObjectCopy.components === "object"
+  ) {
     Object.keys(configObjectCopy.components).forEach((componentKey: string) => {
       configObjectCopy.components[componentKey] = resolveComponent(
         configObjectCopy.components[componentKey],
@@ -142,7 +155,9 @@ const normalizeConfig = (configObject: any) => {
           mediaConfig.extensions = [];
           mediaConfig.categories.map((category: string) => {
             if (extensionCategories[category] != null) {
-              mediaConfig.extensions = mediaConfig.extensions.concat(extensionCategories[category]);
+              mediaConfig.extensions = mediaConfig.extensions.concat(
+                extensionCategories[category],
+              );
             }
           });
           delete mediaConfig.categories;
@@ -153,7 +168,8 @@ const normalizeConfig = (configObject: any) => {
         if (
           mediaConfig.commit.message &&
           typeof mediaConfig.commit.message === "object" &&
-          (mediaConfig.commit.templates == null || typeof mediaConfig.commit.templates !== "object")
+          (mediaConfig.commit.templates == null ||
+            typeof mediaConfig.commit.templates !== "object")
         ) {
           mediaConfig.commit.templates = mediaConfig.commit.message;
         }
@@ -181,7 +197,9 @@ const normalizeConfig = (configObject: any) => {
   }
 
   // Normalize settings
-  if (configObjectCopy.settings && typeof configObjectCopy.settings === "object") {
+  if (
+    configObjectCopy.settings && typeof configObjectCopy.settings === "object"
+  ) {
     if (
       typeof configObjectCopy.settings.hide === "boolean" &&
       configObjectCopy.settings.config == null
@@ -190,7 +208,10 @@ const normalizeConfig = (configObject: any) => {
     }
     delete configObjectCopy.settings.hide;
 
-    if (configObjectCopy.settings.commit && typeof configObjectCopy.settings.commit === "object") {
+    if (
+      configObjectCopy.settings.commit &&
+      typeof configObjectCopy.settings.commit === "object"
+    ) {
       const commit = configObjectCopy.settings.commit;
       if (
         commit.message &&
@@ -203,7 +224,9 @@ const normalizeConfig = (configObject: any) => {
     }
   }
 
-  if (Array.isArray(configObjectCopy.media) && configObjectCopy.media.length > 0) {
+  if (
+    Array.isArray(configObjectCopy.media) && configObjectCopy.media.length > 0
+  ) {
     navigation.media = configObjectCopy.media.map((item: any) => ({
       type: "media",
       name: item.name || "default",
@@ -220,15 +243,24 @@ const normalizeConfig = (configObject: any) => {
   return configObjectCopy;
 };
 
-const normalizeContentEntry = (item: any, componentsMap: Record<string, any>) => {
+const normalizeContentEntry = (
+  item: any,
+  componentsMap: Record<string, any>,
+) => {
   if (item.path != null) {
     item.path = item.path.replace(/^\/|\/$/g, "");
   }
-  if (item.type === "collection" && item.filename && typeof item.filename === "object") {
+  if (
+    item.type === "collection" && item.filename &&
+    typeof item.filename === "object"
+  ) {
     if (typeof item.filename.template === "string") {
       const filenameField = item.filename.field;
       item.filename = item.filename.template;
-      if (filenameField === true || filenameField === false || filenameField === "create") {
+      if (
+        filenameField === true || filenameField === false ||
+        filenameField === "create"
+      ) {
         item.filenameField = filenameField;
       }
     }
@@ -293,7 +325,8 @@ const normalizeContentEntry = (item: any, componentsMap: Record<string, any>) =>
     if (
       item.commit.message &&
       typeof item.commit.message === "object" &&
-      (item.commit.templates == null || typeof item.commit.templates !== "object")
+      (item.commit.templates == null ||
+        typeof item.commit.templates !== "object")
     ) {
       item.commit.templates = item.commit.message;
     }
@@ -318,7 +351,10 @@ const normalizeContentEntries = (
 
   entries.forEach((entry: any) => {
     if (entry?.type === "group") {
-      const normalizedGroup = normalizeContentEntries(entry.items || [], componentsMap);
+      const normalizedGroup = normalizeContentEntries(
+        entry.items || [],
+        componentsMap,
+      );
       navigation.push({
         type: "group",
         name: entry.name,
@@ -354,21 +390,31 @@ function resolveComponent(field: any, componentsMap: Record<string, any>): any {
       const originalName = result.name;
       const componentType = componentCopy.type;
       delete result.component;
-      result = mergeWith({}, componentCopy, result, (objValue: any, srcValue: any) => {
-        if (Array.isArray(srcValue)) {
-          return srcValue;
-        }
-      });
+      result = mergeWith(
+        {},
+        componentCopy,
+        result,
+        (objValue: any, srcValue: any) => {
+          if (Array.isArray(srcValue)) {
+            return srcValue;
+          }
+        },
+      );
       result.name = originalName;
       result.type = componentType;
     } else {
-      console.error(`Component reference "${componentKey}" could not be resolved.`);
+      console.error(
+        `Component reference "${componentKey}" could not be resolved.`,
+      );
       delete result.component; // Remove the broken reference
     }
   }
 
   // Default to `type: object` if fields exist and type is missing
-  if (Array.isArray(result.fields) && result.fields.length > 0 && result.type === undefined) {
+  if (
+    Array.isArray(result.fields) && result.fields.length > 0 &&
+    result.type === undefined
+  ) {
     result.type = "object";
   }
 
@@ -391,7 +437,9 @@ function resolveComponent(field: any, componentsMap: Record<string, any>): any {
 
 // Check if the config contains unresolved component references
 function containsUnresolvedComponent(data: any): boolean {
-  if (Array.isArray(data)) return data.some((item) => containsUnresolvedComponent(item));
+  if (Array.isArray(data)) {
+    return data.some((item) => containsUnresolvedComponent(item));
+  }
   if (data && typeof data === "object") {
     if (typeof data.component === "string") return true;
     if (Array.isArray(data.fields)) {
@@ -422,7 +470,11 @@ const validateConfig = (document: YAML.Document.Parsed) => {
 
 // Process the Zod errors from the validateConfig function. Helps us display errors
 // in the settings editor.
-const processZodError = (error: any, document: YAML.Document.Parsed, errors: any[]) => {
+const processZodError = (
+  error: any,
+  document: YAML.Document.Parsed,
+  errors: any[],
+) => {
   let path = error.path;
   let yamlNode: any = document.getIn(path, true);
   let range = [0, 0];
@@ -460,15 +512,16 @@ const processZodError = (error: any, document: YAML.Document.Parsed, errors: any
 
     case "unrecognized_keys":
       error.keys.forEach((key: string) => {
-        const parentNode =
-          yamlNode && yamlNode.items && yamlNode.items.find((item: any) => item.key.value === key);
+        const parentNode = yamlNode && yamlNode.items &&
+          yamlNode.items.find((item: any) => item.key.value === key);
         if (parentNode) {
           // TODO: investigate why/when parentNode isn't defined, we may want to leave to YAML parser error
           errors.push({
             severity: "warning",
             from: parentNode.key.range[0] || null,
             to: parentNode.key.range[1] || null,
-            message: `Property '${parentNode.key.value}' isn't valid and will be ignored.`,
+            message:
+              `Property '${parentNode.key.value}' isn't valid and will be ignored.`,
           });
         }
       });
@@ -502,7 +555,7 @@ export {
   configVersion,
   isCacheEnabled,
   isConfigEnabled,
-  parseConfig,
   normalizeConfig,
   parseAndValidateConfig,
+  parseConfig,
 };

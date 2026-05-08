@@ -1,18 +1,25 @@
 import Link from "next/link";
 import { headers } from "next/headers";
 import { and, eq } from "drizzle-orm";
-import { auth } from "@/lib/auth";
-import { db } from "@/db";
-import { accountTable } from "@/db/schema";
-import { MainRootLayout } from "../main-root-layout";
-import { Installations } from "@/components/settings/installations";
-import { Identities } from "@/components/settings/identities";
-import { Profile } from "@/components/settings/profile";
-import { DocumentTitle } from "@/components/document-title";
-import { buttonVariants } from "@/components/ui/button";
-import { Card, CardHeader, CardDescription, CardContent, CardTitle } from "@/components/ui/card";
+import { auth } from "../../../lib/auth.ts";
+import { db } from "../../../db/index.ts";
+import { accountTable } from "../../../db/schema.ts";
+import { MainRootLayout } from "../main-root-layout.tsx";
+import { Installations } from "../../../components/settings/installations.tsx";
+import { Identities } from "../../../components/settings/identities.tsx";
+import { Profile } from "../../../components/settings/profile.tsx";
+import { DocumentTitle } from "../../../components/document-title.tsx";
+import { buttonVariants } from "../../../components/ui/button.tsx";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../../../components/ui/card.tsx";
 import { ArrowLeft } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "../../../lib/utils.ts";
+import process from "node:process";
 
 export default async function Page() {
   const session = await auth.api.getSession({
@@ -21,7 +28,10 @@ export default async function Page() {
   const user = session?.user;
   if (!user) throw new Error("User not found");
   const githubAccount = await db.query.accountTable.findFirst({
-    where: and(eq(accountTable.userId, user.id), eq(accountTable.providerId, "github")),
+    where: and(
+      eq(accountTable.userId, user.id),
+      eq(accountTable.providerId, "github"),
+    ),
   });
   const githubConnected = Boolean(githubAccount);
   const githubManageUrl = process.env.GITHUB_APP_CLIENT_ID
@@ -33,22 +43,33 @@ export default async function Page() {
       <DocumentTitle title="Settings" />
       <div className="max-w-screen-sm mx-auto p-4 md:p-6 space-y-6">
         <Link
-          className={cn(buttonVariants({ variant: "outline", size: "xs" }), "inline-flex")}
+          className={cn(
+            buttonVariants({ variant: "outline", size: "xs" }),
+            "inline-flex",
+          )}
           href="/"
         >
           <ArrowLeft />
           Go home
         </Link>
         <header className="flex items-center mb-6">
-          <h1 className="font-semibold tracking-tight text-lg md:text-2xl">Settings</h1>
+          <h1 className="font-semibold tracking-tight text-lg md:text-2xl">
+            Settings
+          </h1>
         </header>
         <div className="flex flex-col relative flex-1 space-y-6">
-          <Profile name={user.name} email={user.email} githubUsername={user.githubUsername} />
+          <Profile
+            name={user.name}
+            email={user.email}
+            githubUsername={user.githubUsername}
+          />
 
           <Card>
             <CardHeader>
               <CardTitle>Authentication</CardTitle>
-              <CardDescription>Your sign-in methods and linked identity providers.</CardDescription>
+              <CardDescription>
+                Your sign-in methods and linked identity providers.
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <Identities
@@ -63,7 +84,9 @@ export default async function Page() {
           {githubConnected && (
             <Card>
               <CardHeader>
-                <CardTitle className="text-base md:text-lg">Installations</CardTitle>
+                <CardTitle className="text-base md:text-lg">
+                  Installations
+                </CardTitle>
                 <CardDescription>
                   Manage the accounts the Github application is installed on.
                 </CardDescription>

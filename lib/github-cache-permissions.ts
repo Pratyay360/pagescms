@@ -1,10 +1,10 @@
 import { and, eq, gt } from "drizzle-orm";
-import { db } from "@/db";
-import { cachePermissionTable } from "@/db/schema";
-import { createOctokitInstance } from "@/lib/utils/octokit";
+import { db } from "../db/index.ts";
+import { cachePermissionTable } from "../db/schema.ts";
+import { createOctokitInstance } from "./utils/octokit.ts";
+import process from "node:process";
 
-const PERMISSIONS_CACHE_TTL_MIN =
-  process.env.PERMISSIONS_TTL_MIN ||
+const PERMISSIONS_CACHE_TTL_MIN = process.env.PERMISSIONS_TTL_MIN ||
   process.env.PERM_TTL_MIN ||
   process.env.PERMISSION_CACHE_TTL ||
   "60";
@@ -59,11 +59,17 @@ const checkRepoAccess = async (
   }
 };
 
-const clearPermissionCache = async (owner: string, repo?: string, githubId?: number) => {
+const clearPermissionCache = async (
+  owner: string,
+  repo?: string,
+  githubId?: number,
+) => {
   const conditions = [];
   conditions.push(eq(cachePermissionTable.owner, owner.toLowerCase()));
   if (repo) conditions.push(eq(cachePermissionTable.repo, repo.toLowerCase()));
-  if (githubId != null) conditions.push(eq(cachePermissionTable.githubId, githubId));
+  if (githubId != null) {
+    conditions.push(eq(cachePermissionTable.githubId, githubId));
+  }
   await db.delete(cachePermissionTable).where(and(...conditions));
 };
 

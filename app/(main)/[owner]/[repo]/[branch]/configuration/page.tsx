@@ -1,14 +1,26 @@
 "use client";
 
 import Link from "next/link";
-import { Entry } from "@/components/entry/entry";
-import { DocumentTitle, formatRepoBranchTitle } from "@/components/document-title";
-import { useConfig } from "@/contexts/config-context";
-import { useUser } from "@/contexts/user-context";
-import { hasGithubIdentity } from "@/lib/authz-shared";
-import { Button } from "@/components/ui/button";
-import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Entry } from "../../../../../../components/entry/entry.tsx";
+import {
+  DocumentTitle,
+  formatRepoBranchTitle,
+} from "../../../../../../components/document-title.tsx";
+import { useConfig } from "../../../../../../contexts/config-context.tsx";
+import { useUser } from "../../../../../../contexts/user-context.tsx";
+import { hasGithubIdentity } from "../../../../../../lib/authz-shared.ts";
+import { Button } from "../../../../../../components/ui/button.tsx";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyTitle,
+} from "../../../../../../components/ui/empty.tsx";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "../../../../../../components/ui/tooltip.tsx";
 import { BookText } from "lucide-react";
 
 export default function Page() {
@@ -36,7 +48,12 @@ export default function Page() {
     <>
       {config && (
         <DocumentTitle
-          title={formatRepoBranchTitle("Configuration", config.owner, config.repo, config.branch)}
+          title={formatRepoBranchTitle(
+            "Configuration",
+            config.owner,
+            config.repo,
+            config.branch,
+          )}
         />
       )}
       <Entry

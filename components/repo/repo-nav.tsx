@@ -3,11 +3,11 @@
 import { useMemo } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useConfig } from "@/contexts/config-context";
-import { useUser } from "@/contexts/user-context";
-import { hasGithubIdentity } from "@/lib/authz-shared";
-import { isConfigEnabled } from "@/lib/config";
-import { cn } from "@/lib/utils";
+import { useConfig } from "../../contexts/config-context.tsx";
+import { useUser } from "../../contexts/user-context.tsx";
+import { hasGithubIdentity } from "../../lib/authz-shared.ts";
+import { isConfigEnabled } from "../../lib/config.ts";
+import { cn } from "../../lib/utils.ts";
 import { FileStack, FileText, FolderOpen, Settings, Users } from "lucide-react";
 
 const RepoNavItem = ({
@@ -44,50 +44,53 @@ const RepoNav = ({ onClick }: { onClick?: () => void }) => {
   const items = useMemo(() => {
     if (!config || !config.object) return [];
     const configObject: any = config.object;
-    const contentItems =
-      configObject.content?.map((item: any) => ({
-        key: item.name,
-        icon:
-          item.type === "collection" ? (
-            <FileStack className="h-5 w-5 mr-2" />
-          ) : (
-            <FileText className="h-5 w-5 mr-2" />
-          ),
-        href: `/${config.owner}/${config.repo}/${encodeURIComponent(config.branch)}/${item.type}/${encodeURIComponent(item.name)}`,
-        label: item.label || item.name,
-      })) || [];
+    const contentItems = configObject.content?.map((item: any) => ({
+      key: item.name,
+      icon: item.type === "collection"
+        ? <FileStack className="h-5 w-5 mr-2" />
+        : <FileText className="h-5 w-5 mr-2" />,
+      href: `/${config.owner}/${config.repo}/${
+        encodeURIComponent(config.branch)
+      }/${item.type}/${encodeURIComponent(item.name)}`,
+      label: item.label || item.name,
+    })) || [];
 
-    const mediaItems =
-      configObject.media?.map((item: any) => ({
-        key: item.name || "media",
-        icon: <FolderOpen className="h-5 w-5 mr-2" />,
-        href: `/${config.owner}/${config.repo}/${encodeURIComponent(config.branch)}/media/${item.name}`,
-        label: item.label || item.name || "Media",
-      })) || [];
+    const mediaItems = configObject.media?.map((item: any) => ({
+      key: item.name || "media",
+      icon: <FolderOpen className="h-5 w-5 mr-2" />,
+      href: `/${config.owner}/${config.repo}/${
+        encodeURIComponent(config.branch)
+      }/media/${item.name}`,
+      label: item.label || item.name || "Media",
+    })) || [];
 
     const canManageRepo = hasGithubIdentity(user);
 
-    const settingsItem =
-      canManageRepo && isConfigEnabled(configObject)
-        ? {
-            key: "configuration",
-            icon: <Settings className="h-5 w-5 mr-2" />,
-            href: `/${config.owner}/${config.repo}/${encodeURIComponent(config.branch)}/configuration`,
-            label: "Configuration",
-          }
-        : null;
+    const settingsItem = canManageRepo && isConfigEnabled(configObject)
+      ? {
+        key: "configuration",
+        icon: <Settings className="h-5 w-5 mr-2" />,
+        href: `/${config.owner}/${config.repo}/${
+          encodeURIComponent(config.branch)
+        }/configuration`,
+        label: "Configuration",
+      }
+      : null;
 
     const collaboratorsItem =
       configObject && Object.keys(configObject).length !== 0 && canManageRepo
         ? {
-            key: "collaborators",
-            icon: <Users className="h-5 w-5 mr-2" />,
-            href: `/${config.owner}/${config.repo}/${encodeURIComponent(config.branch)}/collaborators`,
-            label: "Collaborators",
-          }
+          key: "collaborators",
+          icon: <Users className="h-5 w-5 mr-2" />,
+          href: `/${config.owner}/${config.repo}/${
+            encodeURIComponent(config.branch)
+          }/collaborators`,
+          label: "Collaborators",
+        }
         : null;
 
-    return [...contentItems, ...mediaItems, settingsItem, collaboratorsItem].filter(Boolean);
+    return [...contentItems, ...mediaItems, settingsItem, collaboratorsItem]
+      .filter(Boolean);
   }, [config, user]);
 
   if (!items.length) return null;
@@ -99,7 +102,8 @@ const RepoNav = ({ onClick }: { onClick?: () => void }) => {
           key={item.key}
           icon={item.icon}
           href={item.href}
-          active={pathname === item.href || pathname.startsWith(`${item.href}/`)}
+          active={pathname === item.href ||
+            pathname.startsWith(`${item.href}/`)}
           onClick={onClick}
         >
           {item.label}

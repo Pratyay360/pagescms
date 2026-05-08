@@ -1,8 +1,12 @@
 # Pages CMS
 
-[Pages CMS](https://pagescms.org) is an open source CMS for GitHub repositories. It is especially well suited for static sites and content-driven apps built with tools like Jekyll, Hugo, Next.js, Astro, VuePress, and similar stacks.
+[Pages CMS](https://pagescms.org) is an open source CMS for GitHub repositories.
+It is especially well suited for static sites and content-driven apps built with
+tools like Jekyll, Hugo, Next.js, Astro, VuePress, and similar stacks.
 
-You can use the hosted version directly at [app.pagescms.org](https://app.pagescms.org), or run your own local development copy from this repository.
+You can use the hosted version directly at
+[app.pagescms.org](https://app.pagescms.org), or run your own local development
+copy from this repository.
 
 [![Screenshot of the Pages CMS editor](https://pagescms.org/media/screenshot.png)](https://demo.pagescms.org)
 
@@ -21,7 +25,8 @@ Useful starting points:
 
 ## Use online
 
-The easiest way to get started is the hosted version at [app.pagescms.org](https://app.pagescms.org).
+The easiest way to get started is the hosted version at
+[app.pagescms.org](https://app.pagescms.org).
 
 Use that if you want to:
 
@@ -118,7 +123,8 @@ npm run db:clear-cache
 npm run dev
 ```
 
-If you need GitHub webhooks to reach your local app, use a public tunnel URL as the helper `--base-url`.
+If you need GitHub webhooks to reach your local app, use a public tunnel URL as
+the helper `--base-url`.
 
 For more detail, see:
 

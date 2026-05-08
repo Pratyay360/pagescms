@@ -1,19 +1,19 @@
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
-import { getConfig } from "@/lib/config-store";
-import { ConfigProvider } from "@/contexts/config-context";
-import { RepoLayout } from "@/components/repo/repo-layout";
-import { getServerSession } from "@/lib/session-server";
-import { getToken } from "@/lib/token";
+import { getConfig } from "../../../../../lib/config-store.ts";
+import { ConfigProvider } from "../../../../../contexts/config-context.tsx";
+import { RepoLayout } from "../../../../../components/repo/repo-layout.tsx";
+import { getServerSession } from "../../../../../lib/session-server.ts";
+import { getToken } from "../../../../../lib/token.ts";
 import {
   Empty,
   EmptyContent,
   EmptyDescription,
   EmptyHeader,
   EmptyTitle,
-} from "@/components/ui/empty";
+} from "../../../../../components/ui/empty.tsx";
 import Link from "next/link";
-import { buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "../../../../../components/ui/button.tsx";
 
 export default async function Layout({
   children,
@@ -27,10 +27,9 @@ export default async function Layout({
   const session = await getServerSession();
   const user = session?.user;
   const returnTo = requestHeaders.get("x-return-to");
-  const signInUrl =
-    returnTo && returnTo !== "/sign-in"
-      ? `/sign-in?redirect=${encodeURIComponent(returnTo)}`
-      : "/sign-in";
+  const signInUrl = returnTo && returnTo !== "/sign-in"
+    ? `/sign-in?redirect=${encodeURIComponent(returnTo)}`
+    : "/sign-in";
   if (!user) return redirect(signInUrl);
 
   const decodedBranch = decodeURIComponent(branch);
@@ -65,10 +64,15 @@ export default async function Layout({
           <Empty className="absolute inset-0 border-0 rounded-none">
             <EmptyHeader>
               <EmptyTitle>Branch not found</EmptyTitle>
-              <EmptyDescription>{`The branch "${decodedBranch}" could not be found. It may have been removed or renamed.`}</EmptyDescription>
+              <EmptyDescription>
+                {`The branch "${decodedBranch}" could not be found. It may have been removed or renamed.`}
+              </EmptyDescription>
             </EmptyHeader>
             <EmptyContent>
-              <Link className={buttonVariants({ variant: "default" })} href={`/${owner}/${repo}`}>
+              <Link
+                className={buttonVariants({ variant: "default" })}
+                href={`/${owner}/${repo}`}
+              >
                 Open default branch
               </Link>
             </EmptyContent>

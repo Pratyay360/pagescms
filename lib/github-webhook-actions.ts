@@ -1,5 +1,5 @@
-import { db } from "@/db";
-import { actionRunTable } from "@/db/schema";
+import { db } from "../db/index.ts";
+import { actionRunTable } from "../db/schema.ts";
 import { eq } from "drizzle-orm";
 
 const handleActionWebhookEvent = async (event: string | null, data: any) => {
@@ -15,10 +15,9 @@ const handleActionWebhookEvent = async (event: string | null, data: any) => {
       conclusion: data.workflow_run?.conclusion ?? null,
       htmlUrl: data.workflow_run?.html_url ?? null,
       updatedAt: new Date(),
-      completedAt:
-        data.workflow_run?.status === "completed"
-          ? new Date(data.workflow_run?.updated_at ?? new Date().toISOString())
-          : null,
+      completedAt: data.workflow_run?.status === "completed"
+        ? new Date(data.workflow_run?.updated_at ?? new Date().toISOString())
+        : null,
     })
     .where(eq(actionRunTable.workflowRunId, workflowRunId));
 

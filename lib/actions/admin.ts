@@ -3,14 +3,16 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { eq, sql } from "drizzle-orm";
-import { db } from "@/db";
-import { sessionTable } from "@/db/schema";
-import { requireAdminSession } from "@/lib/admin";
+import { db } from "../../db/index.ts";
+import { sessionTable } from "../../db/schema.ts";
+import { requireAdminSession } from "../admin.ts";
 
 const resetGlobalCache = async () => {
   await requireAdminSession();
 
-  await db.execute(sql`TRUNCATE TABLE cache_file, cache_permission, config, cache_file_meta`);
+  await db.execute(
+    sql`TRUNCATE TABLE cache_file, cache_permission, config, cache_file_meta`,
+  );
 
   revalidatePath("/admin");
 

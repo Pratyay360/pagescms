@@ -1,10 +1,14 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useConfig } from "@/contexts/config-context";
-import { getRelativePath, joinPathSegments, normalizePath } from "@/lib/utils/file";
-import { getSchemaByName } from "@/lib/schema";
-import { requireApiSuccess } from "@/lib/api-client";
+import { useConfig } from "../../contexts/config-context.tsx";
+import {
+  getRelativePath,
+  joinPathSegments,
+  normalizePath,
+} from "../../lib/utils/file.ts";
+import { getSchemaByName } from "../../lib/schema.ts";
+import { requireApiSuccess } from "../../lib/api-client.ts";
 import {
   Dialog,
   DialogClose,
@@ -13,9 +17,9 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+} from "../ui/dialog.tsx";
+import { Button } from "../ui/button.tsx";
+import { Input } from "../ui/input.tsx";
 import { toast } from "sonner";
 
 export function FileRename({
@@ -57,23 +61,33 @@ export function FileRename({
 
   const handleRename = async () => {
     try {
-      const newPath = joinPathSegments([rootPath, normalizePath(newRelativePath)]);
+      const newPath = joinPathSegments([
+        rootPath,
+        normalizePath(newRelativePath),
+      ]);
 
       const renamePromise = new Promise(async (resolve, reject) => {
         try {
           const response = await fetch(
-            `/api/${config.owner}/${config.repo}/${encodeURIComponent(config.branch)}/files/${encodeURIComponent(normalizedPath)}/rename`,
+            `/api/${config.owner}/${config.repo}/${
+              encodeURIComponent(config.branch)
+            }/files/${encodeURIComponent(normalizedPath)}/rename`,
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
-                type: type === "collection" || type === "file" ? "content" : type,
+                type: type === "collection" || type === "file"
+                  ? "content"
+                  : type,
                 name,
                 newPath,
               }),
             },
           );
-          const data = await requireApiSuccess<any>(response, "Failed to rename file");
+          const data = await requireApiSuccess<any>(
+            response,
+            "Failed to rename file",
+          );
 
           resolve(data);
         } catch (error) {
@@ -101,7 +115,10 @@ export function FileRename({
           <DialogTitle>Rename file</DialogTitle>
           <DialogDescription></DialogDescription>
         </DialogHeader>
-        <Input defaultValue={relativePath} onChange={(e) => setNewRelativePath(e.target.value)} />
+        <Input
+          defaultValue={relativePath}
+          onChange={(e) => setNewRelativePath(e.target.value)}
+        />
         <DialogFooter className="max-sm:gap-y-2">
           <DialogClose asChild>
             <Button type="button" variant="outline">

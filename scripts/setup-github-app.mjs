@@ -4,6 +4,7 @@ import { randomBytes } from "node:crypto";
 import { execFile } from "node:child_process";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
+import process from "node:process";
 
 const args = parseArgs(process.argv.slice(2));
 
@@ -16,7 +17,8 @@ async function main() {
   const host = "127.0.0.1";
   const port = Number(args.port || 8787);
   const baseUrl = trimSlash(
-    args.baseUrl || process.env.BASE_URL || process.env.BETTER_AUTH_URL || "http://localhost:3000",
+    args.baseUrl || process.env.BASE_URL || process.env.BETTER_AUTH_URL ||
+      "http://localhost:3000",
   );
   const appName = (args.appName || "Pages CMS").trim();
   const ownerType = args.ownerType === "org" ? "org" : "personal";
@@ -38,7 +40,8 @@ async function main() {
     url: baseUrl,
     callback_urls: [userAuthorizationCallbackUrl],
     redirect_url: localCallbackUrl,
-    description: "Pages CMS is an open source CMS for editing content in GitHub repositories.",
+    description:
+      "Pages CMS is an open source CMS for editing content in GitHub repositories.",
     public: false,
     default_permissions: {
       administration: "write",
@@ -69,10 +72,11 @@ async function main() {
     },
   };
 
-  const appCreationUrl =
-    ownerType === "org"
-      ? `https://github.com/organizations/${encodeURIComponent(orgSlug)}/settings/apps/new?state=${encodeURIComponent(state)}`
-      : `https://github.com/settings/apps/new?state=${encodeURIComponent(state)}`;
+  const appCreationUrl = ownerType === "org"
+    ? `https://github.com/organizations/${
+      encodeURIComponent(orgSlug)
+    }/settings/apps/new?state=${encodeURIComponent(state)}`
+    : `https://github.com/settings/apps/new?state=${encodeURIComponent(state)}`;
 
   const code = await runLocalFlow({
     host,
@@ -85,8 +89,7 @@ async function main() {
 
   const converted = await exchangeManifestCode(code);
   const envPath = args.envPath ? resolve(process.cwd(), args.envPath) : "";
-  const authSecret =
-    process.env.BETTER_AUTH_SECRET ||
+  const authSecret = process.env.BETTER_AUTH_SECRET ||
     process.env.AUTH_SECRET ||
     randomBytes(32).toString("base64url");
 
@@ -121,7 +124,9 @@ async function main() {
   console.log(`- Webhook URL: ${webhookUrl}`);
   console.log("\nNext:");
   console.log("1) Install the app on your target account/repositories.");
-  console.log("   Disable 'User-to-server token expiration' if GitHub shows that option.");
+  console.log(
+    "   Disable 'User-to-server token expiration' if GitHub shows that option.",
+  );
   console.log("2) Start Pages CMS.");
 }
 
@@ -130,7 +135,9 @@ main().catch((error) => {
   process.exit(1);
 });
 
-async function runLocalFlow({ host, port, state, appCreationUrl, manifest, autoOpen }) {
+async function runLocalFlow(
+  { host, port, state, appCreationUrl, manifest, autoOpen },
+) {
   let resolveCode;
   let rejectCode;
 
@@ -153,7 +160,8 @@ async function runLocalFlow({ host, port, state, appCreationUrl, manifest, autoO
 
     if (url.pathname === callbackPath) {
       const incomingState = url.searchParams.get("state") || "";
-      const code = url.searchParams.get("code") || url.searchParams.get("temporary_code") || "";
+      const code = url.searchParams.get("code") ||
+        url.searchParams.get("temporary_code") || "";
       const error = url.searchParams.get("error") || "";
 
       if (error) {
@@ -166,7 +174,9 @@ async function runLocalFlow({ host, port, state, appCreationUrl, manifest, autoO
       if (incomingState !== state) {
         res.writeHead(400, { "content-type": "text/plain; charset=utf-8" });
         res.end("Invalid state. Return to terminal.");
-        rejectCode(new Error("OAuth state mismatch while creating GitHub App."));
+        rejectCode(
+          new Error("OAuth state mismatch while creating GitHub App."),
+        );
         return;
       }
 
@@ -193,7 +203,9 @@ async function runLocalFlow({ host, port, state, appCreationUrl, manifest, autoO
   });
 
   const launchUrl = `http://${host}:${port}${startPath}`;
-  console.log(`\nOpen this URL if browser does not open automatically:\n${launchUrl}`);
+  console.log(
+    `\nOpen this URL if browser does not open automatically:\n${launchUrl}`,
+  );
   if (autoOpen) tryOpenBrowser(launchUrl);
 
   const timeoutMs = 10 * 60 * 1000;
@@ -238,7 +250,9 @@ function renderAutoPostPage({ appCreationUrl, manifest }) {
 
 async function exchangeManifestCode(code) {
   const response = await fetch(
-    `https://api.github.com/app-manifests/${encodeURIComponent(code)}/conversions`,
+    `https://api.github.com/app-manifests/${
+      encodeURIComponent(code)
+    }/conversions`,
     {
       method: "POST",
       headers: {
@@ -250,27 +264,37 @@ async function exchangeManifestCode(code) {
 
   if (!response.ok) {
     const body = await response.text();
-    throw new Error(`GitHub manifest conversion failed (${response.status}): ${body}`);
+    throw new Error(
+      `GitHub manifest conversion failed (${response.status}): ${body}`,
+    );
   }
 
   return response.json();
 }
 
 function upsertEnv(filePath, values) {
-  const lines = existsSync(filePath) ? readFileSync(filePath, "utf8").split(/\r?\n/) : [];
+  const lines = existsSync(filePath)
+    ? readFileSync(filePath, "utf8").split(/\r?\n/)
+    : [];
 
   const nextLines = [...lines];
 
   for (const [key, rawValue] of Object.entries(values)) {
     const value = rawValue == null ? "" : String(rawValue);
     const line = `${key}=${value}`;
-    const index = nextLines.findIndex((existing) => existing.startsWith(`${key}=`));
+    const index = nextLines.findIndex((existing) =>
+      existing.startsWith(`${key}=`)
+    );
 
     if (index >= 0) nextLines[index] = line;
     else nextLines.push(line);
   }
 
-  writeFileSync(filePath, `${nextLines.join("\n").replace(/\n+$/g, "")}\n`, "utf8");
+  writeFileSync(
+    filePath,
+    `${nextLines.join("\n").replace(/\n+$/g, "")}\n`,
+    "utf8",
+  );
 }
 
 function tryOpenBrowser(url) {

@@ -1,10 +1,10 @@
 import { type NextRequest } from "next/server";
 import { and, eq } from "drizzle-orm";
-import { db } from "@/db";
-import { collaboratorTable } from "@/db/schema";
-import { requireGithubRepoWriteAccess } from "@/lib/authz-server";
-import { createHttpError, toErrorResponse } from "@/lib/api-error";
-import { requireApiUserSession } from "@/lib/session-server";
+import { db } from "../../../../db/index.ts";
+import { collaboratorTable } from "../../../../db/schema.ts";
+import { requireGithubRepoWriteAccess } from "../../../../lib/authz-server.ts";
+import { createHttpError, toErrorResponse } from "../../../../lib/api-error.ts";
+import { requireApiUserSession } from "../../../../lib/session-server.ts";
 
 /**
  * Fetches collaborators for a repository.
@@ -14,7 +14,10 @@ import { requireApiUserSession } from "@/lib/session-server";
  * Requires authentication. Only accessible to GitHub users (not collaborators).
  */
 
-export async function GET(request: NextRequest, context: { params: Promise<{ slug: string[] }> }) {
+export async function GET(
+  request: NextRequest,
+  context: { params: Promise<{ slug: string[] }> },
+) {
   try {
     const params = await context.params;
     const sessionResult = await requireApiUserSession();

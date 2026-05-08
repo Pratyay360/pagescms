@@ -1,21 +1,21 @@
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
-import { getToken } from "@/lib/token";
-import { RepoProvider } from "@/contexts/repo-context";
-import { getServerSession } from "@/lib/session-server";
-import { getRepoSnapshot } from "@/lib/github-cache-file";
-import { GithubAuthExpired } from "@/components/github-auth-expired";
-import { isGithubAuthError } from "@/lib/github-auth";
-import { invalidateSessionForGithubAuthError } from "@/lib/github-auth-server";
+import { getToken } from "../../../../lib/token.ts";
+import { RepoProvider } from "../../../../contexts/repo-context.tsx";
+import { getServerSession } from "../../../../lib/session-server.ts";
+import { getRepoSnapshot } from "../../../../lib/github-cache-file.ts";
+import { GithubAuthExpired } from "../../../../components/github-auth-expired.tsx";
+import { isGithubAuthError } from "../../../../lib/github-auth.ts";
+import { invalidateSessionForGithubAuthError } from "../../../../lib/github-auth-server.ts";
 import {
   Empty,
   EmptyContent,
   EmptyDescription,
   EmptyHeader,
   EmptyTitle,
-} from "@/components/ui/empty";
+} from "../../../../components/ui/empty.tsx";
 import Link from "next/link";
-import { buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "../../../../components/ui/button.tsx";
 
 export default async function Layout({
   children,
@@ -29,10 +29,9 @@ export default async function Layout({
   const session = await getServerSession();
   const user = session?.user;
   const returnTo = requestHeaders.get("x-return-to");
-  const signInUrl =
-    returnTo && returnTo !== "/sign-in"
-      ? `/sign-in?redirect=${encodeURIComponent(returnTo)}`
-      : "/sign-in";
+  const signInUrl = returnTo && returnTo !== "/sign-in"
+    ? `/sign-in?redirect=${encodeURIComponent(returnTo)}`
+    : "/sign-in";
   if (!user) return redirect(signInUrl);
 
   try {
@@ -48,7 +47,8 @@ export default async function Layout({
           <EmptyHeader>
             <EmptyTitle>Empty repository</EmptyTitle>
             <EmptyDescription>
-              Create a branch and add a &quot;.pages.yml&quot; file to configure this repository.
+              Create a branch and add a &quot;.pages.yml&quot; file to configure
+              this repository.
             </EmptyDescription>
           </EmptyHeader>
           <EmptyContent>

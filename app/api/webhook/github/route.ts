@@ -1,8 +1,10 @@
 import { after } from "next/server";
 import crypto from "crypto";
-import { handleActionWebhookEvent } from "@/lib/github-webhook-actions";
-import { handleInstallationWebhookEvent } from "@/lib/github-webhook-installation";
-import { handlePushWebhookEvent } from "@/lib/github-webhook-push";
+import { handleActionWebhookEvent } from "../../../../lib/github-webhook-actions.ts";
+import { handleInstallationWebhookEvent } from "../../../../lib/github-webhook-installation.ts";
+import { handlePushWebhookEvent } from "../../../../lib/github-webhook-push.ts";
+import process from "node:process";
+import { Buffer } from "node:buffer";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;

@@ -1,7 +1,7 @@
 "use client";
 
 import { Loader as LucideLoader } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "../lib/utils.ts";
 
 export function Loader({ className = "", children = "" }) {
   return (

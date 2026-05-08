@@ -1,18 +1,27 @@
-import { createOctokitInstance } from "@/lib/utils/octokit";
-import { isContentOperationAllowed } from "@/lib/operations";
-import { getSchemaByName } from "@/lib/schema";
-import { getConfig } from "@/lib/config-store";
-import { getFileExtension, normalizePath } from "@/lib/utils/file";
-import { getToken } from "@/lib/token";
-import { updateFileCache } from "@/lib/github-cache-file";
-import { createHttpError, toErrorResponse } from "@/lib/api-error";
-import { getBranchHeadSha, setBranchHeadSha } from "@/lib/github-cache-file";
+import { createOctokitInstance } from "../../../../../../../../lib/utils/octokit.ts";
+import { isContentOperationAllowed } from "../../../../../../../../lib/operations.ts";
+import { getSchemaByName } from "../../../../../../../../lib/schema.ts";
+import { getConfig } from "../../../../../../../../lib/config-store.ts";
+import {
+  getFileExtension,
+  normalizePath,
+} from "../../../../../../../../lib/utils/file.ts";
+import { getToken } from "../../../../../../../../lib/token.ts";
+import { updateFileCache } from "../../../../../../../../lib/github-cache-file.ts";
+import {
+  createHttpError,
+  toErrorResponse,
+} from "../../../../../../../../lib/api-error.ts";
+import {
+  getBranchHeadSha,
+  setBranchHeadSha,
+} from "../../../../../../../../lib/github-cache-file.ts";
 import {
   buildCommitTokens,
   resolveCommitIdentity,
   resolveCommitMessage,
-} from "@/lib/commit-message";
-import { requireApiUserSession } from "@/lib/session-server";
+} from "../../../../../../../../lib/commit-message.ts";
+import { requireApiUserSession } from "../../../../../../../../lib/session-server.ts";
 
 /**
  * Renames a file in a GitHub repository.
@@ -24,7 +33,11 @@ import { requireApiUserSession } from "@/lib/session-server";
 
 export async function POST(
   request: Request,
-  context: { params: Promise<{ owner: string; repo: string; branch: string; path: string }> },
+  context: {
+    params: Promise<
+      { owner: string; repo: string; branch: string; path: string }
+    >;
+  },
 ) {
   try {
     const params = await context.params;
@@ -45,22 +58,31 @@ export async function POST(
     const config = await getConfig(params.owner, params.repo, params.branch, {
       getToken: async () => token,
     });
-    if (!config)
+    if (!config) {
       throw new Error(
         `Configuration not found for ${params.owner}/${params.repo}/${params.branch}.`,
       );
+    }
 
     const data: any = await request.json();
 
-    if (!data.type || !["content", "media"].includes(data.type))
-      throw new Error(`"type" is required and must be set to "content" or "media".`);
-    if (!data.name && data.type === "content") throw new Error(`"name" is required.`);
+    if (!data.type || !["content", "media"].includes(data.type)) {
+      throw new Error(
+        `"type" is required and must be set to "content" or "media".`,
+      );
+    }
+    if (!data.name && data.type === "content") {
+      throw new Error(`"name" is required.`);
+    }
     if (!data.newPath) throw new Error(`"newPath" is required.`);
 
     const normalizedPath = normalizePath(params.path);
     const normalizedNewPath = normalizePath(data.newPath);
-    if (normalizedPath === normalizedNewPath)
-      throw new Error(`New path "${data.newPath}" is the same as the old path.`);
+    if (normalizedPath === normalizedNewPath) {
+      throw new Error(
+        `New path "${data.newPath}" is the same as the old path.`,
+      );
+    }
 
     let schema;
     let schemaCommitTemplates: Record<string, string> | undefined;
@@ -71,53 +93,85 @@ export async function POST(
         if (!data.name) throw new Error(`"name" is required for content.`);
 
         schema = getSchemaByName(config.object, data.name);
-        if (!schema) throw new Error(`Content schema not found for ${data.name}.`);
+        if (!schema) {
+          throw new Error(`Content schema not found for ${data.name}.`);
+        }
         if (!isContentOperationAllowed("rename", { schema })) {
-          throw createHttpError(`Renaming entries isn't allowed for "${data.name}".`, 403);
+          throw createHttpError(
+            `Renaming entries isn't allowed for "${data.name}".`,
+            403,
+          );
         }
         schemaCommitTemplates = schema?.commit?.templates;
         schemaCommitIdentity = schema?.commit?.identity;
 
-        if (schema.type === "file")
+        if (schema.type === "file") {
           throw new Error(`Renaming content of type "file" isn't allowed.`);
+        }
 
-        if (!normalizedPath.startsWith(schema.path))
-          throw new Error(`Invalid path "${params.path}" for ${data.type} "${data.name}".`);
-        if (!normalizedNewPath.startsWith(schema.path))
-          throw new Error(`Invalid path "${data.newPath}" for ${data.type} "${data.name}".`);
+        if (!normalizedPath.startsWith(schema.path)) {
+          throw new Error(
+            `Invalid path "${params.path}" for ${data.type} "${data.name}".`,
+          );
+        }
+        if (!normalizedNewPath.startsWith(schema.path)) {
+          throw new Error(
+            `Invalid path "${data.newPath}" for ${data.type} "${data.name}".`,
+          );
+        }
 
-        if (getFileExtension(normalizedPath) !== (schema.extension ?? ""))
+        if (getFileExtension(normalizedPath) !== (schema.extension ?? "")) {
           throw new Error(
-            `Invalid extension "${getFileExtension(normalizedPath)}" for ${data.type} "${data.name}".`,
+            `Invalid extension "${
+              getFileExtension(normalizedPath)
+            }" for ${data.type} "${data.name}".`,
           );
-        if (getFileExtension(normalizedNewPath) !== (schema.extension ?? ""))
+        }
+        if (getFileExtension(normalizedNewPath) !== (schema.extension ?? "")) {
           throw new Error(
-            `Invalid extension "${getFileExtension(normalizedNewPath)}" for ${data.type} "${data.name}".`,
+            `Invalid extension "${
+              getFileExtension(normalizedNewPath)
+            }" for ${data.type} "${data.name}".`,
           );
+        }
         break;
       case "media":
         if (!data.name) throw new Error(`"name" is required for media.`);
 
         schema = getSchemaByName(config.object, data.name, "media");
-        if (!schema) throw new Error(`Media schema not found for ${data.name}.`);
+        if (!schema) {
+          throw new Error(`Media schema not found for ${data.name}.`);
+        }
         schemaCommitTemplates = schema?.commit?.templates;
         schemaCommitIdentity = schema?.commit?.identity;
 
-        if (!normalizedPath.startsWith(schema.input))
+        if (!normalizedPath.startsWith(schema.input)) {
           throw new Error(`Invalid path "${params.path}" for media.`);
-        if (!normalizedNewPath.startsWith(schema.input))
+        }
+        if (!normalizedNewPath.startsWith(schema.input)) {
           throw new Error(`Invalid path "${data.newPath}" for media.`);
+        }
 
         if (
           schema.extensions?.length > 0 &&
           !schema.extensions.includes(getFileExtension(normalizedPath))
-        )
-          throw new Error(`Invalid extension "${getFileExtension(normalizedPath)}" for media.`);
+        ) {
+          throw new Error(
+            `Invalid extension "${
+              getFileExtension(normalizedPath)
+            }" for media.`,
+          );
+        }
         if (
           schema.extensions?.length > 0 &&
           !schema.extensions.includes(getFileExtension(normalizedNewPath))
-        )
-          throw new Error(`Invalid extension "${getFileExtension(normalizedNewPath)}" for media.`);
+        ) {
+          throw new Error(
+            `Invalid extension "${
+              getFileExtension(normalizedNewPath)
+            }" for media.`,
+          );
+        }
         break;
     }
 
@@ -125,13 +179,12 @@ export async function POST(
       configObject: config.object,
       identityOverride: schemaCommitIdentity,
     });
-    const committer =
-      commitIdentity === "user" && user.email
-        ? {
-            name: user.name?.trim() || user.email,
-            email: user.email,
-          }
-        : undefined;
+    const committer = commitIdentity === "user" && user.email
+      ? {
+        name: user.name?.trim() || user.email,
+        email: user.email,
+      }
+      : undefined;
 
     const response = await githubRenameFile(
       token,

@@ -2,16 +2,16 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
-import { buttonVariants } from "@/components/ui/button";
-import { GithubAuthExpired } from "@/components/github-auth-expired";
-import { isGithubAuthError } from "@/lib/github-auth";
+import { buttonVariants } from "../components/ui/button.tsx";
+import { GithubAuthExpired } from "../components/github-auth-expired.tsx";
+import { isGithubAuthError } from "../lib/github-auth.ts";
 import {
   Empty,
   EmptyContent,
   EmptyDescription,
   EmptyHeader,
   EmptyTitle,
-} from "@/components/ui/empty";
+} from "../components/ui/empty.tsx";
 
 export default function Error({
   error,
@@ -38,7 +38,10 @@ export default function Error({
         <Link className={buttonVariants({ variant: "default" })} href="/">
           Go home
         </Link>
-        <button className={buttonVariants({ variant: "outline" })} onClick={reset}>
+        <button
+          className={buttonVariants({ variant: "outline" })}
+          onClick={reset}
+        >
           Try again
         </button>
       </EmptyContent>

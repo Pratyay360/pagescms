@@ -1,9 +1,9 @@
 "use client";
 
 import { useMemo } from "react";
-import { Thumbnail } from "@/components/thumbnail";
-import { Field } from "@/types/field";
-import { useConfig } from "@/contexts/config-context";
+import { Thumbnail } from "../../../components/thumbnail.tsx";
+import { Field } from "../../../types/field.ts";
+import { useConfig } from "../../../contexts/config-context.tsx";
 
 const ViewComponent = ({ value, field }: { value: string; field: Field }) => {
   const extraValuesCount = value && Array.isArray(value) ? value.length - 1 : 0;
@@ -20,7 +20,9 @@ const ViewComponent = ({ value, field }: { value: string; field: Field }) => {
     <span className="flex items-center gap-x-1.5">
       <Thumbnail name={mediaName} path={path} className="w-8 rounded-md" />
       {extraValuesCount > 0 && (
-        <span className="text-muted-foreground text-xs">+{extraValuesCount}</span>
+        <span className="text-muted-foreground text-xs">
+          +{extraValuesCount}
+        </span>
       )}
     </span>
   );

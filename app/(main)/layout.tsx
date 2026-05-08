@@ -1,13 +1,13 @@
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
-import { getAccounts } from "@/lib/accounts";
-import { UserProvider } from "@/contexts/user-context";
-import { User } from "@/types/user";
-import { getServerSession } from "@/lib/session-server";
-import { GithubAuthExpired } from "@/components/github-auth-expired";
-import { isGithubAuthError } from "@/lib/github-auth";
-import { invalidateSessionForGithubAuthError } from "@/lib/github-auth-server";
-import { hasAdminAccess } from "@/lib/admin";
+import { getAccounts } from "../../lib/accounts.ts";
+import { UserProvider } from "../../contexts/user-context.tsx";
+import { User } from "../../types/user.ts";
+import { getServerSession } from "../../lib/session-server.ts";
+import { GithubAuthExpired } from "../../components/github-auth-expired.tsx";
+import { isGithubAuthError } from "../../lib/github-auth.ts";
+import { invalidateSessionForGithubAuthError } from "../../lib/github-auth-server.ts";
+import { hasAdminAccess } from "../../lib/admin.ts";
 
 export default async function Layout({
   children,
@@ -17,10 +17,9 @@ export default async function Layout({
   const requestHeaders = await headers();
   const session = await getServerSession();
   const returnTo = requestHeaders.get("x-return-to");
-  const signInUrl =
-    returnTo && returnTo !== "/sign-in"
-      ? `/sign-in?redirect=${encodeURIComponent(returnTo)}`
-      : "/sign-in";
+  const signInUrl = returnTo && returnTo !== "/sign-in"
+    ? `/sign-in?redirect=${encodeURIComponent(returnTo)}`
+    : "/sign-in";
   if (!session?.user) return redirect(signInUrl);
 
   let accounts;

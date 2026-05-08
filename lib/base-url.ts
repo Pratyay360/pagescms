@@ -1,3 +1,4 @@
+import process from "node:process";
 const DEV_BASE_URL = "http://localhost:3000";
 
 export const getBaseUrl = () => {

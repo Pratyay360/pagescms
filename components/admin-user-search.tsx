@@ -9,7 +9,7 @@ import {
   InputGroupAddon,
   InputGroupInput,
   InputGroupText,
-} from "@/components/ui/input-group";
+} from "./ui/input-group.tsx";
 
 export function AdminUserSearch({ initialQuery }: { initialQuery: string }) {
   const router = useRouter();
@@ -38,7 +38,9 @@ export function AdminUserSearch({ initialQuery }: { initialQuery: string }) {
     }
 
     const query = params.toString();
-    router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
+    router.replace(query ? `${pathname}?${query}` : pathname, {
+      scroll: false,
+    });
   }, [debouncedValue, pathname, router, searchParams]);
 
   return (

@@ -2,10 +2,13 @@
 
 import { use, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
-import { DocumentTitle, formatRepoBranchTitle } from "@/components/document-title";
-import { useConfig } from "@/contexts/config-context";
-import { getSchemaByName } from "@/lib/schema";
-import { Collection } from "@/components/collection/collection";
+import {
+  DocumentTitle,
+  formatRepoBranchTitle,
+} from "../../../../../../../components/document-title.tsx";
+import { useConfig } from "../../../../../../../contexts/config-context.tsx";
+import { getSchemaByName } from "../../../../../../../lib/schema.ts";
+import { Collection } from "../../../../../../../components/collection/collection.tsx";
 
 export default function Page({
   params,
@@ -22,7 +25,10 @@ export default function Page({
   if (!config) throw new Error(`Configuration not found.`);
 
   const name = decodeURIComponent(resolvedParams.name);
-  const schema = useMemo(() => getSchemaByName(config?.object, name), [config, name]);
+  const schema = useMemo(() => getSchemaByName(config?.object, name), [
+    config,
+    name,
+  ]);
   if (!schema) throw new Error(`Schema not found for ${name}.`);
 
   const searchParams = useSearchParams();

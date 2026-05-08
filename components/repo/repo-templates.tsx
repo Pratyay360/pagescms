@@ -3,11 +3,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useActionState } from "react";
 import { useRouter } from "next/navigation";
-import { useUser } from "@/contexts/user-context";
-import { handleCopyTemplate } from "@/lib/actions/template";
-import templates from "@/lib/templates";
-import { Button } from "@/components/ui/button";
-import { SubmitButton } from "@/components/submit-button";
+import { useUser } from "../../contexts/user-context.tsx";
+import { handleCopyTemplate } from "../../lib/actions/template.ts";
+import templates from "../../lib/templates.ts";
+import { Button } from "../ui/button.tsx";
+import { SubmitButton } from "../submit-button.tsx";
 import {
   Dialog,
   DialogClose,
@@ -17,33 +17,38 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
+} from "../ui/dialog.tsx";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+} from "../ui/dropdown-menu.tsx";
+import { Input } from "../ui/input.tsx";
+import { Label } from "../ui/label.tsx";
 import { toast } from "sonner";
-import { ChevronsUpDown, ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, ChevronsUpDown } from "lucide-react";
 
 export function RepoTemplates({ defaultAccount }: { defaultAccount?: any }) {
   const { user } = useUser();
   const router = useRouter();
   const dialogCloseRef = useRef<any>(null);
 
-  const [copyTemplateState, copyTemplateAction] = useActionState(handleCopyTemplate, {
-    message: "",
-    data: {
-      template: "",
-      owner: "",
-      repo: "",
-      branch: "",
+  const [copyTemplateState, copyTemplateAction] = useActionState(
+    handleCopyTemplate,
+    {
+      message: "",
+      data: {
+        template: "",
+        owner: "",
+        repo: "",
+        branch: "",
+      },
     },
-  });
-  const [selectedAccount, setSelectedAccount] = useState(defaultAccount || user?.accounts?.[0]);
+  );
+  const [selectedAccount, setSelectedAccount] = useState(
+    defaultAccount || user?.accounts?.[0],
+  );
   const [name, setName] = useState(templates[0].suggested);
   const [isValidName, setIsValidName] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -62,7 +67,9 @@ export function RepoTemplates({ defaultAccount }: { defaultAccount?: any }) {
   useEffect(() => {
     const waitForRepoReadyPromise = new Promise(async (resolve, reject) => {
       try {
-        if (!copyTemplateState.data?.owner || !copyTemplateState.data?.repo) return;
+        if (!copyTemplateState.data?.owner || !copyTemplateState.data?.repo) {
+          return;
+        }
 
         let attempt = 0;
         while (attempt < 10) {
@@ -89,8 +96,12 @@ export function RepoTemplates({ defaultAccount }: { defaultAccount?: any }) {
       toast.promise(waitForRepoReadyPromise, {
         loading: `Waiting for the repository to be ready`,
         success: (response: any) => {
-          if (!copyTemplateState.data?.owner || !copyTemplateState.data?.repo) return;
-          router.push(`/${copyTemplateState.data.owner}/${copyTemplateState.data.repo}`);
+          if (!copyTemplateState.data?.owner || !copyTemplateState.data?.repo) {
+            return;
+          }
+          router.push(
+            `/${copyTemplateState.data.owner}/${copyTemplateState.data.repo}`,
+          );
           return `Repository is ready, redirecting you.`;
         },
         error: (error: any) => error.message,
@@ -130,8 +141,8 @@ export function RepoTemplates({ defaultAccount }: { defaultAccount?: any }) {
                   <DialogHeader>
                     <DialogTitle>Copy template</DialogTitle>
                     <DialogDescription>
-                      This will create a copy of the template repository below under the selected
-                      account.
+                      This will create a copy of the template repository below
+                      under the selected account.
                     </DialogDescription>
                   </DialogHeader>
                   <a
@@ -145,7 +156,9 @@ export function RepoTemplates({ defaultAccount }: { defaultAccount?: any }) {
                       className="aspect-video h-20"
                     />
                     <div className="flex-1 text-left flex flex-col gap-y-1 truncate px-3 py-2 h-full justify-center border-l border-l-accent">
-                      <div className="tracking-tight truncate font-medium">{template.name}</div>
+                      <div className="tracking-tight truncate font-medium">
+                        {template.name}
+                      </div>
                       <div className="text-xs text-muted-foreground truncate">
                         {template.repository}
                       </div>
@@ -155,8 +168,18 @@ export function RepoTemplates({ defaultAccount }: { defaultAccount?: any }) {
                     </div>
                   </a>
                   <div className="grid gap-4">
-                    <input name="owner" type="hidden" value={selectedAccount.login} readOnly />
-                    <input name="template" type="hidden" value={template.repository} readOnly />
+                    <input
+                      name="owner"
+                      type="hidden"
+                      value={selectedAccount.login}
+                      readOnly
+                    />
+                    <input
+                      name="template"
+                      type="hidden"
+                      value={template.repository}
+                      readOnly
+                    />
                     <div className="grid grid-cols-4 items-center gap-4">
                       <Label htmlFor="name" className="text-right">
                         Account
@@ -173,7 +196,10 @@ export function RepoTemplates({ defaultAccount }: { defaultAccount?: any }) {
                             <ChevronsUpDown className="ml-auto h-4 w-4 opacity-50" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="start" className="min-w-full">
+                        <DropdownMenuContent
+                          align="start"
+                          className="min-w-full"
+                        >
                           {user?.accounts?.map((account: any) => (
                             <DropdownMenuItem
                               key={account.login}
@@ -191,7 +217,10 @@ export function RepoTemplates({ defaultAccount }: { defaultAccount?: any }) {
                       </DropdownMenu>
                     </div>
                     <div className="grid grid-cols-4 items-start gap-4">
-                      <Label htmlFor="name" className="h-10 inline-flex items-center justify-end">
+                      <Label
+                        htmlFor="name"
+                        className="h-10 inline-flex items-center justify-end"
+                      >
                         Name
                       </Label>
                       <div className="col-span-3">

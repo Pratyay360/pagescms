@@ -1,5 +1,6 @@
 import { Resend } from "resend";
 import nodemailer from "nodemailer";
+import process from "node:process";
 
 type MailProvider = "resend" | "smtp";
 
@@ -50,7 +51,9 @@ const getEmailProvider = (): MailProvider => {
   const configured = getEnv("EMAIL_PROVIDER")?.toLowerCase();
   if (configured) {
     if (configured === "resend" || configured === "smtp") return configured;
-    throw new Error(`Unsupported EMAIL_PROVIDER "${configured}". Use "resend" or "smtp".`);
+    throw new Error(
+      `Unsupported EMAIL_PROVIDER "${configured}". Use "resend" or "smtp".`,
+    );
   }
 
   if (getEnv("RESEND_API_KEY")) return "resend";
@@ -69,11 +72,14 @@ const getSmtpTransporter = () => {
 
   const portRaw = getEnv("SMTP_PORT") || "587";
   const port = Number(portRaw);
-  if (!Number.isInteger(port) || port <= 0)
+  if (!Number.isInteger(port) || port <= 0) {
     throw new Error("SMTP_PORT must be a positive integer.");
+  }
 
   const secureRaw = getEnv("SMTP_SECURE");
-  const secure = secureRaw ? parseBoolean(secureRaw, "SMTP_SECURE") : port === 465;
+  const secure = secureRaw
+    ? parseBoolean(secureRaw, "SMTP_SECURE")
+    : port === 465;
 
   const user = getEnv("SMTP_USER");
   const pass = getEnv("SMTP_PASSWORD");
@@ -92,9 +98,13 @@ const getSmtpTransporter = () => {
   return transporter;
 };
 
-export const sendEmail = async ({ to, subject, html, text }: SendEmailInput) => {
+export const sendEmail = async (
+  { to, subject, html, text }: SendEmailInput,
+) => {
   const recipients = Array.isArray(to) ? to : [to];
-  if (recipients.length === 0) throw new Error("At least one recipient is required.");
+  if (recipients.length === 0) {
+    throw new Error("At least one recipient is required.");
+  }
 
   const from = getFromEmail();
   const provider = getEmailProvider();

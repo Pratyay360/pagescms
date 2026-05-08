@@ -1,6 +1,6 @@
-import { User } from "@/components/user";
-import { AdminButton } from "@/components/admin-button";
-import { About } from "@/components/about";
+import { User } from "../../components/user.tsx";
+import { AdminButton } from "../../components/admin-button.tsx";
+import { About } from "../../components/about.tsx";
 
 export function MainRootLayout({ children }: { children: React.ReactNode }) {
   return (

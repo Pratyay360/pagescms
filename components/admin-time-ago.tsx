@@ -1,8 +1,10 @@
 "use client";
 
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip.tsx";
 
-export function AdminTimeAgo({ label, fullDate }: { label: string; fullDate: string }) {
+export function AdminTimeAgo(
+  { label, fullDate }: { label: string; fullDate: string },
+) {
   return (
     <Tooltip>
       <TooltipTrigger asChild>

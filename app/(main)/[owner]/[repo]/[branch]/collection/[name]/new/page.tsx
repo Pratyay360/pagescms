@@ -2,10 +2,13 @@
 
 import { use } from "react";
 import { useSearchParams } from "next/navigation";
-import { DocumentTitle, formatRepoBranchTitle } from "@/components/document-title";
-import { Entry } from "@/components/entry/entry";
-import { useConfig } from "@/contexts/config-context";
-import { getSchemaByName } from "@/lib/schema";
+import {
+  DocumentTitle,
+  formatRepoBranchTitle,
+} from "../../../../../../../../components/document-title.tsx";
+import { Entry } from "../../../../../../../../components/entry/entry.tsx";
+import { useConfig } from "../../../../../../../../contexts/config-context.tsx";
+import { getSchemaByName } from "../../../../../../../../lib/schema.ts";
 
 export default function Page({
   params,

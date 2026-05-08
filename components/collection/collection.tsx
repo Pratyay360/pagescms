@@ -1,37 +1,50 @@
 "use client";
 
-import { Fragment, memo, type ReactNode, useCallback, useEffect, useMemo, useState } from "react";
+import {
+  Fragment,
+  memo,
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useConfig } from "@/contexts/config-context";
-import { RepoActionButtons } from "@/components/repo/repo-action-buttons";
+import { useConfig } from "../../contexts/config-context.tsx";
+import { RepoActionButtons } from "../repo/repo-action-buttons.tsx";
 import {
-  getParentPath,
   getFileName,
+  getParentPath,
   getRelativePath,
   joinPathSegments,
   normalizePath,
   sortFiles,
-} from "@/lib/utils/file";
-import { viewComponents } from "@/fields/registry";
-import { getSchemaActions } from "@/lib/actions";
-import { getSchemaByName, getPrimaryField, getFieldByPath, safeAccess } from "@/lib/schema";
-import { requireApiSuccess } from "@/lib/api-client";
-import { EmptyCreate } from "@/components/empty-create";
-import { FileOptions } from "@/components/file/file-options";
-import { CollectionTable } from "./collection-table";
-import { FolderCreate } from "@/components/folder-create";
-import { resolveContentOperations } from "@/lib/operations";
-import { useRepoHeader } from "@/components/repo/repo-header-context";
-import { Button, buttonVariants } from "@/components/ui/button";
-import { ButtonGroup } from "@/components/ui/button-group";
+} from "../../lib/utils/file.ts";
+import { viewComponents } from "../../fields/registry.ts";
+import { getSchemaActions } from "../../lib/actions.ts";
+import {
+  getFieldByPath,
+  getPrimaryField,
+  getSchemaByName,
+  safeAccess,
+} from "../../lib/schema.ts";
+import { requireApiSuccess } from "../../lib/api-client.ts";
+import { EmptyCreate } from "../empty-create.tsx";
+import { FileOptions } from "../file/file-options.tsx";
+import { CollectionTable } from "./collection-table.tsx";
+import { FolderCreate } from "../folder-create.tsx";
+import { resolveContentOperations } from "../../lib/operations.ts";
+import { useRepoHeader } from "../repo/repo-header-context.tsx";
+import { Button, buttonVariants } from "../ui/button.tsx";
+import { ButtonGroup } from "../ui/button-group.tsx";
 import {
   Empty,
   EmptyContent,
   EmptyDescription,
   EmptyHeader,
   EmptyTitle,
-} from "@/components/ui/empty";
+} from "../ui/empty.tsx";
 import {
   Breadcrumb,
   BreadcrumbEllipsis,
@@ -40,7 +53,7 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
+} from "../ui/breadcrumb.tsx";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -51,20 +64,20 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
+} from "../ui/alert-dialog.tsx";
+import { Input } from "../ui/input.tsx";
+import { Skeleton } from "../ui/skeleton.tsx";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
+import { cn } from "../../lib/utils.ts";
 import useSWR, { useSWRConfig } from "swr";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "../ui/dropdown-menu.tsx";
 import { EllipsisVertical, FolderPlus, Plus, Search } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip.tsx";
 
 type GroupTrailItem = {
   name: string;
@@ -119,7 +132,12 @@ const CollectionHeaderActions = memo(function CollectionHeaderActions({
                 name={name}
                 onCreate={onFolderCreate}
               >
-                <Button type="button" variant="outline" className="shrink-0" size="icon">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="shrink-0"
+                  size="icon"
+                >
                   <FolderPlus />
                 </Button>
               </FolderCreate>
@@ -130,11 +148,17 @@ const CollectionHeaderActions = memo(function CollectionHeaderActions({
       )}
       {showAddEntry && (
         <>
-          <Link className={cn(buttonVariants(), "hidden sm:flex")} href={addEntryHref}>
+          <Link
+            className={cn(buttonVariants(), "hidden sm:flex")}
+            href={addEntryHref}
+          >
             Add an entry
           </Link>
           <Link
-            className={cn(buttonVariants({ size: "icon" }), "sm:hidden shrink-0")}
+            className={cn(
+              buttonVariants({ size: "icon" }),
+              "sm:hidden shrink-0",
+            )}
             href={addEntryHref}
           >
             <Plus className="size-4" />
@@ -158,10 +182,17 @@ export function Collection({ name, path }: { name: string; path?: string }) {
   const { config } = useConfig();
   if (!config) throw new Error(`Configuration not found.`);
 
-  const schema = useMemo(() => getSchemaByName(config?.object, name), [config, name]);
+  const schema = useMemo(() => getSchemaByName(config?.object, name), [
+    config,
+    name,
+  ]);
   if (!schema) throw new Error(`Schema not found for "${name}".`);
-  if (schema.type !== "collection") throw new Error(`"${name}" is not a collection.`);
-  const operations = useMemo(() => resolveContentOperations({ schema }), [schema]);
+  if (schema.type !== "collection") {
+    throw new Error(`"${name}" is not a collection.`);
+  }
+  const operations = useMemo(() => resolveContentOperations({ schema }), [
+    schema,
+  ]);
   const canCreate = operations.create;
   const canRename = operations.rename;
   const canDelete = operations.delete;
@@ -173,12 +204,15 @@ export function Collection({ name, path }: { name: string; path?: string }) {
         // If we have a list of fields defined for the view
         schema.view.fields.forEach((path: string) => {
           const field = getFieldByPath(schema.fields, path);
-          if (field && !["object", "block"].includes(field.type))
+          if (field && !["object", "block"].includes(field.type)) {
             pathAndFieldArray.push({ path: path, field: field });
+          }
         });
       } else {
         pathAndFieldArray = schema.fields
-          .filter((field: any) => !["object", "block"].includes(field.type) && !field.hidden)
+          .filter((field: any) =>
+            !["object", "block"].includes(field.type) && !field.hidden
+          )
           .map((field: any) => ({ path: field.name, field: field }));
       }
     } else {
@@ -197,7 +231,8 @@ export function Collection({ name, path }: { name: string; path?: string }) {
     if (
       !pathAndFieldArray.find((item: any) => item.path === "date") &&
       schema.filename.startsWith("{year}-{month}-{day}") &&
-      ((schema.view?.fields && schema.view?.fields.includes("date")) || !schema.view?.fields)
+      ((schema.view?.fields && schema.view?.fields.includes("date")) ||
+        !schema.view?.fields)
     ) {
       pathAndFieldArray.push({
         path: "date",
@@ -212,8 +247,13 @@ export function Collection({ name, path }: { name: string; path?: string }) {
     return pathAndFieldArray;
   }, [schema]);
 
-  const primaryField = useMemo(() => getPrimaryField(schema) ?? "name", [schema]);
-  const collectionActions = useMemo(() => getSchemaActions(schema, "collection"), [schema]);
+  const primaryField = useMemo(() => getPrimaryField(schema) ?? "name", [
+    schema,
+  ]);
+  const collectionActions = useMemo(
+    () => getSchemaActions(schema, "collection"),
+    [schema],
+  );
   const requestedFieldPaths = useMemo(() => {
     const paths = new Set<string>(["name", "path", primaryField]);
     viewFields.forEach((item: any) => paths.add(item.path));
@@ -230,7 +270,9 @@ export function Collection({ name, path }: { name: string; path?: string }) {
         path: fetchPath,
         fields: requestedFieldPaths.join(","),
       });
-      return `/api/${config.owner}/${config.repo}/${encodeURIComponent(config.branch)}/collections/${encodeURIComponent(name)}?${params.toString()}`;
+      return `/api/${config.owner}/${config.repo}/${
+        encodeURIComponent(config.branch)
+      }/collections/${encodeURIComponent(name)}?${params.toString()}`;
     },
     [config.branch, config.owner, config.repo, name, requestedFieldPaths],
   );
@@ -247,21 +289,29 @@ export function Collection({ name, path }: { name: string; path?: string }) {
       const unsortedData = result.data.contents || [];
       if (unsortedData.length === 0) return [];
       return unsortedData.sort((a: any, b: any) => {
-        if (a.type === "dir" && b.type === "file") return schema.view?.foldersFirst ? -1 : 1;
-        if (a.type === "file" && b.type === "dir") return schema.view?.foldersFirst ? 1 : -1;
+        if (a.type === "dir" && b.type === "file") {
+          return schema.view?.foldersFirst ? -1 : 1;
+        }
+        if (a.type === "file" && b.type === "dir") {
+          return schema.view?.foldersFirst ? 1 : -1;
+        }
         return a.name.localeCompare(b.name);
       });
     },
     [schema.view?.foldersFirst],
   );
 
-  const collectionPath = schema.view?.layout === "tree" ? schema.path : path || schema.path;
+  const collectionPath = schema.view?.layout === "tree"
+    ? schema.path
+    : path || schema.path;
   const rootCollectionKey = useMemo(
     () => buildCollectionApiUrl(collectionPath),
     [buildCollectionApiUrl, collectionPath],
   );
 
-  const { data: swrCollectionData, error: swrCollectionError } = useSWR<Record<string, any>[]>(
+  const { data: swrCollectionData, error: swrCollectionError } = useSWR<
+    Record<string, any>[]
+  >(
     rootCollectionKey,
     fetchCollectionByUrl,
     {
@@ -284,13 +334,19 @@ export function Collection({ name, path }: { name: string; path?: string }) {
 
   useEffect(() => {
     if (!swrCollectionError) return;
-    setError(swrCollectionError instanceof Error ? swrCollectionError.message : "Fetch failed");
+    setError(
+      swrCollectionError instanceof Error
+        ? swrCollectionError.message
+        : "Fetch failed",
+    );
   }, [swrCollectionError]);
 
   const fetchCollectionData = useCallback(
     async (fetchPath: string): Promise<Record<string, any>[] | undefined> => {
       const apiUrl = buildCollectionApiUrl(fetchPath);
-      const cachedValue = cache.get(apiUrl) as { data?: Record<string, any>[] } | undefined;
+      const cachedValue = cache.get(apiUrl) as
+        | { data?: Record<string, any>[] }
+        | undefined;
       if (cachedValue?.data) return cachedValue.data;
 
       try {
@@ -302,12 +358,23 @@ export function Collection({ name, path }: { name: string; path?: string }) {
         if (fetchPath === (path || schema.path)) {
           setError(err.message);
         } else {
-          toast.error(`Could not load items inside ${getFileName(fetchPath)}: ${err.message}`);
+          toast.error(
+            `Could not load items inside ${
+              getFileName(fetchPath)
+            }: ${err.message}`,
+          );
         }
         return undefined;
       }
     },
-    [buildCollectionApiUrl, cache, fetchCollectionByUrl, mutate, path, schema.path],
+    [
+      buildCollectionApiUrl,
+      cache,
+      fetchCollectionByUrl,
+      mutate,
+      path,
+      schema.path,
+    ],
   );
 
   const handleDelete = useCallback((path: string) => {
@@ -340,7 +407,10 @@ export function Collection({ name, path }: { name: string; path?: string }) {
       };
 
       // Check if the item is moving to a different folder
-      if (getParentPath(normalizePath(path)) !== getParentPath(normalizePath(newPath))) {
+      if (
+        getParentPath(normalizePath(path)) !==
+          getParentPath(normalizePath(newPath))
+      ) {
         // For items moved to a different folder, we need to:
         // 1. Remove the item from its original location (recursively)
         const removeItem = (items: any[]): any[] => {
@@ -390,7 +460,9 @@ export function Collection({ name, path }: { name: string; path?: string }) {
         const renamePromise = new Promise(async (resolve, reject) => {
           try {
             const response = await fetch(
-              `/api/${config.owner}/${config.repo}/${encodeURIComponent(config.branch)}/files/${encodeURIComponent(normalizedPath)}/rename`,
+              `/api/${config.owner}/${config.repo}/${
+                encodeURIComponent(config.branch)
+              }/files/${encodeURIComponent(normalizedPath)}/rename`,
               {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -401,7 +473,10 @@ export function Collection({ name, path }: { name: string; path?: string }) {
                 }),
               },
             );
-            const data = await requireApiSuccess<any>(response, "Failed to rename file");
+            const data = await requireApiSuccess<any>(
+              response,
+              "Failed to rename file",
+            );
 
             resolve(data);
           } catch (error) {
@@ -413,7 +488,11 @@ export function Collection({ name, path }: { name: string; path?: string }) {
           loading: `Renaming "${path}" to "${newPath}"`,
           success: (data: any) => {
             router.push(
-              `/${config.owner}/${config.repo}/${encodeURIComponent(config.branch)}/collection/${encodeURIComponent(name)}/new?parent=${encodeURIComponent(getParentPath(normalizedNewPath))}`,
+              `/${config.owner}/${config.repo}/${
+                encodeURIComponent(config.branch)
+              }/collection/${encodeURIComponent(name)}/new?parent=${
+                encodeURIComponent(getParentPath(normalizedNewPath))
+              }`,
             );
             return data.message;
           },
@@ -428,47 +507,55 @@ export function Collection({ name, path }: { name: string; path?: string }) {
 
   const columns = useMemo(() => {
     let tableColumns: any;
-    tableColumns =
-      viewFields
-        .map((pathAndField: any) => {
-          const path = pathAndField.path;
-          const field = pathAndField.field;
-          if (!field) return null;
+    tableColumns = viewFields
+      .map((pathAndField: any) => {
+        const path = pathAndField.path;
+        const field = pathAndField.field;
+        if (!field) return null;
 
-          return {
-            id: path,
-            accessorKey: path,
-            accessorFn: (originalRow: any) => safeAccess(originalRow.fields, path),
-            header: field?.label ?? field.name,
-            meta: {
-              className: path === primaryField ? "truncate w-full min-w-[12rem] max-w-[1px]" : "",
-            },
-            cell: ({ cell, row }: { cell: any; row: any }) => {
-              const cellValue = cell.getValue();
-              const FieldComponent = viewComponents?.[field.type];
-              const CellView = FieldComponent ? (
-                <FieldComponent value={cellValue} field={field} />
-              ) : Array.isArray(cellValue) ? (
+        return {
+          id: path,
+          accessorKey: path,
+          accessorFn: (originalRow: any) =>
+            safeAccess(originalRow.fields, path),
+          header: field?.label ?? field.name,
+          meta: {
+            className: path === primaryField
+              ? "truncate w-full min-w-[12rem] max-w-[1px]"
+              : "",
+          },
+          cell: ({ cell, row }: { cell: any; row: any }) => {
+            const cellValue = cell.getValue();
+            const FieldComponent = viewComponents?.[field.type];
+            const CellView = FieldComponent
+              ? <FieldComponent value={cellValue} field={field} />
+              : Array.isArray(cellValue)
+              ? (
                 cellValue.join(", ")
-              ) : (
-                cellValue
+              )
+              : cellValue;
+            if (path === primaryField) {
+              return (
+                <Link
+                  className="font-medium truncate"
+                  href={`/${config.owner}/${config.repo}/${
+                    encodeURIComponent(config.branch)
+                  }/collection/${encodeURIComponent(name)}/edit/${
+                    encodeURIComponent(row.original.path)
+                  }`}
+                >
+                  {CellView}
+                </Link>
               );
-              if (path === primaryField) {
-                return (
-                  <Link
-                    className="font-medium truncate"
-                    href={`/${config.owner}/${config.repo}/${encodeURIComponent(config.branch)}/collection/${encodeURIComponent(name)}/edit/${encodeURIComponent(row.original.path)}`}
-                  >
-                    {CellView}
-                  </Link>
-                );
-              }
-              return <div className="truncate w-full max-w-[12rem]">{CellView}</div>;
-            },
-            sortUndefined: schema.view?.foldersFirst ? "first" : "last",
-          };
-        })
-        .filter(Boolean) || [];
+            }
+            return (
+              <div className="truncate w-full max-w-[12rem]">{CellView}</div>
+            );
+          },
+          sortUndefined: schema.view?.foldersFirst ? "first" : "last",
+        };
+      })
+      .filter(Boolean) || [];
 
     tableColumns.push({
       accessorKey: "actions",
@@ -478,8 +565,14 @@ export function Collection({ name, path }: { name: string; path?: string }) {
           {row.original.type === "file" && (
             <ButtonGroup>
               <Link
-                className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
-                href={`/${config.owner}/${config.repo}/${encodeURIComponent(config.branch)}/collection/${name}/edit/${encodeURIComponent(row.original.path)}`}
+                className={cn(
+                  buttonVariants({ variant: "outline", size: "sm" }),
+                )}
+                href={`/${config.owner}/${config.repo}/${
+                  encodeURIComponent(config.branch)
+                }/collection/${name}/edit/${
+                  encodeURIComponent(row.original.path)
+                }`}
               >
                 Edit
               </Link>
@@ -502,74 +595,95 @@ export function Collection({ name, path }: { name: string; path?: string }) {
           {canCreate &&
             schema.view?.layout === "tree" &&
             (row.original.type === "file" &&
-            !row.original.isNode &&
-            !(row.depth === 0 && row.original.name === schema.view?.node?.filename) ? (
-              canRename ? (
-                <AlertDialog>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="outline" size="icon-sm" className="w-8 h-8">
-                          <Plus className="size-4" />
-                        </Button>
-                      </AlertDialogTrigger>
-                    </TooltipTrigger>
-                    <TooltipContent>Add children entry</TooltipContent>
-                  </Tooltip>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Rename this file first?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Before adding children to this file, you must rename it from &quot;
-                        {row.original.path}&quot; to &quot;
-                        {row.original.path.replace(
-                          `.${schema.extension}`,
-                          `/${schema.view?.node?.filename}`,
-                        )}
-                        &quot;.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={() =>
-                          handleConfirmRenameNode(
-                            row.original.path,
-                            row.original.path.replace(
+                !row.original.isNode &&
+                !(row.depth === 0 &&
+                  row.original.name === schema.view?.node?.filename)
+              ? (
+                canRename
+                  ? (
+                    <AlertDialog>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="outline"
+                              size="icon-sm"
+                              className="w-8 h-8"
+                            >
+                              <Plus className="size-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                        </TooltipTrigger>
+                        <TooltipContent>Add children entry</TooltipContent>
+                      </Tooltip>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>
+                            Rename this file first?
+                          </AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Before adding children to this file, you must rename
+                            it from &quot;
+                            {row.original.path}&quot; to &quot;
+                            {row.original.path.replace(
                               `.${schema.extension}`,
                               `/${schema.view?.node?.filename}`,
-                            ),
-                          )
-                        }
-                      >
-                        Rename
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              ) : null
-            ) : (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Link
-                    className={cn(
-                      buttonVariants({ variant: "outline", size: "icon-sm" }),
-                      "w-8 h-8",
-                    )}
-                    href={
-                      row.original.isNode
-                        ? `/${config.owner}/${config.repo}/${encodeURIComponent(config.branch)}/collection/${encodeURIComponent(name)}/new?parent=${encodeURIComponent(row.original.parentPath)}`
+                            )}
+                            &quot;.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() =>
+                              handleConfirmRenameNode(
+                                row.original.path,
+                                row.original.path.replace(
+                                  `.${schema.extension}`,
+                                  `/${schema.view?.node?.filename}`,
+                                ),
+                              )}
+                          >
+                            Rename
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  )
+                  : null
+              )
+              : (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link
+                      className={cn(
+                        buttonVariants({ variant: "outline", size: "icon-sm" }),
+                        "w-8 h-8",
+                      )}
+                      href={row.original.isNode
+                        ? `/${config.owner}/${config.repo}/${
+                          encodeURIComponent(config.branch)
+                        }/collection/${encodeURIComponent(name)}/new?parent=${
+                          encodeURIComponent(row.original.parentPath)
+                        }`
                         : row.original.type === "dir"
-                          ? `/${config.owner}/${config.repo}/${encodeURIComponent(config.branch)}/collection/${encodeURIComponent(name)}/new?parent=${encodeURIComponent(row.original.path)}`
-                          : `/${config.owner}/${config.repo}/${encodeURIComponent(config.branch)}/collection/${encodeURIComponent(name)}/new?parent=${encodeURIComponent(row.original.path)}`
-                    }
-                  >
-                    <Plus className="size-4" />
-                  </Link>
-                </TooltipTrigger>
-                <TooltipContent>Add children entry</TooltipContent>
-              </Tooltip>
-            ))}
+                        ? `/${config.owner}/${config.repo}/${
+                          encodeURIComponent(config.branch)
+                        }/collection/${encodeURIComponent(name)}/new?parent=${
+                          encodeURIComponent(row.original.path)
+                        }`
+                        : `/${config.owner}/${config.repo}/${
+                          encodeURIComponent(config.branch)
+                        }/collection/${encodeURIComponent(name)}/new?parent=${
+                          encodeURIComponent(row.original.path)
+                        }`}
+                    >
+                      <Plus className="size-4" />
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent>Add children entry</TooltipContent>
+                </Tooltip>
+              ))}
         </div>
       ),
       enableSorting: false,
@@ -596,18 +710,19 @@ export function Collection({ name, path }: { name: string; path?: string }) {
   ]);
 
   const initialState = useMemo(() => {
-    const sortId =
-      viewFields == null
-        ? "name"
-        : schema.view?.default?.sort ||
-          (viewFields.find((item: any) => item.field.name === "date") && "date") ||
-          primaryField;
+    const sortId = viewFields == null ? "name" : schema.view?.default?.sort ||
+      (viewFields.find((item: any) => item.field.name === "date") && "date") ||
+      primaryField;
 
     return {
       sorting: [
         {
           id: sortId,
-          desc: sortId === "date" ? true : schema.view?.default?.order === "desc" ? true : false,
+          desc: sortId === "date"
+            ? true
+            : schema.view?.default?.order === "desc"
+            ? true
+            : false,
         },
       ],
       pagination: {
@@ -628,7 +743,9 @@ export function Collection({ name, path }: { name: string; path?: string }) {
   const handleExpand = useCallback(
     async (row: any) => {
       if (!row) return;
-      const subRows = await fetchCollectionData(row.isNode ? row.parentPath : row.path);
+      const subRows = await fetchCollectionData(
+        row.isNode ? row.parentPath : row.path,
+      );
       if (subRows !== undefined) {
         setData((currentData: any[]) => {
           const updateNestedData = (items: any[]): any[] => {
@@ -693,7 +810,12 @@ export function Collection({ name, path }: { name: string; path?: string }) {
                     </Button>
                   </ButtonGroup>
                   {schema.view?.layout === "tree" && (
-                    <Button variant="outline" size="icon-sm" className="w-8 h-8" disabled>
+                    <Button
+                      variant="outline"
+                      size="icon-sm"
+                      className="w-8 h-8"
+                      disabled
+                    >
                       <Plus className="size-4" />
                     </Button>
                   )}
@@ -707,26 +829,40 @@ export function Collection({ name, path }: { name: string; path?: string }) {
     [schema.view?.layout],
   );
 
-  const addEntryHref = `/${config.owner}/${config.repo}/${encodeURIComponent(config.branch)}/collection/${encodeURIComponent(name)}/new${
+  const addEntryHref = `/${config.owner}/${config.repo}/${
+    encodeURIComponent(config.branch)
+  }/collection/${encodeURIComponent(name)}/new${
     schema.view?.layout !== "tree" && path && path !== schema.path
       ? `?parent=${encodeURIComponent(path)}`
       : ""
   }`;
 
   const breadcrumbNode = useMemo(() => {
-    const groupTrail: GroupTrailItem[] = Array.isArray(schema.groupTrail) ? schema.groupTrail : [];
+    const groupTrail: GroupTrailItem[] = Array.isArray(schema.groupTrail)
+      ? schema.groupTrail
+      : [];
     const normalizedRootPath = normalizePath(schema.path);
     const normalizedCurrentPath = normalizePath(collectionPath);
-    const relativePath = getRelativePath(normalizedCurrentPath, normalizedRootPath);
-    const segments = relativePath ? relativePath.split("/").filter(Boolean) : [];
+    const relativePath = getRelativePath(
+      normalizedCurrentPath,
+      normalizedRootPath,
+    );
+    const segments = relativePath
+      ? relativePath.split("/").filter(Boolean)
+      : [];
 
     const entries = segments.map((segment, index) => ({
       name: segment,
-      path: joinPathSegments([normalizedRootPath, segments.slice(0, index + 1).join("/")]),
+      path: joinPathSegments([
+        normalizedRootPath,
+        segments.slice(0, index + 1).join("/"),
+      ]),
     }));
 
     const middleEntries = entries.length > 3 ? entries.slice(1, -1) : [];
-    const visibleEntries = entries.length > 3 ? [entries[0], entries[entries.length - 1]] : entries;
+    const visibleEntries = entries.length > 3
+      ? [entries[0], entries[entries.length - 1]]
+      : entries;
 
     return (
       <Breadcrumb>
@@ -740,20 +876,24 @@ export function Collection({ name, path }: { name: string; path?: string }) {
             </Fragment>
           ))}
           <BreadcrumbItem
-            className={entries.length === 0 ? "min-w-0 max-w-full truncate" : undefined}
+            className={entries.length === 0
+              ? "min-w-0 max-w-full truncate"
+              : undefined}
           >
-            {entries.length > 0 ? (
-              <BreadcrumbLink
-                className="cursor-pointer"
-                onClick={() => handleNavigate(schema.path)}
-              >
-                {schema.label || schema.name}
-              </BreadcrumbLink>
-            ) : (
-              <BreadcrumbPage className="block max-w-full font-semibold truncate">
-                {schema.label || schema.name}
-              </BreadcrumbPage>
-            )}
+            {entries.length > 0
+              ? (
+                <BreadcrumbLink
+                  className="cursor-pointer"
+                  onClick={() => handleNavigate(schema.path)}
+                >
+                  {schema.label || schema.name}
+                </BreadcrumbLink>
+              )
+              : (
+                <BreadcrumbPage className="block max-w-full font-semibold truncate">
+                  {schema.label || schema.name}
+                </BreadcrumbPage>
+              )}
           </BreadcrumbItem>
           {entries.length > 0 && <BreadcrumbSeparator />}
 
@@ -786,19 +926,23 @@ export function Collection({ name, path }: { name: string; path?: string }) {
             const isLast = index === visibleEntries.length - 1;
             return (
               <Fragment key={entry.path}>
-                <BreadcrumbItem className={isLast ? "min-w-0 max-w-full truncate" : undefined}>
-                  {isLast ? (
-                    <BreadcrumbPage className="block max-w-full font-semibold truncate">
-                      {entry.name}
-                    </BreadcrumbPage>
-                  ) : (
-                    <BreadcrumbLink
-                      className="cursor-pointer"
-                      onClick={() => handleNavigate(entry.path)}
-                    >
-                      {entry.name}
-                    </BreadcrumbLink>
-                  )}
+                <BreadcrumbItem
+                  className={isLast ? "min-w-0 max-w-full truncate" : undefined}
+                >
+                  {isLast
+                    ? (
+                      <BreadcrumbPage className="block max-w-full font-semibold truncate">
+                        {entry.name}
+                      </BreadcrumbPage>
+                    )
+                    : (
+                      <BreadcrumbLink
+                        className="cursor-pointer"
+                        onClick={() => handleNavigate(entry.path)}
+                      >
+                        {entry.name}
+                      </BreadcrumbLink>
+                    )}
                 </BreadcrumbItem>
                 {!isLast && <BreadcrumbSeparator />}
               </Fragment>
@@ -807,7 +951,14 @@ export function Collection({ name, path }: { name: string; path?: string }) {
         </BreadcrumbList>
       </Breadcrumb>
     );
-  }, [collectionPath, handleNavigate, schema.groupTrail, schema.label, schema.name, schema.path]);
+  }, [
+    collectionPath,
+    handleNavigate,
+    schema.groupTrail,
+    schema.label,
+    schema.name,
+    schema.path,
+  ]);
 
   const headerNode = useMemo(
     () => (
@@ -815,8 +966,8 @@ export function Collection({ name, path }: { name: string; path?: string }) {
         <div className="min-w-0 truncate">{breadcrumbNode}</div>
         <CollectionHeaderActions
           addEntryHref={addEntryHref}
-          actionNode={
-            collectionActions.length > 0 ? (
+          actionNode={collectionActions.length > 0
+            ? (
               <RepoActionButtons
                 actions={collectionActions}
                 owner={config.owner}
@@ -831,8 +982,8 @@ export function Collection({ name, path }: { name: string; path?: string }) {
                   format: schema.format ?? null,
                 }}
               />
-            ) : undefined
-          }
+            )
+            : undefined}
           collectionPath={collectionPath}
           name={name}
           showAddEntry={canCreate}
@@ -866,55 +1017,66 @@ export function Collection({ name, path }: { name: string; path?: string }) {
     header: headerNode,
   });
 
-  const isLoading = !swrCollectionData && !swrCollectionError && data.length === 0;
+  const isLoading = !swrCollectionData && !swrCollectionError &&
+    data.length === 0;
 
-  const contentNode = isLoading ? (
-    loadingSkeleton
-  ) : error ? (
-    <div className="flex flex-1 items-center justify-center">
-      <Empty className="max-w-[420px] flex-none">
-        <EmptyHeader>
-          <EmptyTitle>
-            {error === "Not found" ? "Folder not found" : "Something went wrong"}
-          </EmptyTitle>
-          <EmptyDescription>
+  const contentNode = isLoading
+    ? loadingSkeleton
+    : error
+    ? (
+      <div className="flex flex-1 items-center justify-center">
+        <Empty className="max-w-[420px] flex-none">
+          <EmptyHeader>
+            <EmptyTitle>
+              {error === "Not found"
+                ? "Folder not found"
+                : "Something went wrong"}
+            </EmptyTitle>
+            <EmptyDescription>
+              {error === "Not found"
+                ? `The collection folder "${schema.path}" does not exist yet.`
+                : error}
+            </EmptyDescription>
+          </EmptyHeader>
+          <EmptyContent>
             {error === "Not found"
-              ? `The collection folder "${schema.path}" does not exist yet.`
-              : error}
-          </EmptyDescription>
-        </EmptyHeader>
-        <EmptyContent>
-          {error === "Not found" ? (
-            canCreate ? (
-              <EmptyCreate type="content" name={schema.name}>
-                Create folder
-              </EmptyCreate>
-            ) : null
-          ) : (
-            <Link
-              className={buttonVariants({ variant: "default" })}
-              href={`/${config.owner}/${config.repo}/${encodeURIComponent(config.branch)}/settings`}
-            >
-              Go to settings
-            </Link>
-          )}
-        </EmptyContent>
-      </Empty>
-    </div>
-  ) : (
-    <CollectionTable
-      columns={columns}
-      data={data}
-      search={tableSearch}
-      setSearch={setTableSearch}
-      initialState={initialState}
-      onExpand={handleExpand}
-      pathname={pathname}
-      path={path || schema.path}
-      isTree={schema.view?.layout === "tree"}
-      primaryField={primaryField}
-    />
-  );
+              ? (
+                canCreate
+                  ? (
+                    <EmptyCreate type="content" name={schema.name}>
+                      Create folder
+                    </EmptyCreate>
+                  )
+                  : null
+              )
+              : (
+                <Link
+                  className={buttonVariants({ variant: "default" })}
+                  href={`/${config.owner}/${config.repo}/${
+                    encodeURIComponent(config.branch)
+                  }/settings`}
+                >
+                  Go to settings
+                </Link>
+              )}
+          </EmptyContent>
+        </Empty>
+      </div>
+    )
+    : (
+      <CollectionTable
+        columns={columns}
+        data={data}
+        search={tableSearch}
+        setSearch={setTableSearch}
+        initialState={initialState}
+        onExpand={handleExpand}
+        pathname={pathname}
+        path={path || schema.path}
+        isTree={schema.view?.layout === "tree"}
+        primaryField={primaryField}
+      />
+    );
 
   return <div className="min-w-0 flex flex-col space-y-6">{contentNode}</div>;
 }

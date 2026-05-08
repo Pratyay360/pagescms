@@ -25,6 +25,7 @@
 import { writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { createClient } from "@libsql/client";
+import process from "node:process";
 
 const getArg = (name) => {
   const prefix = `--${name}=`;
@@ -53,7 +54,9 @@ const main = async () => {
   const out = getArg("out") || "collaborators-export.csv";
 
   if (!url) {
-    throw new Error("Missing SQLite/libSQL URL. Pass --url=... or set SQLITE_URL env var.");
+    throw new Error(
+      "Missing SQLite/libSQL URL. Pass --url=... or set SQLITE_URL env var.",
+    );
   }
 
   const client = createClient({

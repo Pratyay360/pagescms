@@ -3,9 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { getInitialsFromName } from "@/lib/utils/avatar";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
+import { getInitialsFromName } from "../../lib/utils/avatar.ts";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar.tsx";
+import { Button } from "../ui/button.tsx";
 import {
   Card,
   CardContent,
@@ -13,9 +13,9 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+} from "../ui/card.tsx";
+import { Input } from "../ui/input.tsx";
+import { Label } from "../ui/label.tsx";
 import { Loader } from "lucide-react";
 
 type ProfileProps = {
@@ -30,7 +30,8 @@ export function Profile({ name, email, githubUsername }: ProfileProps) {
   const [isSaving, setIsSaving] = useState(false);
 
   const initialName = name?.trim() || "";
-  const canSave = displayName.trim().length > 0 && displayName.trim() !== initialName && !isSaving;
+  const canSave = displayName.trim().length > 0 &&
+    displayName.trim() !== initialName && !isSaving;
   const avatarLabel = displayName.trim() || email;
 
   const handleSave = async () => {
@@ -52,7 +53,9 @@ export function Profile({ name, email, githubUsername }: ProfileProps) {
       toast.success("Profile updated.");
       router.refresh();
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Failed to update profile.";
+      const message = error instanceof Error
+        ? error.message
+        : "Failed to update profile.";
       toast.error(message);
     } finally {
       setIsSaving(false);
@@ -63,7 +66,9 @@ export function Profile({ name, email, githubUsername }: ProfileProps) {
     <Card>
       <CardHeader>
         <CardTitle>Profile</CardTitle>
-        <CardDescription>Manage the information displayed to other users.</CardDescription>
+        <CardDescription>
+          Manage the information displayed to other users.
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <form
@@ -96,11 +101,9 @@ export function Profile({ name, email, githubUsername }: ProfileProps) {
               <div className="col-span-3">
                 <Avatar className="h-24 w-24 rounded-md">
                   <AvatarImage
-                    src={
-                      githubUsername
-                        ? `https://github.com/${githubUsername}.png`
-                        : `https://unavatar.io/${email}?fallback=false`
-                    }
+                    src={githubUsername
+                      ? `https://github.com/${githubUsername}.png`
+                      : `https://unavatar.io/${email}?fallback=false`}
                     alt={avatarLabel}
                   />
                   <AvatarFallback className="rounded-md">
@@ -113,7 +116,12 @@ export function Profile({ name, email, githubUsername }: ProfileProps) {
         </form>
       </CardContent>
       <CardFooter>
-        <Button size="sm" className="ml-auto" onClick={() => void handleSave()} disabled={!canSave}>
+        <Button
+          size="sm"
+          className="ml-auto"
+          onClick={() => void handleSave()}
+          disabled={!canSave}
+        >
           Save profile
           {isSaving && <Loader className="ml-2 h-4 w-4 animate-spin" />}
         </Button>

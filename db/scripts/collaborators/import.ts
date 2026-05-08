@@ -1,9 +1,10 @@
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { and, eq, sql } from "drizzle-orm";
-import { db } from "../../index";
-import { collaboratorTable, userTable } from "../../schema";
-import { parseCsv } from "./csv";
+import { db } from "../../index.ts";
+import { collaboratorTable, userTable } from "../../schema.ts";
+import { parseCsv } from "./csv.ts";
+import process from "node:process";
 
 const getArgValue = (name: string): string | undefined => {
   const argument = process.argv.find((arg) => arg.startsWith(`--${name}=`));
@@ -18,7 +19,10 @@ const parseNumberOrNull = (value: string | undefined): number | null => {
   return Number.isNaN(parsed) ? null : parsed;
 };
 
-const parseRequiredNumber = (value: string | undefined, label: string): number => {
+const parseRequiredNumber = (
+  value: string | undefined,
+  label: string,
+): number => {
   const parsed = parseNumberOrNull(value);
   if (parsed == null) throw new Error(`Invalid or missing "${label}"`);
   return parsed;
@@ -60,8 +64,8 @@ const main = async () => {
     console.log("🧹 Existing collaborators cleared (--replace)");
   }
 
-  const defaultInvitedByUser =
-    (await findUserById(defaultInvitedByUserId)) ?? (await findUserByEmail(defaultInvitedByEmail));
+  const defaultInvitedByUser = (await findUserById(defaultInvitedByUserId)) ??
+    (await findUserByEmail(defaultInvitedByEmail));
 
   let inserted = 0;
   let updated = 0;
@@ -79,15 +83,19 @@ const main = async () => {
       const branch = row.branch?.trim() || null;
 
       if (!type || !owner || !repo || !email) {
-        throw new Error("Missing one of required fields: type, owner, repo, email");
+        throw new Error(
+          "Missing one of required fields: type, owner, repo, email",
+        );
       }
 
-      const installationId = parseRequiredNumber(row.installationId, "installationId");
+      const installationId = parseRequiredNumber(
+        row.installationId,
+        "installationId",
+      );
       const ownerId = parseRequiredNumber(row.ownerId, "ownerId");
       const repoId = parseNumberOrNull(row.repoId);
 
-      const invitedByUser =
-        (await findUserById(row.invitedBy?.trim())) ??
+      const invitedByUser = (await findUserById(row.invitedBy?.trim())) ??
         (await findUserByEmail(row.invitedByEmail?.trim())) ??
         defaultInvitedByUser;
 
@@ -123,7 +131,9 @@ const main = async () => {
       };
 
       if (existing) {
-        await db.update(collaboratorTable).set(values).where(eq(collaboratorTable.id, existing.id));
+        await db.update(collaboratorTable).set(values).where(
+          eq(collaboratorTable.id, existing.id),
+        );
         updated += 1;
       } else {
         await db.insert(collaboratorTable).values(values);
@@ -135,7 +145,9 @@ const main = async () => {
     }
   }
 
-  console.log(`✅ Import complete: inserted=${inserted}, updated=${updated}, skipped=${skipped}`);
+  console.log(
+    `✅ Import complete: inserted=${inserted}, updated=${updated}, skipped=${skipped}`,
+  );
 };
 
 main().catch((error) => {

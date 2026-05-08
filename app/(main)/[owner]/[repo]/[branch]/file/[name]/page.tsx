@@ -1,10 +1,13 @@
 "use client";
 
 import { use, useMemo } from "react";
-import { useConfig } from "@/contexts/config-context";
-import { Entry } from "@/components/entry/entry";
-import { DocumentTitle, formatRepoBranchTitle } from "@/components/document-title";
-import { getSchemaByName } from "@/lib/schema";
+import { useConfig } from "../../../../../../../contexts/config-context.tsx";
+import { Entry } from "../../../../../../../components/entry/entry.tsx";
+import {
+  DocumentTitle,
+  formatRepoBranchTitle,
+} from "../../../../../../../components/document-title.tsx";
+import { getSchemaByName } from "../../../../../../../lib/schema.ts";
 
 export default function Page({
   params,
@@ -21,10 +24,15 @@ export default function Page({
   if (!config) throw new Error(`Configuration not found.`);
 
   const schema = useMemo(
-    () => getSchemaByName(config?.object, decodeURIComponent(resolvedParams.name)),
+    () =>
+      getSchemaByName(config?.object, decodeURIComponent(resolvedParams.name)),
     [config, resolvedParams.name],
   );
-  if (!schema) throw new Error(`Schema not found for ${decodeURIComponent(resolvedParams.name)}.`);
+  if (!schema) {
+    throw new Error(
+      `Schema not found for ${decodeURIComponent(resolvedParams.name)}.`,
+    );
+  }
 
   return (
     <>
@@ -36,7 +44,11 @@ export default function Page({
           config.branch,
         )}
       />
-      <Entry name={resolvedParams.name} path={schema.path} title={schema.label || schema.name} />
+      <Entry
+        name={resolvedParams.name}
+        path={schema.path}
+        title={schema.label || schema.name}
+      />
     </>
   );
 }

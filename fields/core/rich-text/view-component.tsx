@@ -1,6 +1,6 @@
 "use client";
 
-import { Field } from "@/types/field";
+import { Field } from "../../../types/field.ts";
 import { marked } from "marked";
 
 const stripHtml = (text: string) =>
@@ -27,14 +27,19 @@ const collectInlineText = (tokens: unknown[]): string => {
       continue;
     }
 
-    if (type === "link" || type === "strong" || type === "em" || type === "del") {
-      if (Array.isArray(token.tokens)) parts.push(collectInlineText(token.tokens));
-      else if (typeof token.text === "string") parts.push(token.text);
+    if (
+      type === "link" || type === "strong" || type === "em" || type === "del"
+    ) {
+      if (Array.isArray(token.tokens)) {
+        parts.push(collectInlineText(token.tokens));
+      } else if (typeof token.text === "string") parts.push(token.text);
       continue;
     }
 
     if (type === "image") {
-      if (typeof token.text === "string" && token.text.trim()) parts.push(token.text);
+      if (typeof token.text === "string" && token.text.trim()) {
+        parts.push(token.text);
+      }
       continue;
     }
 
