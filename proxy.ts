@@ -12,8 +12,8 @@ function isAllowedOrigin(originHeader: string, hostHeader: string): boolean {
 
 export function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
-  const isStaticAsset = pathname.startsWith("/_next/") ||
-    pathname === "/favicon.ico" || /\.[^/]+$/.test(pathname);
+  const isStaticAsset =
+    pathname.startsWith("/_next/") || pathname === "/favicon.ico" || /\.[^/]+$/.test(pathname);
 
   if (isStaticAsset) {
     return NextResponse.next();
@@ -26,9 +26,7 @@ export function proxy(request: NextRequest) {
   ) {
     const originHeader = request.headers.get("Origin");
     const hostHeader = request.headers.get("Host");
-    if (
-      !originHeader || !hostHeader || !isAllowedOrigin(originHeader, hostHeader)
-    ) {
+    if (!originHeader || !hostHeader || !isAllowedOrigin(originHeader, hostHeader)) {
       return new NextResponse(null, {
         status: 403,
       });

@@ -10,9 +10,7 @@ import { requireAdminSession } from "../admin.ts";
 const resetGlobalCache = async () => {
   await requireAdminSession();
 
-  await db.execute(
-    sql`TRUNCATE TABLE cache_file, cache_permission, config, cache_file_meta`,
-  );
+  await db.execute(sql`TRUNCATE TABLE cache_file, cache_permission, config, cache_file_meta`);
 
   revalidatePath("/admin");
 

@@ -16,10 +16,7 @@ export const dynamic = "force-dynamic";
  * Requires authentication. Only accessible to GitHub users (not collaborators).
  */
 
-export async function GET(
-  request: NextRequest,
-  context: { params: Promise<{ slug: string[] }> },
-) {
+export async function GET(request: NextRequest, context: { params: Promise<{ slug: string[] }> }) {
   try {
     const params = await context.params;
     const sessionResult = await requireApiUserSession();

@@ -6,13 +6,7 @@ import { useConfig } from "../../contexts/config-context.tsx";
 import { useRepo } from "../../contexts/repo-context.tsx";
 import { RepoBranches } from "./repo-branches.tsx";
 import { Button } from "../ui/button.tsx";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "../ui/dialog.tsx";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog.tsx";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -42,9 +36,7 @@ export function RepoDropdown({ onClick }: { onClick?: () => void }) {
         }
         branchesToDisplay = branchesToDisplay.concat(
           branches
-            .filter((branch) =>
-              branch !== config.branch && branch !== defaultBranch
-            )
+            .filter((branch) => branch !== config.branch && branch !== defaultBranch)
             .slice(0, 5 - branchesToDisplay.length),
         );
       }
@@ -73,20 +65,14 @@ export function RepoDropdown({ onClick }: { onClick?: () => void }) {
             />
             <div className="text-left overflow-hidden ml-3">
               <div className="font-medium truncate">{repo}</div>
-              <div className="text-xs text-muted-foreground truncate">
-                {config?.branch}
-              </div>
+              <div className="text-xs text-muted-foreground truncate">{config?.branch}</div>
             </div>
             <ChevronsUpDown className="ml-auto h-4 w-4 opacity-50" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem asChild>
-            <a
-              href={`https://github.com/${owner}/${repo}`}
-              target="_blank"
-              onClick={onClick}
-            >
+            <a href={`https://github.com/${owner}/${repo}`} target="_blank" onClick={onClick}>
               View on GitHub
               <ArrowUpRight className="size-3 text-muted-foreground ml-auto" />
             </a>
@@ -97,10 +83,7 @@ export function RepoDropdown({ onClick }: { onClick?: () => void }) {
           </DropdownMenuLabel>
           {displayBranches.length > 0 && (
             <>
-              <DropdownMenuRadioGroup
-                value={config?.branch}
-                onValueChange={handleBranchChange}
-              >
+              <DropdownMenuRadioGroup value={config?.branch} onValueChange={handleBranchChange}>
                 {displayBranches.map((branch: string) => (
                   <DropdownMenuRadioItem
                     key={branch}
@@ -116,9 +99,7 @@ export function RepoDropdown({ onClick }: { onClick?: () => void }) {
             </>
           )}
           <DialogTrigger asChild>
-            <DropdownMenuItem onClick={onClick}>
-              Manage branches
-            </DropdownMenuItem>
+            <DropdownMenuItem onClick={onClick}>Manage branches</DropdownMenuItem>
           </DialogTrigger>
         </DropdownMenuContent>
         <DialogContent>

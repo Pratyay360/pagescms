@@ -23,14 +23,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "../ui/pagination.tsx";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "../ui/table.tsx";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table.tsx";
 import Link from "next/link";
 import { cn } from "../../lib/utils.ts";
 import {
@@ -111,11 +104,9 @@ export function CollectionTable<TData extends TableData>({
 
   const handleRowExpansion = useCallback(
     async (row: Row<TData>) => {
-      const needsLoading = row.getCanExpand() && !row.getIsExpanded() &&
-        row.original.subRows === undefined;
-      const loadPath = row.original.isNode
-        ? row.original.parentPath
-        : row.original.path;
+      const needsLoading =
+        row.getCanExpand() && !row.getIsExpanded() && row.original.subRows === undefined;
+      const loadPath = row.original.isNode ? row.original.parentPath : row.original.path;
 
       if (needsLoading) {
         if (!loadPath) return;
@@ -156,8 +147,7 @@ export function CollectionTable<TData extends TableData>({
     getPaginationRowModel: getPaginationRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
-    getRowCanExpand: (row) =>
-      row.original.isNode || row.original.type === "dir",
+    getRowCanExpand: (row) => row.original.isNode || row.original.type === "dir",
     getSubRows: (row) => row.subRows,
     state: {
       globalFilter: search,
@@ -226,19 +216,20 @@ export function CollectionTable<TData extends TableData>({
                       header.column.columnDef.meta?.className,
                     )}
                     onClick={header.column.getToggleSortingHandler()}
-                    title={header.column.getCanSort()
-                      ? header.column.getNextSortingOrder() === "asc"
-                        ? "Sort ascending"
-                        : header.column.getNextSortingOrder() === "desc"
-                        ? "Sort descending"
-                        : "Clear sort"
-                      : undefined}
+                    title={
+                      header.column.getCanSort()
+                        ? header.column.getNextSortingOrder() === "asc"
+                          ? "Sort ascending"
+                          : header.column.getNextSortingOrder() === "desc"
+                            ? "Sort descending"
+                            : "Clear sort"
+                        : undefined
+                    }
                   >
                     <div className="flex items-center gap-x-2">
-                      {header.isPlaceholder ? null : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext(),
-                      )}
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(header.column.columnDef.header, header.getContext())}
                       {{
                         asc: <ArrowUp className="h-4 w-4 opacity-50" />,
                         desc: <ArrowDown className="xh-4 w-4 opacity-50" />,
@@ -251,145 +242,119 @@ export function CollectionTable<TData extends TableData>({
           ))}
         </TableHeader>
         <TableBody>
-          {table.getRowModel().rows?.length
-            ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id}>
-                  {row.original.type === "dir"
-                    ? (
-                      <>
-                        <TableCell
-                          colSpan={columns.length - 1}
-                          className="p-2 border-b py-0 h-12"
-                          style={{
-                            paddingLeft: row.depth > 0
-                              ? `${row.depth * 2}rem`
-                              : undefined,
-                          }}
+          {table.getRowModel().rows?.length ? (
+            table.getRowModel().rows.map((row) => (
+              <TableRow key={row.id}>
+                {row.original.type === "dir" ? (
+                  <>
+                    <TableCell
+                      colSpan={columns.length - 1}
+                      className="p-2 border-b py-0 h-12"
+                      style={{
+                        paddingLeft: row.depth > 0 ? `${row.depth * 2}rem` : undefined,
+                      }}
+                    >
+                      {isTree ? (
+                        <button
+                          className="flex items-center gap-x-2 font-medium"
+                          onClick={() => handleRowExpansion(row as Row<TData>)}
                         >
-                          {isTree
-                            ? (
-                              <button
-                                className="flex items-center gap-x-2 font-medium"
-                                onClick={() =>
-                                  handleRowExpansion(row as Row<TData>)}
-                              >
-                                {loadingRows[row.id]
-                                  ? (
-                                    <Loader className="h-4 w-4 animate-spin text-muted-foreground" />
-                                  )
-                                  : row.getIsExpanded()
-                                  ? <FolderOpen className="h-4 w-4" />
-                                  : <Folder className="h-4 w-4" />}
-                                {row.original.name}
-                              </button>
-                            )
-                            : (
-                              <Link
-                                className="flex items-center gap-x-2 font-medium"
-                                href={`${pathname}?path=${
-                                  encodeURIComponent(row.original.path)
-                                }`}
-                              >
-                                <Folder className="h-4 w-4" />
-                                {row.original.name}
-                              </Link>
-                            )}
-                        </TableCell>
-                        <TableCell className="p-2 border-b py-0 h-12">
-                          {(() => {
-                            const lastCell = row
-                              .getVisibleCells()[
-                                row.getVisibleCells().length - 1
-                              ];
-                            return flexRender(
-                              lastCell.column.columnDef.cell,
-                              lastCell.getContext(),
-                            );
-                          })()}
-                        </TableCell>
-                      </>
-                    )
-                    : (
-                      row.getVisibleCells().map((cell, index) => (
-                        <TableCell
-                          key={cell.id}
-                          className={cn(
-                            "p-2 border-b py-0 h-12",
-                            cell.column.columnDef.meta?.className,
+                          {loadingRows[row.id] ? (
+                            <Loader className="h-4 w-4 animate-spin text-muted-foreground" />
+                          ) : row.getIsExpanded() ? (
+                            <FolderOpen className="h-4 w-4" />
+                          ) : (
+                            <Folder className="h-4 w-4" />
                           )}
-                          style={{
-                            paddingLeft:
-                              cell.column.id === primaryField && row.depth > 0
-                                ? `${row.depth * 1.5}rem`
-                                : undefined,
-                          }}
+                          {row.original.name}
+                        </button>
+                      ) : (
+                        <Link
+                          className="flex items-center gap-x-2 font-medium"
+                          href={`${pathname}?path=${encodeURIComponent(row.original.path)}`}
                         >
-                          <div className="flex items-center gap-x-1">
-                            {row.depth > 0 && cell.column.id === primaryField &&
-                              (
-                                <LShapeIcon className="h-4 w-4 text-muted-foreground opacity-50" />
+                          <Folder className="h-4 w-4" />
+                          {row.original.name}
+                        </Link>
+                      )}
+                    </TableCell>
+                    <TableCell className="p-2 border-b py-0 h-12">
+                      {(() => {
+                        const lastCell = row.getVisibleCells()[row.getVisibleCells().length - 1];
+                        return flexRender(lastCell.column.columnDef.cell, lastCell.getContext());
+                      })()}
+                    </TableCell>
+                  </>
+                ) : (
+                  row.getVisibleCells().map((cell, index) => (
+                    <TableCell
+                      key={cell.id}
+                      className={cn(
+                        "p-2 border-b py-0 h-12",
+                        cell.column.columnDef.meta?.className,
+                      )}
+                      style={{
+                        paddingLeft:
+                          cell.column.id === primaryField && row.depth > 0
+                            ? `${row.depth * 1.5}rem`
+                            : undefined,
+                      }}
+                    >
+                      <div className="flex items-center gap-x-1">
+                        {row.depth > 0 && cell.column.id === primaryField && (
+                          <LShapeIcon className="h-4 w-4 text-muted-foreground opacity-50" />
+                        )}
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        {isTree &&
+                          row.getCanExpand() &&
+                          cell.column.id === primaryField &&
+                          (loadingRows[row.id] ? (
+                            <Button
+                              variant="ghost"
+                              size="icon-sm"
+                              className="h-6 w-6 rounded-full"
+                              disabled
+                            >
+                              <Loader className="h-4 w-4 animate-spin text-muted-foreground" />
+                            </Button>
+                          ) : (
+                            <Button
+                              variant="ghost"
+                              size="icon-sm"
+                              className="h-6 w-6 rounded-full"
+                              onClick={() => handleRowExpansion(row as Row<TData>)}
+                              disabled={
+                                row.getIsExpanded() &&
+                                Array.isArray(row.original.subRows) &&
+                                row.original.subRows.length === 0
+                              }
+                            >
+                              {row.getIsExpanded() ? (
+                                <CircleMinus className="text-muted-foreground hover:text-foreground h-4 w-4" />
+                              ) : (
+                                <CirclePlus className="text-muted-foreground hover:text-foreground h-4 w-4" />
                               )}
-                            {flexRender(
-                              cell.column.columnDef.cell,
-                              cell.getContext(),
-                            )}
-                            {isTree &&
-                              row.getCanExpand() &&
-                              cell.column.id === primaryField &&
-                              (loadingRows[row.id]
-                                ? (
-                                  <Button
-                                    variant="ghost"
-                                    size="icon-sm"
-                                    className="h-6 w-6 rounded-full"
-                                    disabled
-                                  >
-                                    <Loader className="h-4 w-4 animate-spin text-muted-foreground" />
-                                  </Button>
-                                )
-                                : (
-                                  <Button
-                                    variant="ghost"
-                                    size="icon-sm"
-                                    className="h-6 w-6 rounded-full"
-                                    onClick={() =>
-                                      handleRowExpansion(row as Row<TData>)}
-                                    disabled={row.getIsExpanded() &&
-                                      Array.isArray(row.original.subRows) &&
-                                      row.original.subRows.length === 0}
-                                  >
-                                    {row.getIsExpanded()
-                                      ? (
-                                        <CircleMinus className="text-muted-foreground hover:text-foreground h-4 w-4" />
-                                      )
-                                      : (
-                                        <CirclePlus className="text-muted-foreground hover:text-foreground h-4 w-4" />
-                                      )}
-                                    <span className="sr-only">
-                                      {row.getIsExpanded()
-                                        ? "Collapse row"
-                                        : "Expand row"}
-                                    </span>
-                                  </Button>
-                                ))}
-                          </div>
-                        </TableCell>
-                      ))
-                    )}
-                </TableRow>
-              ))
-            )
-            : (
-              <TableRow className="hover:bg-transparent">
-                <TableCell
-                  colSpan={columns.length}
-                  className="text-center text-muted-foreground text-sm p-6"
-                >
-                  <span>No entries</span>
-                </TableCell>
+                              <span className="sr-only">
+                                {row.getIsExpanded() ? "Collapse row" : "Expand row"}
+                              </span>
+                            </Button>
+                          ))}
+                      </div>
+                    </TableCell>
+                  ))
+                )}
               </TableRow>
-            )}
+            ))
+          ) : (
+            <TableRow className="hover:bg-transparent">
+              <TableCell
+                colSpan={columns.length}
+                className="text-center text-muted-foreground text-sm p-6"
+              >
+                <span>No entries</span>
+              </TableCell>
+            </TableRow>
+          )}
         </TableBody>
       </Table>
       {pageCount > 1 && (
@@ -404,27 +369,27 @@ export function CollectionTable<TData extends TableData>({
                     event.preventDefault();
                     if (table.getCanPreviousPage()) table.previousPage();
                   }}
-                  className={!table.getCanPreviousPage()
-                    ? "pointer-events-none opacity-50"
-                    : undefined}
+                  className={
+                    !table.getCanPreviousPage() ? "pointer-events-none opacity-50" : undefined
+                  }
                 />
               </PaginationItem>
               {paginationItems.map((item, index) => (
                 <PaginationItem key={`${item}-${index}`}>
-                  {item === "ellipsis"
-                    ? <PaginationEllipsis />
-                    : (
-                      <PaginationLink
-                        href="#"
-                        isActive={item === currentPage}
-                        onClick={(event) => {
-                          event.preventDefault();
-                          table.setPageIndex(item);
-                        }}
-                      >
-                        {item + 1}
-                      </PaginationLink>
-                    )}
+                  {item === "ellipsis" ? (
+                    <PaginationEllipsis />
+                  ) : (
+                    <PaginationLink
+                      href="#"
+                      isActive={item === currentPage}
+                      onClick={(event) => {
+                        event.preventDefault();
+                        table.setPageIndex(item);
+                      }}
+                    >
+                      {item + 1}
+                    </PaginationLink>
+                  )}
                 </PaginationItem>
               ))}
               <PaginationItem>
@@ -435,9 +400,7 @@ export function CollectionTable<TData extends TableData>({
                     event.preventDefault();
                     if (table.getCanNextPage()) table.nextPage();
                   }}
-                  className={!table.getCanNextPage()
-                    ? "pointer-events-none opacity-50"
-                    : undefined}
+                  className={!table.getCanNextPage() ? "pointer-events-none opacity-50" : undefined}
                 />
               </PaginationItem>
             </PaginationContent>

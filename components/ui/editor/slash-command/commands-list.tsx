@@ -6,9 +6,7 @@ import { Ban } from "lucide-react";
 export type SlashItem = {
   title: string;
   icon: LucideIcon;
-  command: (
-    params: { editor: Editor; range: { from: number; to: number } },
-  ) => void;
+  command: (params: { editor: Editor; range: { from: number; to: number } }) => void;
 };
 
 type CommandsListProps = {
@@ -39,9 +37,7 @@ const CommandsList = forwardRef<CommandsListHandle, CommandsListProps>(
 
         if (event.key === "ArrowUp") {
           event.preventDefault();
-          setSelectedIndex((current) =>
-            (current + items.length - 1) % items.length
-          );
+          setSelectedIndex((current) => (current + items.length - 1) % items.length);
           return true;
         }
 
@@ -63,27 +59,25 @@ const CommandsList = forwardRef<CommandsListHandle, CommandsListProps>(
 
     return (
       <div className="bg-popover text-popover-foreground border-border z-50 min-w-44 overflow-hidden rounded-md border p-1 shadow-md">
-        {items.length
-          ? (
-            items.map((item, index) => (
-              <button
-                key={item.title}
-                type="button"
-                onClick={() => selectItem(index)}
-                aria-selected={selectedIndex === index}
-                className="focus:bg-accent focus:text-accent-foreground aria-selected:bg-accent aria-selected:text-accent-foreground relative flex w-full cursor-default items-center rounded-sm px-2 py-1.5 text-sm outline-none"
-              >
-                <item.icon className="mr-2 size-4" />
-                {item.title}
-              </button>
-            ))
-          )
-          : (
-            <div className="text-muted-foreground flex items-center px-2 py-1.5 text-sm">
-              <Ban className="mr-2 size-4" />
-              No results
-            </div>
-          )}
+        {items.length ? (
+          items.map((item, index) => (
+            <button
+              key={item.title}
+              type="button"
+              onClick={() => selectItem(index)}
+              aria-selected={selectedIndex === index}
+              className="focus:bg-accent focus:text-accent-foreground aria-selected:bg-accent aria-selected:text-accent-foreground relative flex w-full cursor-default items-center rounded-sm px-2 py-1.5 text-sm outline-none"
+            >
+              <item.icon className="mr-2 size-4" />
+              {item.title}
+            </button>
+          ))
+        ) : (
+          <div className="text-muted-foreground flex items-center px-2 py-1.5 text-sm">
+            <Ban className="mr-2 size-4" />
+            No results
+          </div>
+        )}
       </div>
     );
   },

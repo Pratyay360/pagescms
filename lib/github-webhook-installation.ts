@@ -1,19 +1,12 @@
 import { db } from "../db/index.ts";
-import {
-  cacheFileTable,
-  collaboratorTable,
-  githubInstallationTokenTable,
-} from "../db/schema.ts";
+import { cacheFileTable, collaboratorTable, githubInstallationTokenTable } from "../db/schema.ts";
 import { and, eq, inArray } from "drizzle-orm";
 import {
   clearFileCache,
   updateFileCacheOwner,
   updateFileCacheRepository,
 } from "./github-cache-file.ts";
-import {
-  deleteCacheFileMeta,
-  deleteCacheFileMetaByPaths,
-} from "./github-cache-meta.ts";
+import { deleteCacheFileMeta, deleteCacheFileMetaByPaths } from "./github-cache-meta.ts";
 
 const chunkArray = <T>(items: T[], size = 200): T[][] => {
   const chunks: T[][] = [];
@@ -56,24 +49,17 @@ const clearScopedFileCache = async (
   );
 
   for (const pathsChunk of chunkArray(uniqueChangedPaths, 200)) {
-    await db.delete(cacheFileTable).where(
-      and(whereBase, inArray(cacheFileTable.path, pathsChunk)),
-    );
+    await db.delete(cacheFileTable).where(and(whereBase, inArray(cacheFileTable.path, pathsChunk)));
   }
 
   for (const parentPathsChunk of chunkArray(affectedParentPaths, 200)) {
     await db
       .delete(cacheFileTable)
-      .where(
-        and(whereBase, inArray(cacheFileTable.parentPath, parentPathsChunk)),
-      );
+      .where(and(whereBase, inArray(cacheFileTable.parentPath, parentPathsChunk)));
   }
 };
 
-const handleInstallationWebhookEvent = async (
-  event: string | null,
-  data: any,
-) => {
+const handleInstallationWebhookEvent = async (event: string | null, data: any) => {
   switch (event) {
     case "installation":
       if (data.action !== "deleted") return false;
@@ -81,10 +67,7 @@ const handleInstallationWebhookEvent = async (
       {
         const accountLogin = data.installation?.account?.login;
         if (!accountLogin) {
-          console.error(
-            "Missing account login in installation deleted event",
-            data.installation,
-          );
+          console.error("Missing account login in installation deleted event", data.installation);
           return true;
         }
 
@@ -94,12 +77,7 @@ const handleInstallationWebhookEvent = async (
             .where(eq(collaboratorTable.installationId, data.installation.id)),
           db
             .delete(githubInstallationTokenTable)
-            .where(
-              eq(
-                githubInstallationTokenTable.installationId,
-                data.installation.id,
-              ),
-            ),
+            .where(eq(githubInstallationTokenTable.installationId, data.installation.id)),
           clearFileCache(accountLogin),
           deleteCacheFileMeta(accountLogin),
         ]);
@@ -110,13 +88,10 @@ const handleInstallationWebhookEvent = async (
       if (data.action !== "removed") return false;
 
       {
-        const reposIdRemoved =
-          data.repositories_removed?.map((repo: any) => repo.id) || [];
+        const reposIdRemoved = data.repositories_removed?.map((repo: any) => repo.id) || [];
         if (reposIdRemoved.length === 0) return true;
 
-        await db.delete(collaboratorTable).where(
-          inArray(collaboratorTable.repoId, reposIdRemoved),
-        );
+        await db.delete(collaboratorTable).where(inArray(collaboratorTable.repoId, reposIdRemoved));
 
         await Promise.all(
           (data.repositories_removed || []).map((repo: any) => {
@@ -149,9 +124,7 @@ const handleInstallationWebhookEvent = async (
 
       if (data.action === "deleted") {
         await Promise.all([
-          db.delete(collaboratorTable).where(
-            eq(collaboratorTable.repoId, repoId),
-          ),
+          db.delete(collaboratorTable).where(eq(collaboratorTable.repoId, repoId)),
           clearFileCache(owner, repoName),
           deleteCacheFileMeta(owner, repoName),
         ]);
@@ -159,9 +132,7 @@ const handleInstallationWebhookEvent = async (
         const oldOwner = data.changes?.owner?.from?.login || owner;
 
         await Promise.all([
-          db.delete(collaboratorTable).where(
-            eq(collaboratorTable.repoId, repoId),
-          ),
+          db.delete(collaboratorTable).where(eq(collaboratorTable.repoId, repoId)),
           clearFileCache(oldOwner, repoName),
           deleteCacheFileMeta(oldOwner, repoName),
         ]);

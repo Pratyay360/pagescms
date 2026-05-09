@@ -172,16 +172,10 @@ const markFolderScopeError = async (
   folderPath: string,
   error: string,
 ) => {
-  await upsertScopedMeta(
-    owner,
-    repo,
-    branch,
-    getFolderScope(context, folderPath),
-    {
-      status: "error",
-      error,
-    },
-  );
+  await upsertScopedMeta(owner, repo, branch, getFolderScope(context, folderPath), {
+    status: "error",
+    error,
+  });
 };
 
 const claimFolderScopes = async (
@@ -293,9 +287,7 @@ const fetchMediaDirectoryEntries = async (
 
     return response.data;
   } catch (error: any) {
-    if (
-      error?.status === 404 && error?.response?.data?.message === "Not Found"
-    ) {
+    if (error?.status === 404 && error?.response?.data?.message === "Not Found") {
       return [];
     }
 
@@ -314,78 +306,68 @@ const replaceFolderCache = async (
   const now = new Date();
   const lowerOwner = owner.toLowerCase();
   const lowerRepo = repo.toLowerCase();
-  const locked = await withFolderCacheLock(
-    owner,
-    repo,
-    branch,
-    scope,
-    async (tx) => {
+  const locked = await withFolderCacheLock(owner, repo, branch, scope, async (tx) => {
+    await tx
+      .delete(cacheFileTable)
+      .where(
+        and(
+          eq(cacheFileTable.owner, lowerOwner),
+          eq(cacheFileTable.repo, lowerRepo),
+          eq(cacheFileTable.branch, branch),
+          eq(cacheFileTable.parentPath, scope.path),
+        ),
+      );
+
+    if (entries.length > 0) {
+      await tx.insert(cacheFileTable).values(entries);
+
       await tx
-        .delete(cacheFileTable)
-        .where(
-          and(
-            eq(cacheFileTable.owner, lowerOwner),
-            eq(cacheFileTable.repo, lowerRepo),
-            eq(cacheFileTable.branch, branch),
-            eq(cacheFileTable.parentPath, scope.path),
-          ),
-        );
-
-      if (entries.length > 0) {
-        await tx.insert(cacheFileTable).values(entries);
-
-        await tx
-          .insert(cacheFileMetaTable)
-          .values({
-            owner: lowerOwner,
-            repo: lowerRepo,
-            branch,
-            path: scope.path,
-            context: scope.context,
+        .insert(cacheFileMetaTable)
+        .values({
+          owner: lowerOwner,
+          repo: lowerRepo,
+          branch,
+          path: scope.path,
+          context: scope.context,
+          commitSha: commit?.sha ?? null,
+          commitTimestamp: commit?.timestamp ? new Date(commit.timestamp) : null,
+          status: "ok",
+          error: null,
+          updatedAt: now,
+          lastCheckedAt: now,
+        })
+        .onConflictDoUpdate({
+          target: [
+            cacheFileMetaTable.owner,
+            cacheFileMetaTable.repo,
+            cacheFileMetaTable.branch,
+            cacheFileMetaTable.path,
+            cacheFileMetaTable.context,
+          ],
+          set: {
             commitSha: commit?.sha ?? null,
-            commitTimestamp: commit?.timestamp
-              ? new Date(commit.timestamp)
-              : null,
+            commitTimestamp: commit?.timestamp ? new Date(commit.timestamp) : null,
             status: "ok",
             error: null,
             updatedAt: now,
             lastCheckedAt: now,
-          })
-          .onConflictDoUpdate({
-            target: [
-              cacheFileMetaTable.owner,
-              cacheFileMetaTable.repo,
-              cacheFileMetaTable.branch,
-              cacheFileMetaTable.path,
-              cacheFileMetaTable.context,
-            ],
-            set: {
-              commitSha: commit?.sha ?? null,
-              commitTimestamp: commit?.timestamp
-                ? new Date(commit.timestamp)
-                : null,
-              status: "ok",
-              error: null,
-              updatedAt: now,
-              lastCheckedAt: now,
-            },
-          });
-        return;
-      }
+          },
+        });
+      return;
+    }
 
-      await tx
-        .delete(cacheFileMetaTable)
-        .where(
-          and(
-            eq(cacheFileMetaTable.owner, lowerOwner),
-            eq(cacheFileMetaTable.repo, lowerRepo),
-            eq(cacheFileMetaTable.branch, branch),
-            eq(cacheFileMetaTable.path, scope.path),
-            eq(cacheFileMetaTable.context, scope.context),
-          ),
-        );
-    },
-  );
+    await tx
+      .delete(cacheFileMetaTable)
+      .where(
+        and(
+          eq(cacheFileMetaTable.owner, lowerOwner),
+          eq(cacheFileMetaTable.repo, lowerRepo),
+          eq(cacheFileMetaTable.branch, branch),
+          eq(cacheFileMetaTable.path, scope.path),
+          eq(cacheFileMetaTable.context, scope.context),
+        ),
+      );
+  });
   if (!locked.acquired) return false;
   return true;
 };

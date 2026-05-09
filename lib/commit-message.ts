@@ -11,9 +11,7 @@ const defaultCommitTemplates: Record<CommitAction, string> = {
   rename: "Rename {oldPath} to {newPath} (via Pages CMS)",
 };
 
-const getCommitTemplates = (
-  configObject?: Record<string, any>,
-): CommitTemplates => {
+const getCommitTemplates = (configObject?: Record<string, any>): CommitTemplates => {
   const templates = configObject?.settings?.commit?.templates;
   return templates && typeof templates === "object" ? templates : {};
 };
@@ -106,12 +104,10 @@ const resolveCommitMessage = ({
   const template =
     typeof overrideTemplate === "string" && overrideTemplate.trim()
       ? overrideTemplate
-      : typeof globalTemplates[action] === "string" &&
-          globalTemplates[action]?.trim()
-      ? (globalTemplates[action] as string)
-      : defaultCommitTemplates[action];
-  return renderCommitTemplate(template, tokens).replace(/\s+/g, " ").trim()
-    .slice(0, 200);
+      : typeof globalTemplates[action] === "string" && globalTemplates[action]?.trim()
+        ? (globalTemplates[action] as string)
+        : defaultCommitTemplates[action];
+  return renderCommitTemplate(template, tokens).replace(/\s+/g, " ").trim().slice(0, 200);
 };
 
 export { buildCommitTokens, resolveCommitIdentity, resolveCommitMessage };

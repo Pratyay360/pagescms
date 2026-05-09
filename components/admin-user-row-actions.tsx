@@ -33,11 +33,7 @@ export function AdminUserRowActions({
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button
-            variant="outline"
-            size="icon-sm"
-            aria-label={`User actions for ${name}`}
-          >
+          <Button variant="outline" size="icon-sm" aria-label={`User actions for ${name}`}>
             <MoreHorizontal className="size-4" />
           </Button>
         </DropdownMenuTrigger>

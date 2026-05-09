@@ -29,9 +29,10 @@ export default async function Layout({
   const session = await getServerSession();
   const user = session?.user;
   const returnTo = requestHeaders.get("x-return-to");
-  const signInUrl = returnTo && returnTo !== "/sign-in"
-    ? `/sign-in?redirect=${encodeURIComponent(returnTo)}`
-    : "/sign-in";
+  const signInUrl =
+    returnTo && returnTo !== "/sign-in"
+      ? `/sign-in?redirect=${encodeURIComponent(returnTo)}`
+      : "/sign-in";
   if (!user) return redirect(signInUrl);
 
   try {
@@ -47,8 +48,7 @@ export default async function Layout({
           <EmptyHeader>
             <EmptyTitle>Empty repository</EmptyTitle>
             <EmptyDescription>
-              Create a branch and add a &quot;.pages.yml&quot; file to configure
-              this repository.
+              Create a branch and add a &quot;.pages.yml&quot; file to configure this repository.
             </EmptyDescription>
           </EmptyHeader>
           <EmptyContent>

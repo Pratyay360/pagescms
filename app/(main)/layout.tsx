@@ -17,9 +17,10 @@ export default async function Layout({
   const requestHeaders = await headers();
   const session = await getServerSession();
   const returnTo = requestHeaders.get("x-return-to");
-  const signInUrl = returnTo && returnTo !== "/sign-in"
-    ? `/sign-in?redirect=${encodeURIComponent(returnTo)}`
-    : "/sign-in";
+  const signInUrl =
+    returnTo && returnTo !== "/sign-in"
+      ? `/sign-in?redirect=${encodeURIComponent(returnTo)}`
+      : "/sign-in";
   if (!session?.user) return redirect(signInUrl);
 
   let accounts;

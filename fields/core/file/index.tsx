@@ -10,11 +10,7 @@ import {
   normalizeMediaPath,
 } from "../../../lib/utils/file.ts";
 
-const read = (
-  value: any,
-  field: Field,
-  config: Record<string, any>,
-): string | string[] | null => {
+const read = (value: any, field: Field, config: Record<string, any>): string | string[] | null => {
   if (!value) return null;
   if (Array.isArray(value) && !value.length) return null;
 
@@ -32,19 +28,10 @@ const read = (
   }
 
   const normalizedValue = normalizeMediaPath(String(value));
-  return swapPrefix(
-    normalizedValue,
-    mediaConfig.output,
-    mediaConfig.input,
-    true,
-  );
+  return swapPrefix(normalizedValue, mediaConfig.output, mediaConfig.input, true);
 };
 
-const write = (
-  value: any,
-  field: Field,
-  config: Record<string, any>,
-): string | string[] | null => {
+const write = (value: any, field: Field, config: Record<string, any>): string | string[] | null => {
   if (!value) return null;
   if (Array.isArray(value) && !value.length) return null;
 
@@ -65,10 +52,7 @@ const write = (
   return swapPrefix(normalizedValue, mediaConfig.input, mediaConfig.output);
 };
 
-const getAllowedExtensions = (
-  field: Field,
-  mediaConfig: any,
-): string[] | undefined => {
+const getAllowedExtensions = (field: Field, mediaConfig: any): string[] | undefined => {
   if (!mediaConfig) return undefined;
   if (!field.options?.extensions && !field.options?.categories) {
     return mediaConfig?.extensions || undefined;
@@ -86,25 +70,21 @@ const getAllowedExtensions = (
     extensions = [...mediaConfig.extensions];
   }
 
-  if (
-    extensions.length > 0 && mediaConfig?.extensions &&
-    Array.isArray(mediaConfig.extensions)
-  ) {
-    extensions = extensions.filter((ext) =>
-      mediaConfig.extensions.includes(ext)
-    );
+  if (extensions.length > 0 && mediaConfig?.extensions && Array.isArray(mediaConfig.extensions)) {
+    extensions = extensions.filter((ext) => mediaConfig.extensions.includes(ext));
   }
 
   return extensions;
 };
 
 const schema = (field: Field, configObject?: Record<string, any>) => {
-  const mediaConfig = configObject &&
+  const mediaConfig =
+    configObject &&
     (field.options?.media === false
       ? undefined
       : field.options?.media && typeof field.options.media === "string"
-      ? getSchemaByName(configObject, field.options.media, "media")
-      : configObject.media?.[0]);
+        ? getSchemaByName(configObject, field.options.media, "media")
+        : configObject.media?.[0]);
   const mediaInputPath = mediaConfig?.input;
   const allowedExtensions = getAllowedExtensions(field, mediaConfig);
   let zodSchema: z.ZodTypeAny;
@@ -121,12 +101,9 @@ const schema = (field: Field, configObject?: Record<string, any>) => {
     let hasEmptyElementInArray = false;
 
     if (isMultiple) {
-      isEmpty = data === null || data === undefined ||
-        (Array.isArray(data) && data.length === 0);
+      isEmpty = data === null || data === undefined || (Array.isArray(data) && data.length === 0);
       if (Array.isArray(data) && data.length > 0) {
-        hasEmptyElementInArray = data.some((s) =>
-          typeof s === "string" && s === ""
-        );
+        hasEmptyElementInArray = data.some((s) => typeof s === "string" && s === "");
       }
     } else {
       isEmpty = data === null || data === undefined || data === "";
@@ -149,9 +126,7 @@ const schema = (field: Field, configObject?: Record<string, any>) => {
 
     if (enforceUnique && Array.isArray(data)) {
       const normalizedPaths = data
-        .filter((path): path is string =>
-          typeof path === "string" && path !== ""
-        )
+        .filter((path): path is string => typeof path === "string" && path !== "")
         .map((path) => normalizeMediaPath(path));
       if (new Set(normalizedPaths).size !== normalizedPaths.length) {
         ctx.addIssue({
@@ -172,8 +147,7 @@ const schema = (field: Field, configObject?: Record<string, any>) => {
       if (mediaInputPath && !path.startsWith(mediaInputPath)) {
         ctx.addIssue({
           code: ZodIssueCode.custom,
-          message:
-            `Path must start with the media directory: ${mediaInputPath}`,
+          message: `Path must start with the media directory: ${mediaInputPath}`,
         });
       }
 
@@ -183,11 +157,9 @@ const schema = (field: Field, configObject?: Record<string, any>) => {
         if (!allowedExtensions.includes(fileExtension)) {
           ctx.addIssue({
             code: ZodIssueCode.custom,
-            message: `Invalid file extension '.${fileExtension}'. Allowed: ${
-              allowedExtensions
-                .map((e: string) => `.${e}`)
-                .join(", ")
-            }`,
+            message: `Invalid file extension '.${fileExtension}'. Allowed: ${allowedExtensions
+              .map((e: string) => `.${e}`)
+              .join(", ")}`,
           });
         }
       }

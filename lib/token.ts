@@ -19,19 +19,10 @@ const installationTokenRefreshInFlight = new Map<number, Promise<string>>();
 
 // Get a token for a user (including collagborators who need to provide an owner/repo scope).
 const getToken = cache(
-  async (
-    user: User,
-    owner: string,
-    repo: string,
-    verifyGithubAccess: boolean = false,
-  ) => {
+  async (user: User, owner: string, repo: string, verifyGithubAccess: boolean = false) => {
     const githubAccount = await getGithubAccount(user.id);
     if (githubAccount?.accessToken) {
-      const hasGithubAccess = await canAccessRepoWithToken(
-        githubAccount.accessToken,
-        owner,
-        repo,
-      );
+      const hasGithubAccess = await canAccessRepoWithToken(githubAccount.accessToken, owner, repo);
       if (hasGithubAccess) {
         return {
           token: githubAccount.accessToken,
@@ -40,10 +31,7 @@ const getToken = cache(
       }
 
       if (verifyGithubAccess) {
-        throw createHttpError(
-          `You do not have permission to access "${owner}/${repo}".`,
-          403,
-        );
+        throw createHttpError(`You do not have permission to access "${owner}/${repo}".`, 403);
       }
     }
 
@@ -51,10 +39,7 @@ const getToken = cache(
       where: collaboratorMatchesUserForRepo(user, owner, repo),
     });
     if (!permission) {
-      throw createHttpError(
-        `You do not have permission to access "${owner}/${repo}".`,
-        403,
-      );
+      throw createHttpError(`You do not have permission to access "${owner}/${repo}".`, 403);
     }
 
     const installationToken = await getInstallationToken(owner, repo);
@@ -73,13 +58,10 @@ const getInstallationToken = cache(async (owner: string, repo: string) => {
     privateKey: process.env.GITHUB_APP_PRIVATE_KEY!,
   });
 
-  const repoInstallation = await app.octokit.request(
-    "GET /repos/{owner}/{repo}/installation",
-    {
-      owner,
-      repo,
-    },
-  );
+  const repoInstallation = await app.octokit.request("GET /repos/{owner}/{repo}/installation", {
+    owner,
+    repo,
+  });
   if (!repoInstallation) {
     throw new Error(`Installation token not found for "${owner}/${repo}".`);
   }
@@ -162,11 +144,7 @@ const getUserToken = cache(async (userId: string) => {
   return githubAccount.accessToken;
 });
 
-const canAccessRepoWithToken = async (
-  token: string,
-  owner: string,
-  repo: string,
-) => {
+const canAccessRepoWithToken = async (token: string, owner: string, repo: string) => {
   try {
     const octokit = createOctokitInstance(token);
     await octokit.rest.repos.get({ owner, repo });

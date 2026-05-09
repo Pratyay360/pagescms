@@ -2,8 +2,7 @@ import type { User } from "../types/user.ts";
 
 type UserLike = Pick<User, "githubUsername"> | null | undefined;
 
-const hasGithubIdentity = (user: UserLike): boolean =>
-  Boolean(user?.githubUsername);
+const hasGithubIdentity = (user: UserLike): boolean => Boolean(user?.githubUsername);
 
 const assertGithubIdentity = (
   user: UserLike,

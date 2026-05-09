@@ -4,12 +4,7 @@ import { useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Search } from "lucide-react";
 import { useDebounce } from "use-debounce";
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupInput,
-  InputGroupText,
-} from "./ui/input-group.tsx";
+import { InputGroup, InputGroupAddon, InputGroupInput, InputGroupText } from "./ui/input-group.tsx";
 
 export function AdminUserSearch({ initialQuery }: { initialQuery: string }) {
   const router = useRouter();

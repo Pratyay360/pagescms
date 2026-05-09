@@ -13,10 +13,7 @@ import {
 import { getRepoReadContext } from "../../../../../../../lib/api-repo-context.ts";
 import { normalizePath } from "../../../../../../../lib/utils/file.ts";
 import { getCollectionCache } from "../../../../../../../lib/github-cache-file.ts";
-import {
-  createHttpError,
-  toErrorResponse,
-} from "../../../../../../../lib/api-error.ts";
+import { createHttpError, toErrorResponse } from "../../../../../../../lib/api-error.ts";
 
 /**
  * Fetches and parses collection contents from GitHub repositories
@@ -31,9 +28,7 @@ import {
 export async function GET(
   request: NextRequest,
   context: {
-    params: Promise<
-      { owner: string; repo: string; branch: string; name: string }
-    >;
+    params: Promise<{ owner: string; repo: string; branch: string; name: string }>;
   },
 ) {
   try {
@@ -53,18 +48,12 @@ export async function GET(
 
     const normalizedPath = normalizePath(path);
     if (!normalizedPath.startsWith(schema.path)) {
-      throw createHttpError(
-        `Invalid path "${path}" for collection "${params.name}".`,
-        400,
-      );
+      throw createHttpError(`Invalid path "${path}" for collection "${params.name}".`, 400);
     }
 
     if (schema.subfolders === false) {
       if (normalizedPath !== schema.path) {
-        throw createHttpError(
-          `Invalid path "${path}" for collection "${params.name}".`,
-          400,
-        );
+        throw createHttpError(`Invalid path "${path}" for collection "${params.name}".`, 400);
       }
     }
 
@@ -89,8 +78,7 @@ export async function GET(
       // Remove node entries from subfolders
       entries = entries.filter(
         (item: any) =>
-          item.isNode || item.parentPath === schema.path ||
-          item.name !== schema.view.node.filename,
+          item.isNode || item.parentPath === schema.path || item.name !== schema.view.node.filename,
       );
     }
 
@@ -104,13 +92,10 @@ export async function GET(
           (item: any) =>
             item.type !== "dir" ||
             (schema.view.node.hideDirs === "others"
-              ? entries.some((subItem: any) =>
-                subItem.parentPath === item.path && subItem.isNode
-              )
+              ? entries.some((subItem: any) => subItem.parentPath === item.path && subItem.isNode)
               : !entries.some(
-                (subItem: any) =>
-                  subItem.parentPath === item.path && subItem.isNode,
-              )),
+                  (subItem: any) => subItem.parentPath === item.path && subItem.isNode,
+                )),
         );
       }
     }
@@ -121,11 +106,7 @@ export async function GET(
       // If this is a search request, filter the contents
       if (type === "search" && query) {
         const searchQuery = query.toLowerCase();
-        const searchFields = Array.isArray(fields)
-          ? fields
-          : fields
-          ? [fields]
-          : [];
+        const searchFields = Array.isArray(fields) ? fields : fields ? [fields] : [];
 
         data.contents = data.contents.filter((item) => {
           if (searchFields.length === 0) {
@@ -136,8 +117,7 @@ export async function GET(
               return true;
             }
 
-            return item.content &&
-              item.content.toLowerCase().includes(searchQuery);
+            return item.content && item.content.toLowerCase().includes(searchQuery);
           }
 
           return searchFields.some((field) => {
@@ -213,9 +193,7 @@ const parseContents = (
               const requestedFieldPaths = selectedFields
                 .filter((fieldPath) => fieldPath !== "path")
                 .map((fieldPath) =>
-                  fieldPath.startsWith("fields.")
-                    ? fieldPath.replace(/^fields\./, "")
-                    : fieldPath
+                  fieldPath.startsWith("fields.") ? fieldPath.replace(/^fields\./, "") : fieldPath,
                 );
               contentObject = pickAndTransformFields(
                 parsedObject,
@@ -225,22 +203,16 @@ const parseContents = (
               );
             } else {
               // TODO: review if this works for blocks
-              contentObject = deepMap(
-                parsedObject,
-                schema.fields,
-                (value, field) => {
-                  if (typeof field.type === "string" && readFns[field.type]) {
-                    return readFns[field.type](value, field, config);
-                  }
-                  return value;
-                },
-              );
+              contentObject = deepMap(parsedObject, schema.fields, (value, field) => {
+                if (typeof field.type === "string" && readFns[field.type]) {
+                  return readFns[field.type](value, field, config);
+                }
+                return value;
+              });
             }
           } catch (error: any) {
             // TODO: send this to the client?
-            console.error(
-              `Error parsing frontmatter for file "${item.path}": ${error.message}`,
-            );
+            console.error(`Error parsing frontmatter for file "${item.path}": ${error.message}`);
             parsedErrors.push(
               `Error parsing frontmatter for file "${item.path}": ${error.message}`,
             );
@@ -254,10 +226,7 @@ const parseContents = (
 
         // TODO: make this configurable
         // TODO: support other date formats
-        if (
-          !contentObject.date &&
-          schema.filename.startsWith("{year}-{month}-{day}")
-        ) {
+        if (!contentObject.date && schema.filename.startsWith("{year}-{month}-{day}")) {
           // If we couldn"t get a date from the content and filenames have a date, we extract it
           const filenameDate = getDateFromFilename(item.name);
           if (filenameDate) {
@@ -328,10 +297,7 @@ const setByPath = (target: Record<string, any>, path: string, value: any) => {
 
   for (let i = 0; i < segments.length - 1; i++) {
     const key = segments[i];
-    if (
-      cursor[key] == null || typeof cursor[key] !== "object" ||
-      Array.isArray(cursor[key])
-    ) {
+    if (cursor[key] == null || typeof cursor[key] !== "object" || Array.isArray(cursor[key])) {
       cursor[key] = {};
     }
     cursor = cursor[key];

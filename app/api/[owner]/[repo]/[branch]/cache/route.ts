@@ -1,10 +1,6 @@
 import { and, eq, sql } from "drizzle-orm";
 import { db } from "../../../../../../db/index.ts";
-import {
-  cacheFileTable,
-  cachePermissionTable,
-  configTable,
-} from "../../../../../../db/schema.ts";
+import { cacheFileTable, cachePermissionTable, configTable } from "../../../../../../db/schema.ts";
 import { requireGithubRepoWriteAccess } from "../../../../../../lib/authz-server.ts";
 import {
   clearFileCache,
@@ -18,10 +14,7 @@ import {
   upsertCacheFileMeta,
 } from "../../../../../../lib/github-cache-meta.ts";
 import { getConfig } from "../../../../../../lib/config-store.ts";
-import {
-  createHttpError,
-  toErrorResponse,
-} from "../../../../../../lib/api-error.ts";
+import { createHttpError, toErrorResponse } from "../../../../../../lib/api-error.ts";
 import { isCacheEnabled } from "../../../../../../lib/config.ts";
 import { getBranchHeadSha } from "../../../../../../lib/github-cache-file.ts";
 import { requireApiUserSession } from "../../../../../../lib/session-server.ts";
@@ -52,19 +45,9 @@ export async function GET(
     }
 
     // Keep DB access mostly sequential to avoid spiking pool usage on the cache dashboard.
-    const meta = await getCacheFileMeta(
-      params.owner,
-      params.repo,
-      params.branch,
-    );
-    const metaEntries = await listCacheFileMeta(
-      params.owner,
-      params.repo,
-      params.branch,
-    );
-    const folderMeta = metaEntries.filter((entry) =>
-      entry.context !== "branch"
-    );
+    const meta = await getCacheFileMeta(params.owner, params.repo, params.branch);
+    const metaEntries = await listCacheFileMeta(params.owner, params.repo, params.branch);
+    const folderMeta = metaEntries.filter((entry) => entry.context !== "branch");
     const fileCountResult = await db
       .select({ count: sql<number>`count(*)` })
       .from(cacheFileTable)
@@ -91,12 +74,7 @@ export async function GET(
         eq(configTable.branch, params.branch),
       ),
     });
-    const branchHeadSha = await getBranchHeadSha(
-      params.owner,
-      params.repo,
-      params.branch,
-      token,
-    );
+    const branchHeadSha = await getBranchHeadSha(params.owner, params.repo, params.branch, token);
 
     return Response.json({
       status: "success",
@@ -107,10 +85,10 @@ export async function GET(
         permissionCount: Number(permissionCountResult[0]?.count || 0),
         config: cachedConfig
           ? {
-            sha: cachedConfig.sha,
-            lastCheckedAt: cachedConfig.lastCheckedAt,
-            version: cachedConfig.version,
-          }
+              sha: cachedConfig.sha,
+              lastCheckedAt: cachedConfig.lastCheckedAt,
+              version: cachedConfig.version,
+            }
           : null,
         branchHeadSha,
       },
@@ -151,15 +129,9 @@ export async function POST(
 
     switch (action) {
       case "reconcile-file-cache":
-        await ensureFileCacheFreshness(
-          params.owner,
-          params.repo,
-          params.branch,
-          token,
-          {
-            force: true,
-          },
-        );
+        await ensureFileCacheFreshness(params.owner, params.repo, params.branch, token, {
+          force: true,
+        });
         return Response.json({
           status: "success",
           message: "File cache reconciled.",

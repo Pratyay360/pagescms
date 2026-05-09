@@ -20,10 +20,10 @@ export type RepoActionConfig = {
   confirm?:
     | boolean
     | {
-      title?: string;
-      message?: string;
-      button?: string;
-    };
+        title?: string;
+        message?: string;
+        button?: string;
+      };
   fields?: RepoActionField[];
 };
 
@@ -62,9 +62,7 @@ export const getSchemaActions = (
   schema: any,
   scope?: "collection" | "entry",
 ): RepoActionConfig[] => {
-  const actions: RepoActionConfig[] = Array.isArray(schema?.actions)
-    ? schema.actions
-    : [];
+  const actions: RepoActionConfig[] = Array.isArray(schema?.actions) ? schema.actions : [];
   if (scope == null) {
     return actions.filter((action) => action.scope == null);
   }
@@ -76,9 +74,7 @@ export const isActionRunActive = (run: ActionRunSummary | null | undefined) => {
   return run.status !== "completed";
 };
 
-export const formatActionRunState = (
-  run: Pick<ActionRunSummary, "status" | "conclusion">,
-) => {
+export const formatActionRunState = (run: Pick<ActionRunSummary, "status" | "conclusion">) => {
   if (run.status !== "completed") {
     if (
       run.status === "queued" ||

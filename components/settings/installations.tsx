@@ -36,9 +36,7 @@ const Installations = () => {
               alt={`${account.login}'s avatar`}
               className="h-6 w-6 rounded"
             />
-            <span className="font-medium truncate hover:underline">
-              {account.login}
-            </span>
+            <span className="font-medium truncate hover:underline">{account.login}</span>
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -49,11 +47,7 @@ const Installations = () => {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem asChild>
-                <a
-                  href={getGithubInstallationUrl(account)}
-                  target="_blank"
-                  rel="noreferrer"
-                >
+                <a href={getGithubInstallationUrl(account)} target="_blank" rel="noreferrer">
                   Manage GitHub App
                   <ArrowUpRight className="size-3 text-muted-foreground ml-auto" />
                 </a>

@@ -48,12 +48,7 @@ export default function Page() {
     <>
       {config && (
         <DocumentTitle
-          title={formatRepoBranchTitle(
-            "Configuration",
-            config.owner,
-            config.repo,
-            config.branch,
-          )}
+          title={formatRepoBranchTitle("Configuration", config.owner, config.repo, config.branch)}
         />
       )}
       <Entry

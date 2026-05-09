@@ -27,9 +27,7 @@ const collectInlineText = (tokens: unknown[]): string => {
       continue;
     }
 
-    if (
-      type === "link" || type === "strong" || type === "em" || type === "del"
-    ) {
+    if (type === "link" || type === "strong" || type === "em" || type === "del") {
       if (Array.isArray(token.tokens)) {
         parts.push(collectInlineText(token.tokens));
       } else if (typeof token.text === "string") parts.push(token.text);

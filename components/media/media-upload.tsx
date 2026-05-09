@@ -60,9 +60,7 @@ function MediaUploadRoot({
   if (!config) throw new Error(`Configuration not found.`);
 
   const configMedia = useMemo(
-    () => (media
-      ? getSchemaByName(config.object, media, "media")
-      : config.object.media[0]),
+    () => (media ? getSchemaByName(config.object, media, "media") : config.object.media[0]),
     [media, config.object],
   );
 
@@ -84,19 +82,13 @@ function MediaUploadRoot({
     async (files: File[]) => {
       try {
         for (const file of files) {
-          const uploadFilename = getUploadFileName(
-            file.name,
-            rename ?? configMedia?.rename,
-          );
+          const uploadFilename = getUploadFileName(file.name, rename ?? configMedia?.rename);
 
           const uploadPromise = (async () => {
             const content = await new Promise<string>((resolve, reject) => {
               const reader = new FileReader();
               reader.onload = () => {
-                const base64Content = (reader.result as string).replace(
-                  /^(.+,)/,
-                  "",
-                );
+                const base64Content = (reader.result as string).replace(/^(.+,)/, "");
                 resolve(base64Content);
               };
               reader.onerror = () => reject(new Error("Failed to read file"));
@@ -105,11 +97,9 @@ function MediaUploadRoot({
 
             const fullPath = joinPathSegments([path ?? "", uploadFilename]);
             const response = await fetch(
-              `/api/${config.owner}/${config.repo}/${
-                encodeURIComponent(
-                  config.branch,
-                )
-              }/files/${encodeURIComponent(fullPath)}`,
+              `/api/${config.owner}/${config.repo}/${encodeURIComponent(
+                config.branch,
+              )}/files/${encodeURIComponent(fullPath)}`,
               {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -121,10 +111,7 @@ function MediaUploadRoot({
               },
             );
 
-            const data = await requireApiSuccess<any>(
-              response,
-              "Failed to upload file",
-            );
+            const data = await requireApiSuccess<any>(response, "Failed to upload file");
 
             return data.data as FileSaveData;
           })();
@@ -135,9 +122,7 @@ function MediaUploadRoot({
               onUpload?.(savedEntry);
               return `Uploaded ${file.name}`;
             },
-            error: (
-              error: unknown,
-            ) => (error instanceof Error ? error.message : "Upload failed"),
+            error: (error: unknown) => (error instanceof Error ? error.message : "Upload failed"),
           });
         }
       } catch (error) {
@@ -157,28 +142,20 @@ function MediaUploadRoot({
     [handleFiles, accept, multiple, disabled],
   );
 
-  return (
-    <MediaUploadContext.Provider value={contextValue}>
-      {children}
-    </MediaUploadContext.Provider>
-  );
+  return <MediaUploadContext.Provider value={contextValue}>{children}</MediaUploadContext.Provider>;
 }
 
 function MediaUploadTrigger({ children }: MediaUploadTriggerProps) {
   const context = useContext(MediaUploadContext);
   if (!context) {
-    throw new Error(
-      "MediaUploadTrigger must be used within a MediaUpload component",
-    );
+    throw new Error("MediaUploadTrigger must be used within a MediaUpload component");
   }
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const filterAcceptedFiles = useCallback(
     (files: File[]) => {
-      const acceptedExtensions = context.accept?.split(",").map((ext) =>
-        ext.trim().toLowerCase()
-      );
+      const acceptedExtensions = context.accept?.split(",").map((ext) => ext.trim().toLowerCase());
       if (!acceptedExtensions?.length) return files;
 
       const validFiles = files.filter((file) => {
@@ -234,23 +211,17 @@ function MediaUploadTrigger({ children }: MediaUploadTriggerProps) {
   );
 }
 
-function MediaUploadDropZone(
-  { children, className }: MediaUploadDropZoneProps,
-) {
+function MediaUploadDropZone({ children, className }: MediaUploadDropZoneProps) {
   const context = useContext(MediaUploadContext);
   if (!context) {
-    throw new Error(
-      "MediaUploadDropZone must be used within a MediaUpload component",
-    );
+    throw new Error("MediaUploadDropZone must be used within a MediaUpload component");
   }
 
   const [isDragging, setIsDragging] = useState(false);
 
   const filterAcceptedFiles = useCallback(
     (files: File[]) => {
-      const acceptedExtensions = context.accept?.split(",").map((ext) =>
-        ext.trim().toLowerCase()
-      );
+      const acceptedExtensions = context.accept?.split(",").map((ext) => ext.trim().toLowerCase());
       if (!acceptedExtensions?.length) return files;
 
       const validFiles = files.filter((file) => {

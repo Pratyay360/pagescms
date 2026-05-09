@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
 const REPO = "pagescms/pagescms";
-const PACKAGE_JSON_URL =
-  "https://raw.githubusercontent.com/pagescms/pagescms/main/package.json";
+const PACKAGE_JSON_URL = "https://raw.githubusercontent.com/pagescms/pagescms/main/package.json";
 
 export async function GET() {
   try {
