@@ -23,7 +23,10 @@ const getErrorStatus = (error: unknown): number => {
   if (error && typeof error === "object") {
     const { status, statusCode } = error as ErrorLike;
     const explicitStatus = typeof status === "number" ? status : statusCode;
-    if (typeof explicitStatus === "number" && explicitStatus >= 400 && explicitStatus <= 599) {
+    if (
+      typeof explicitStatus === "number" && explicitStatus >= 400 &&
+      explicitStatus <= 599
+    ) {
       return explicitStatus;
     }
   }
@@ -42,7 +45,10 @@ const getErrorStatus = (error: unknown): number => {
   if (message.includes("unauthorized") || message.includes("not signed in")) {
     return 401;
   }
-  if (message.includes("conflict") || message.includes("changed since you last loaded")) return 409;
+  if (
+    message.includes("conflict") ||
+    message.includes("changed since you last loaded")
+  ) return 409;
   if (message.includes("rate limit")) return 429;
   if (message.includes("too many clients already")) return 503;
   if (

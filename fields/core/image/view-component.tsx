@@ -20,7 +20,9 @@ const ViewComponent = ({ value, field }: { value: string; field: Field }) => {
     <span className="flex items-center gap-x-1.5">
       <Thumbnail name={mediaName} path={path} className="w-8 rounded-md" />
       {extraValuesCount > 0 && (
-        <span className="text-muted-foreground text-xs">+{extraValuesCount}</span>
+        <span className="text-muted-foreground text-xs">
+          +{extraValuesCount}
+        </span>
       )}
     </span>
   );

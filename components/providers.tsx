@@ -6,9 +6,16 @@ import { UserProvider } from "../contexts/user-context.tsx";
 import { TooltipProvider } from "./ui/tooltip.tsx";
 import { User } from "../types/user.ts";
 
-export function Providers({ children, user }: { children: React.ReactNode; user: User | null }) {
+export function Providers(
+  { children, user }: { children: React.ReactNode; user: User | null },
+) {
   return (
-    <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="system"
+      enableSystem
+      disableTransitionOnChange
+    >
       <UserProvider user={user}>
         <TooltipProvider>
           <ActionToastProvider>{children}</ActionToastProvider>

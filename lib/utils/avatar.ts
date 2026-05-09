@@ -12,7 +12,8 @@ const getInitialsFromName = (name?: string) => {
   }
 
   const firstNameInitial = nameParts[0].charAt(0).toUpperCase();
-  const lastNameInitial = nameParts[nameParts.length - 1].charAt(0).toUpperCase();
+  const lastNameInitial = nameParts[nameParts.length - 1].charAt(0)
+    .toUpperCase();
 
   return firstNameInitial + lastNameInitial;
 };

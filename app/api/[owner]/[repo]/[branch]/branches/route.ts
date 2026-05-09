@@ -1,6 +1,9 @@
 import { createOctokitInstance } from "../../../../../../lib/utils/octokit.ts";
 import { getToken } from "../../../../../../lib/token.ts";
-import { createHttpError, toErrorResponse } from "../../../../../../lib/api-error.ts";
+import {
+  createHttpError,
+  toErrorResponse,
+} from "../../../../../../lib/api-error.ts";
 import { requireApiUserSession } from "../../../../../../lib/session-server.ts";
 
 /**
@@ -47,7 +50,8 @@ export async function POST(
 
     return Response.json({
       status: "success",
-      message: `Branch "${data.name}" created successfully from"${params.branch}".`,
+      message:
+        `Branch "${data.name}" created successfully from"${params.branch}".`,
       data: response.data,
     });
   } catch (error: any) {

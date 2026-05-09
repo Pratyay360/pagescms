@@ -14,7 +14,10 @@ import { and, eq, sql } from "drizzle-orm";
 import { collaboratorTable, verificationTable } from "../../db/schema.ts";
 import { z } from "zod";
 import { randomBytes, randomUUID } from "crypto";
-import { findVerifiedUserByEmail, normalizeEmail } from "../collaborator-access.ts";
+import {
+  findVerifiedUserByEmail,
+  normalizeEmail,
+} from "../collaborator-access.ts";
 import process from "node:process";
 
 const parseInviteEmails = (raw: FormDataEntryValue | null) => {
@@ -43,7 +46,10 @@ const assertRepoInInstallation = async (
   if (installations.length !== 1) {
     throw new Error(`"${owner}" is not part of your GitHub App installations`);
   }
-  const installationRepos = await getInstallationRepos(token, installations[0].id);
+  const installationRepos = await getInstallationRepos(
+    token,
+    installations[0].id,
+  );
   const isInstalledForRepo = installationRepos.some(
     (installationRepo) =>
       installationRepo.id === repoAccess.repoId ||
@@ -51,7 +57,9 @@ const assertRepoInInstallation = async (
         installationRepo.name?.toLowerCase() === repo.toLowerCase()),
   );
   if (!isInstalledForRepo) {
-    throw new Error(`"${owner}/${repo}" is not part of your Pages CMS installation.`);
+    throw new Error(
+      `"${owner}/${repo}" is not part of your Pages CMS installation.`,
+    );
   }
 
   return {
@@ -91,7 +99,8 @@ const createCollaboratorInviteMagicLink = async ({
   const token = generateMagicLinkToken();
   const redirectPath = `/${owner}/${repo}`;
   const expiresAt = new Date(
-    Date.now() + (Number(process.env.COLLABORATOR_INVITE_LINK_EXPIRES_IN) || 86400) * 1000,
+    Date.now() +
+      (Number(process.env.COLLABORATOR_INVITE_LINK_EXPIRES_IN) || 86400) * 1000,
   );
 
   await db.insert(verificationTable).values({
@@ -126,7 +135,9 @@ const handleAddCollaborator = async (prevState: any, formData: FormData) => {
     });
     const user = session?.user;
     if (!user) {
-      throw new Error("You must be signed in with GitHub to invite collaborators.");
+      throw new Error(
+        "You must be signed in with GitHub to invite collaborators.",
+      );
     }
 
     // TODO: add support for branches
@@ -146,13 +157,19 @@ const handleAddCollaborator = async (prevState: any, formData: FormData) => {
     const owner = ownerAndRepoValidation.data.owner;
     const repo = ownerAndRepoValidation.data.repo;
 
-    const emailsValidation = parseInviteEmails(formData.get("emails") ?? formData.get("email"));
+    const emailsValidation = parseInviteEmails(
+      formData.get("emails") ?? formData.get("email"),
+    );
     if (!emailsValidation.success || emailsValidation.data.length === 0) {
       throw new Error("Invalid email list");
     }
     const emails = emailsValidation.data;
 
-    const { repoAccess, installation } = await assertRepoInInstallation(user, owner, repo);
+    const { repoAccess, installation } = await assertRepoInInstallation(
+      user,
+      owner,
+      repo,
+    );
 
     const baseUrl = getBaseUrl();
     const repoUrl = new URL(`/${owner}/${repo}`, baseUrl).toString();
@@ -183,7 +200,9 @@ const handleAddCollaborator = async (prevState: any, formData: FormData) => {
             immediateAccessCount += 1;
           }
         }
-        errors.push(`${normalizedEmail} is already invited to "${owner}/${repo}".`);
+        errors.push(
+          `${normalizedEmail} is already invited to "${owner}/${repo}".`,
+        );
         continue;
       }
 
@@ -210,7 +229,10 @@ const handleAddCollaborator = async (prevState: any, formData: FormData) => {
             html,
           });
         } catch (error: any) {
-          console.error(`Failed to send invitation email to ${normalizedEmail}:`, error.message);
+          console.error(
+            `Failed to send invitation email to ${normalizedEmail}:`,
+            error.message,
+          );
           errors.push(`${normalizedEmail}: ${error.message}`);
           continue;
         }
@@ -269,20 +291,19 @@ const handleAddCollaborator = async (prevState: any, formData: FormData) => {
     }
 
     return {
-      message:
-        immediateAccessCount > 0 && pendingInviteCount > 0
-          ? `${immediateAccessCount} collaborator${
-              immediateAccessCount === 1 ? "" : "s"
-            } added immediately and ${pendingInviteCount} invite${
-              pendingInviteCount === 1 ? "" : "s"
-            } sent for "${owner}/${repo}".`
-          : immediateAccessCount > 0
-            ? `${immediateAccessCount} collaborator${
-                immediateAccessCount === 1 ? "" : "s"
-              } added to "${owner}/${repo}".`
-            : pendingInviteCount === 1
-              ? `${createdCollaborators[0].email} invited to "${owner}/${repo}".`
-              : `${pendingInviteCount} collaborators invited to "${owner}/${repo}".`,
+      message: immediateAccessCount > 0 && pendingInviteCount > 0
+        ? `${immediateAccessCount} collaborator${
+          immediateAccessCount === 1 ? "" : "s"
+        } added immediately and ${pendingInviteCount} invite${
+          pendingInviteCount === 1 ? "" : "s"
+        } sent for "${owner}/${repo}".`
+        : immediateAccessCount > 0
+        ? `${immediateAccessCount} collaborator${
+          immediateAccessCount === 1 ? "" : "s"
+        } added to "${owner}/${repo}".`
+        : pendingInviteCount === 1
+        ? `${createdCollaborators[0].email} invited to "${owner}/${repo}".`
+        : `${pendingInviteCount} collaborators invited to "${owner}/${repo}".`,
       data: createdCollaborators,
       errors,
     };
@@ -293,14 +314,20 @@ const handleAddCollaborator = async (prevState: any, formData: FormData) => {
 };
 
 // Remove a collaborator from a repository.
-const handleRemoveCollaborator = async (collaboratorId: number, owner: string, repo: string) => {
+const handleRemoveCollaborator = async (
+  collaboratorId: number,
+  owner: string,
+  repo: string,
+) => {
   try {
     const session = await auth.api.getSession({
       headers: await headers(),
     });
     const user = session?.user;
     if (!user) {
-      throw new Error("You must be signed in with GitHub to invite collaborators.");
+      throw new Error(
+        "You must be signed in with GitHub to invite collaborators.",
+      );
     }
 
     const collaborator = await db.query.collaboratorTable.findFirst({
@@ -325,7 +352,8 @@ const handleRemoveCollaborator = async (collaboratorId: number, owner: string, r
     }
 
     return {
-      message: `Invitation to ${collaborator.email} for "${owner}/${repo}" successfully removed.`,
+      message:
+        `Invitation to ${collaborator.email} for "${owner}/${repo}" successfully removed.`,
     };
   } catch (error: any) {
     console.error(error);
@@ -344,7 +372,9 @@ const handleResendCollaboratorInvite = async (
     });
     const user = session?.user;
     if (!user) {
-      throw new Error("You must be signed in with GitHub to resend collaborator invites.");
+      throw new Error(
+        "You must be signed in with GitHub to resend collaborator invites.",
+      );
     }
     await assertRepoInInstallation(user, owner, repo);
 
@@ -391,4 +421,8 @@ const handleResendCollaboratorInvite = async (
   }
 };
 
-export { handleAddCollaborator, handleRemoveCollaborator, handleResendCollaboratorInvite };
+export {
+  handleAddCollaborator,
+  handleRemoveCollaborator,
+  handleResendCollaboratorInvite,
+};

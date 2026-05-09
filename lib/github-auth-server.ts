@@ -4,10 +4,10 @@ import { sessionTable } from "../db/schema.ts";
 
 type AuthSession =
   | {
-      session?: {
-        id?: string | null;
-      } | null;
-    }
+    session?: {
+      id?: string | null;
+    } | null;
+  }
   | null
   | undefined;
 

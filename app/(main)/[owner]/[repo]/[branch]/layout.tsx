@@ -27,10 +27,9 @@ export default async function Layout({
   const session = await getServerSession();
   const user = session?.user;
   const returnTo = requestHeaders.get("x-return-to");
-  const signInUrl =
-    returnTo && returnTo !== "/sign-in"
-      ? `/sign-in?redirect=${encodeURIComponent(returnTo)}`
-      : "/sign-in";
+  const signInUrl = returnTo && returnTo !== "/sign-in"
+    ? `/sign-in?redirect=${encodeURIComponent(returnTo)}`
+    : "/sign-in";
   if (!user) return redirect(signInUrl);
 
   const decodedBranch = decodeURIComponent(branch);
@@ -70,7 +69,10 @@ export default async function Layout({
               </EmptyDescription>
             </EmptyHeader>
             <EmptyContent>
-              <Link className={buttonVariants({ variant: "default" })} href={`/${owner}/${repo}`}>
+              <Link
+                className={buttonVariants({ variant: "default" })}
+                href={`/${owner}/${repo}`}
+              >
                 Open default branch
               </Link>
             </EmptyContent>

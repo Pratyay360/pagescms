@@ -10,7 +10,9 @@ import createSuggestion, {
 type SlashCommandsOptions = {
   onRequestImage: ImagePickerHandler | null;
   onInsertLocalImageFile:
-    | ((context: ImagePickerContext & Omit<ImagePickerFileResult, "kind">) => void | Promise<void>)
+    | ((
+      context: ImagePickerContext & Omit<ImagePickerFileResult, "kind">,
+    ) => void | Promise<void>)
     | null;
   enableImages: boolean;
   imageSlashFallback: SlashImageFallback;

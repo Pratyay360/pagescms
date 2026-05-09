@@ -9,7 +9,11 @@ const ViewComponent = ({ value, field }: { value: string; field: Field }) => {
   const extraValuesCount = value && Array.isArray(value) ? value.length - 1 : 0;
 
   const filename = useMemo(() => {
-    return !value ? null : Array.isArray(value) ? getFileName(value[0]) : getFileName(value);
+    return !value
+      ? null
+      : Array.isArray(value)
+      ? getFileName(value[0])
+      : getFileName(value);
   }, [value]);
 
   if (!filename) return null;
@@ -18,10 +22,14 @@ const ViewComponent = ({ value, field }: { value: string; field: Field }) => {
     <span className="flex items-center gap-x-1.5">
       <span className="inline-flex rounded-full border px-2 py-0.5 text-sm font-medium items-center gap-x-1.5">
         <File className="w-3 h-3 shrink-0" />
-        <span className="text-ellipsis overflow-hidden whitespace-nowrap">{filename}</span>
+        <span className="text-ellipsis overflow-hidden whitespace-nowrap">
+          {filename}
+        </span>
       </span>
       {extraValuesCount > 0 && (
-        <span className="text-muted-foreground text-xs">+{extraValuesCount}</span>
+        <span className="text-muted-foreground text-xs">
+          +{extraValuesCount}
+        </span>
       )}
     </span>
   );

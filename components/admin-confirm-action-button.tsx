@@ -59,7 +59,9 @@ export function AdminConfirmActionButton({
               setOpen(false);
             }}
           >
-            <AlertDialogAction variant={variant === "destructive" ? "destructive" : "default"}>
+            <AlertDialogAction
+              variant={variant === "destructive" ? "destructive" : "default"}
+            >
               {confirmLabel}
             </AlertDialogAction>
           </form>

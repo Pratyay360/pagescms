@@ -14,10 +14,48 @@ const serializedTypes = [
 ];
 
 const extensionCategories: Record<string, string[]> = {
-  image: ["jpg", "jpeg", "apng", "png", "gif", "svg", "ico", "avif", "bmp", "tif", "tiff", "webp"],
+  image: [
+    "jpg",
+    "jpeg",
+    "apng",
+    "png",
+    "gif",
+    "svg",
+    "ico",
+    "avif",
+    "bmp",
+    "tif",
+    "tiff",
+    "webp",
+  ],
   document: ["pdf", "doc", "docx", "ppt", "pptx", "vxls", "xlsx", "txt", "rtf"],
-  video: ["mp4", "avi", "mov", "wmv", "flv", "mpeg", "webm", "ogv", "ts", "3gp", "3g2"],
-  audio: ["mp3", "wav", "aac", "ogg", "flac", "weba", "oga", "opus", "mid", "midi", "3gp", "3g2"],
+  video: [
+    "mp4",
+    "avi",
+    "mov",
+    "wmv",
+    "flv",
+    "mpeg",
+    "webm",
+    "ogv",
+    "ts",
+    "3gp",
+    "3g2",
+  ],
+  audio: [
+    "mp3",
+    "wav",
+    "aac",
+    "ogg",
+    "flac",
+    "weba",
+    "oga",
+    "opus",
+    "mid",
+    "midi",
+    "3gp",
+    "3g2",
+  ],
   compressed: ["zip", "rar", "7z", "tar", "gz", "tgz", "bz", "bz2"],
   code: [
     "js",
@@ -74,24 +112,29 @@ function getFileName(path: string): string {
 function normalizePath(path: string): string {
   const pathSegments = path.replace("//", "/").replace(/\/+$/, "").split("/");
 
-  const normalizedPathSegments = pathSegments.reduce((acc: string[], segment: string) => {
-    if (segment === "..") {
-      if (acc.length === 0 || acc[acc.length - 1] === "..") {
+  const normalizedPathSegments = pathSegments.reduce(
+    (acc: string[], segment: string) => {
+      if (segment === "..") {
+        if (acc.length === 0 || acc[acc.length - 1] === "..") {
+          acc.push(segment);
+        } else {
+          acc.pop();
+        }
+      } else if (segment !== "." && segment !== "") {
         acc.push(segment);
-      } else {
-        acc.pop();
       }
-    } else if (segment !== "." && segment !== "") {
-      acc.push(segment);
-    }
-    return acc;
-  }, []);
+      return acc;
+    },
+    [],
+  );
 
   return normalizedPathSegments.join("/");
 }
 
 const getParentPath = (path: string): string => {
-  return path === "" || path === "/" ? "" : path.split("/").slice(0, -1).join("/") || "";
+  return path === "" || path === "/"
+    ? ""
+    : path.split("/").slice(0, -1).join("/") || "";
 };
 
 const getRelativePath = (path: string, rootPath: string): string => {
@@ -156,20 +199,24 @@ type UploadRenameMode = boolean | "safe" | "random" | undefined;
 const getSafeUploadName = (filename: string): string => {
   const normalizedName = decodePathSafely(getFileName(filename || ""));
   const extension = getFileExtension(normalizedName);
-  const baseName = extension ? normalizedName.slice(0, -(extension.length + 1)) : normalizedName;
+  const baseName = extension
+    ? normalizedName.slice(0, -(extension.length + 1))
+    : normalizedName;
 
-  const safeBaseName =
-    slugify(baseName, {
-      lower: true,
-      strict: true,
-      trim: true,
-    }) || "file";
+  const safeBaseName = slugify(baseName, {
+    lower: true,
+    strict: true,
+    trim: true,
+  }) || "file";
 
   const safeExtension = extension ? `.${extension.toLowerCase()}` : "";
   return `${safeBaseName}${safeExtension}`;
 };
 
-const getUploadFileName = (filename: string, rename: UploadRenameMode): string => {
+const getUploadFileName = (
+  filename: string,
+  rename: UploadRenameMode,
+): string => {
   if (rename === false || rename == null) return filename;
   if (rename === "random") {
     return generateRandomUploadName(getFileExtension(filename));

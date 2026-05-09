@@ -25,8 +25,10 @@ type FieldModule = {
 
 const fieldTypes = new Set<string>();
 const labels: Record<string, string> = {};
-const schemas: Record<string, (field: Field, configObject?: Record<string, any>) => z.ZodTypeAny> =
-  {};
+const schemas: Record<
+  string,
+  (field: Field, configObject?: Record<string, any>) => z.ZodTypeAny
+> = {};
 const defaultValues: Record<string, any> = {};
 const readFns: Record<
   string,

@@ -1,7 +1,15 @@
 import { getRepoReadContext } from "../../../../../../../../lib/api-repo-context.ts";
-import { getFileExtension, normalizePath } from "../../../../../../../../lib/utils/file.ts";
+import {
+  getFileExtension,
+  normalizePath,
+} from "../../../../../../../../lib/utils/file.ts";
 import { getMediaCache } from "../../../../../../../../lib/github-cache-file.ts";
-import { createHttpError, toErrorResponse } from "../../../../../../../../lib/api-error.ts";
+import {
+  createHttpError,
+  toErrorResponse,
+} from "../../../../../../../../lib/api-error.ts";
+
+export const dynamic = "force-dynamic";
 
 /**
  * Get the list of media files in a directory.
@@ -27,8 +35,9 @@ export async function GET(
     const params = await context.params;
     const { token, config } = await getRepoReadContext(params);
 
-    const mediaConfig =
-      config.object.media.find((item: any) => item.name === params.name) || config.object.media[0];
+    const mediaConfig = config.object.media.find((item: any) =>
+      item.name === params.name
+    ) || config.object.media[0];
 
     if (!mediaConfig) {
       if (params.name) {
@@ -50,7 +59,10 @@ export async function GET(
       params.branch,
     );
     if (!normalizedPath.startsWith(mediaConfig.input)) {
-      throw createHttpError(`Invalid path "${params.path}" for media "${params.name}".`, 400);
+      throw createHttpError(
+        `Invalid path "${params.path}" for media "${params.name}".`,
+        400,
+      );
     }
 
     const { searchParams } = new URL(request.url);
@@ -98,7 +110,9 @@ export async function GET(
           sha: item.sha,
           name: item.name,
           path: item.path,
-          extension: item.type === "dir" ? undefined : getFileExtension(item.name),
+          extension: item.type === "dir"
+            ? undefined
+            : getFileExtension(item.name),
           size: item.size,
           url: item.downloadUrl,
         };
@@ -110,7 +124,12 @@ export async function GET(
   }
 }
 
-const normalizeMediaPath = (rawPath: string, owner: string, repo: string, branch: string) => {
+const normalizeMediaPath = (
+  rawPath: string,
+  owner: string,
+  repo: string,
+  branch: string,
+) => {
   const decodedPath = decodeURIComponent(rawPath || "");
 
   // Handle markdown-link wrappers: [label](target)
@@ -137,7 +156,8 @@ const normalizeMediaPath = (rawPath: string, owner: string, repo: string, branch
     }
   }
 
-  repoRelativePath = repoRelativePath.split("#")[0]?.split("?")[0] || repoRelativePath;
+  repoRelativePath = repoRelativePath.split("#")[0]?.split("?")[0] ||
+    repoRelativePath;
 
   return normalizePath(repoRelativePath);
 };

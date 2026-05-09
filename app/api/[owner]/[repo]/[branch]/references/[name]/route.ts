@@ -14,7 +14,10 @@ import {
 import { getRepoReadContext } from "../../../../../../../lib/api-repo-context.ts";
 import { normalizePath } from "../../../../../../../lib/utils/file.ts";
 import { getCollectionCache } from "../../../../../../../lib/github-cache-file.ts";
-import { createHttpError, toErrorResponse } from "../../../../../../../lib/api-error.ts";
+import {
+  createHttpError,
+  toErrorResponse,
+} from "../../../../../../../lib/api-error.ts";
 
 type ParsedReferenceItem = {
   name: string;
@@ -31,7 +34,9 @@ const extractTemplateFields = (template: string) =>
 export async function GET(
   request: NextRequest,
   context: {
-    params: Promise<{ owner: string; repo: string; branch: string; name: string }>;
+    params: Promise<
+      { owner: string; repo: string; branch: string; name: string }
+    >;
   },
 ) {
   try {
@@ -47,21 +52,31 @@ export async function GET(
     const query = searchParams.get("query") || "";
     const valueTemplate = searchParams.get("valueTemplate") || "{path}";
     const labelTemplate = searchParams.get("labelTemplate") || "{name}";
-    const searchFields = searchParams.get("searchFields")?.split(",").filter(Boolean) || ["name"];
+    const searchFields =
+      searchParams.get("searchFields")?.split(",").filter(Boolean) || ["name"];
     const selectedValues = searchParams.getAll("value").filter(Boolean);
     const primaryField = getPrimaryField(schema);
 
     const requiredFields = Array.from(
       new Set([
-        ...resolveReferenceFieldPaths(extractTemplateFields(valueTemplate), primaryField),
-        ...resolveReferenceFieldPaths(extractTemplateFields(labelTemplate), primaryField),
+        ...resolveReferenceFieldPaths(
+          extractTemplateFields(valueTemplate),
+          primaryField,
+        ),
+        ...resolveReferenceFieldPaths(
+          extractTemplateFields(labelTemplate),
+          primaryField,
+        ),
         ...resolveReferenceFieldPaths(searchFields, primaryField),
       ]),
     );
 
     const normalizedPath = normalizePath(schema.path || "");
     if (!normalizedPath) {
-      throw createHttpError(`Invalid path for collection "${params.name}".`, 400);
+      throw createHttpError(
+        `Invalid path for collection "${params.name}".`,
+        400,
+      );
     }
 
     let entries = await getCollectionCache(
@@ -76,7 +91,8 @@ export async function GET(
     if (schema.view?.node?.filename) {
       entries = entries.filter(
         (item: any) =>
-          item.isNode || item.parentPath === schema.path || item.name !== schema.view.node.filename,
+          item.isNode || item.parentPath === schema.path ||
+          item.name !== schema.view.node.filename,
       );
     }
 
@@ -88,15 +104,24 @@ export async function GET(
           (item: any) =>
             item.type !== "dir" ||
             (schema.view.node.hideDirs === "others"
-              ? entries.some((subItem: any) => subItem.parentPath === item.path && subItem.isNode)
+              ? entries.some((subItem: any) =>
+                subItem.parentPath === item.path && subItem.isNode
+              )
               : !entries.some(
-                  (subItem: any) => subItem.parentPath === item.path && subItem.isNode,
-                )),
+                (subItem: any) =>
+                  subItem.parentPath === item.path && subItem.isNode,
+              )),
         );
       }
     }
 
-    const parsedItems = parseReferenceItems(entries, schema, config, requiredFields, primaryField);
+    const parsedItems = parseReferenceItems(
+      entries,
+      schema,
+      config,
+      requiredFields,
+      primaryField,
+    );
     const options = parsedItems
       .map((item) => ({
         value: String(interpolate(valueTemplate, item, "fields")),
@@ -104,10 +129,9 @@ export async function GET(
       }))
       .filter((item) => item.value.length > 0);
 
-    const filtered =
-      selectedValues.length > 0
-        ? options.filter((item) => selectedValues.includes(item.value))
-        : filterReferenceOptions(options, parsedItems, query, searchFields);
+    const filtered = selectedValues.length > 0
+      ? options.filter((item) => selectedValues.includes(item.value))
+      : filterReferenceOptions(options, parsedItems, query, searchFields);
 
     return Response.json({
       status: "success",
@@ -137,7 +161,8 @@ const filterReferenceOptions = (
 
     return searchFields.some((field) => {
       if (field === "primary") {
-        return item.primary && String(item.primary).toLowerCase().includes(normalizedQuery);
+        return item.primary &&
+          String(item.primary).toLowerCase().includes(normalizedQuery);
       }
 
       if (field === "name" || field === "path") {
@@ -145,7 +170,9 @@ const filterReferenceOptions = (
         return value && String(value).toLowerCase().includes(normalizedQuery);
       }
 
-      const fieldPath = field.startsWith("fields.") ? field.replace(/^fields\./, "") : field;
+      const fieldPath = field.startsWith("fields.")
+        ? field.replace(/^fields\./, "")
+        : field;
       const value = safeAccess(item.fields, fieldPath);
       return value && String(value).toLowerCase().includes(normalizedQuery);
     });
@@ -172,7 +199,8 @@ const parseReferenceItems = (
   return contents.reduce<ParsedReferenceItem[]>((acc, item: any) => {
     if (
       item.type !== "file" ||
-      (!item.path.endsWith(`.${schema.extension}`) && schema.extension !== "") ||
+      (!item.path.endsWith(`.${schema.extension}`) &&
+        schema.extension !== "") ||
       excludedFiles.includes(item.name)
     ) {
       return acc;
@@ -186,9 +214,16 @@ const parseReferenceItems = (
           format: schema.format,
           delimiters: schema.delimiters,
         });
-        contentObject = pickAndTransformFields(parsedObject, schema.fields, selectedFields, config);
+        contentObject = pickAndTransformFields(
+          parsedObject,
+          schema.fields,
+          selectedFields,
+          config,
+        );
       } catch (error: any) {
-        console.error(`Error parsing frontmatter for file "${item.path}": ${error.message}`);
+        console.error(
+          `Error parsing frontmatter for file "${item.path}": ${error.message}`,
+        );
       }
     }
 
@@ -196,7 +231,9 @@ const parseReferenceItems = (
       contentObject.name = item.name;
     }
 
-    if (!contentObject.date && schema.filename?.startsWith("{year}-{month}-{day}")) {
+    if (
+      !contentObject.date && schema.filename?.startsWith("{year}-{month}-{day}")
+    ) {
       const filenameDate = getDateFromFilename(item.name);
       if (filenameDate) contentObject.date = filenameDate.string;
     }
@@ -204,7 +241,9 @@ const parseReferenceItems = (
     acc.push({
       name: item.name,
       path: item.path,
-      primary: primaryField ? safeAccess(contentObject, primaryField) : undefined,
+      primary: primaryField
+        ? safeAccess(contentObject, primaryField)
+        : undefined,
       fields: contentObject,
     });
 

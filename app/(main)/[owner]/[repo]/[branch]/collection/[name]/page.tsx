@@ -25,7 +25,10 @@ export default function Page({
   if (!config) throw new Error(`Configuration not found.`);
 
   const name = decodeURIComponent(resolvedParams.name);
-  const schema = useMemo(() => getSchemaByName(config?.object, name), [config, name]);
+  const schema = useMemo(() => getSchemaByName(config?.object, name), [
+    config,
+    name,
+  ]);
   if (!schema) throw new Error(`Schema not found for ${name}.`);
 
   const searchParams = useSearchParams();

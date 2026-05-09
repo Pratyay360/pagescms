@@ -25,7 +25,11 @@ import {
   resetGlobalCache,
 } from "../../../lib/actions/admin.ts";
 import { buttonVariants } from "../../../components/ui/button.tsx";
-import { Avatar, AvatarFallback, AvatarImage } from "../../../components/ui/avatar.tsx";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "../../../components/ui/avatar.tsx";
 import {
   Card,
   CardAction,
@@ -61,7 +65,10 @@ const formatDateTime = (value: Date | string | null | undefined) => {
   return date.toLocaleString();
 };
 
-const formatTimeAgoLabel = (value: Date | string | null | undefined, nowMs: number) => {
+const formatTimeAgoLabel = (
+  value: Date | string | null | undefined,
+  nowMs: number,
+) => {
   if (!value) return "-";
   const date = value instanceof Date ? value : new Date(value);
   if (Number.isNaN(date.getTime())) return "-";
@@ -106,15 +113,17 @@ export default async function Page({
   const resolvedSearchParams = await searchParams;
   const query = resolvedSearchParams?.q?.trim() ?? "";
   const pageParam = Number.parseInt(resolvedSearchParams?.page ?? "1", 10);
-  const currentPage = Number.isFinite(pageParam) && pageParam > 0 ? pageParam : 1;
+  const currentPage = Number.isFinite(pageParam) && pageParam > 0
+    ? pageParam
+    : 1;
   const lowerQuery = query.toLowerCase();
 
   const userSearchFilter = query
     ? or(
-        sql`lower(${userTable.name}) like ${`%${lowerQuery}%`}`,
-        sql`lower(${userTable.email}) like ${`%${lowerQuery}%`}`,
-        sql`lower(coalesce(${userTable.githubUsername}, '')) like ${`%${lowerQuery}%`}`,
-      )
+      sql`lower(${userTable.name}) like ${`%${lowerQuery}%`}`,
+      sql`lower(${userTable.email}) like ${`%${lowerQuery}%`}`,
+      sql`lower(coalesce(${userTable.githubUsername}, '')) like ${`%${lowerQuery}%`}`,
+    )
     : undefined;
 
   const usersQuery = db
@@ -134,7 +143,9 @@ export default async function Page({
     })
     .from(userTable);
 
-  const filteredUsersQuery = userSearchFilter ? usersQuery.where(userSearchFilter) : usersQuery;
+  const filteredUsersQuery = userSearchFilter
+    ? usersQuery.where(userSearchFilter)
+    : usersQuery;
 
   const [
     [userCount],
@@ -158,10 +169,14 @@ export default async function Page({
       .select({ count: sql<number>`count(*)::int` })
       .from(accountTable)
       .where(eq(accountTable.providerId, "github")),
-    db.select({ count: sql<number>`count(*)::int` }).from(githubInstallationTokenTable),
+    db.select({ count: sql<number>`count(*)::int` }).from(
+      githubInstallationTokenTable,
+    ),
     db
       .select({
-        count: sql<number>`count(distinct (${configTable.owner}, ${configTable.repo}))::int`,
+        count: sql<
+          number
+        >`count(distinct (${configTable.owner}, ${configTable.repo}))::int`,
       })
       .from(configTable),
     db.select({ count: sql<number>`count(*)::int` }).from(collaboratorTable),
@@ -170,9 +185,9 @@ export default async function Page({
     db.select({ count: sql<number>`count(*)::int` }).from(cachePermissionTable),
     userSearchFilter
       ? db
-          .select({ count: sql<number>`count(*)::int` })
-          .from(userTable)
-          .where(userSearchFilter)
+        .select({ count: sql<number>`count(*)::int` })
+        .from(userTable)
+        .where(userSearchFilter)
       : db.select({ count: sql<number>`count(*)::int` }).from(userTable),
     filteredUsersQuery
       .orderBy(desc(userTable.createdAt))
@@ -180,7 +195,10 @@ export default async function Page({
       .offset((currentPage - 1) * USERS_PER_PAGE),
   ]);
 
-  const totalUserPages = Math.max(1, Math.ceil((filteredUserCount?.count ?? 0) / USERS_PER_PAGE));
+  const totalUserPages = Math.max(
+    1,
+    Math.ceil((filteredUserCount?.count ?? 0) / USERS_PER_PAGE),
+  );
   const safeCurrentPage = Math.min(currentPage, totalUserPages);
 
   return (
@@ -188,7 +206,10 @@ export default async function Page({
       <DocumentTitle title="Admin" />
       <div className="max-w-screen-lg mx-auto p-4 md:p-6 space-y-6">
         <Link
-          className={cn(buttonVariants({ variant: "outline", size: "xs" }), "inline-flex")}
+          className={cn(
+            buttonVariants({ variant: "outline", size: "xs" }),
+            "inline-flex",
+          )}
           href="/"
         >
           <ArrowLeft />
@@ -196,37 +217,49 @@ export default async function Page({
         </Link>
 
         <header>
-          <h1 className="font-semibold tracking-tight text-lg md:text-2xl">Admin</h1>
+          <h1 className="font-semibold tracking-tight text-lg md:text-2xl">
+            Admin
+          </h1>
         </header>
 
         <div className="space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Overview</CardTitle>
-              <CardDescription>High-level installation metrics.</CardDescription>
+              <CardDescription>
+                High-level installation metrics.
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid gap-4 md:grid-cols-4">
                 <div className="md:pr-4 md:border-r">
-                  <div className="mb-1.5 text-sm text-muted-foreground">Users</div>
+                  <div className="mb-1.5 text-sm text-muted-foreground">
+                    Users
+                  </div>
                   <div className="text-3xl font-semibold tracking-tight">
                     {formatCompactNumber(userCount?.count ?? 0)}
                   </div>
                 </div>
                 <div className="md:px-4 md:border-r">
-                  <div className="mb-1.5 text-sm text-muted-foreground">Installs</div>
+                  <div className="mb-1.5 text-sm text-muted-foreground">
+                    Installs
+                  </div>
                   <div className="text-3xl font-semibold tracking-tight">
                     {formatCompactNumber(installCount?.count ?? 0)}
                   </div>
                 </div>
                 <div className="md:px-4 md:border-r">
-                  <div className="mb-1.5 text-sm text-muted-foreground">Configured repos</div>
+                  <div className="mb-1.5 text-sm text-muted-foreground">
+                    Configured repos
+                  </div>
                   <div className="text-3xl font-semibold tracking-tight">
                     {formatCompactNumber(repoCount?.count ?? 0)}
                   </div>
                 </div>
                 <div className="md:pl-4">
-                  <div className="mb-1.5 text-sm text-muted-foreground">Cached files</div>
+                  <div className="mb-1.5 text-sm text-muted-foreground">
+                    Cached files
+                  </div>
                   <div className="text-3xl font-semibold tracking-tight">
                     {formatCompactNumber(cacheFileCount?.count ?? 0)}
                   </div>
@@ -239,7 +272,8 @@ export default async function Page({
             <CardHeader>
               <CardTitle>Users</CardTitle>
               <CardDescription>
-                Search and revoke active sessions for individual users or everyone at once.
+                Search and revoke active sessions for individual users or
+                everyone at once.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -268,85 +302,98 @@ export default async function Page({
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {users.length > 0 ? (
-                    users.map((user) => (
-                      <TableRow key={user.id}>
-                        <TableCell className="w-10 min-w-10">
-                          <Avatar size="sm">
-                            <AvatarImage
-                              src={
-                                user.githubUsername
+                  {users.length > 0
+                    ? (
+                      users.map((user) => (
+                        <TableRow key={user.id}>
+                          <TableCell className="w-10 min-w-10">
+                            <Avatar size="sm">
+                              <AvatarImage
+                                src={user.githubUsername
                                   ? `https://github.com/${user.githubUsername}.png`
-                                  : `https://unavatar.io/${user.email}?fallback=false`
-                              }
-                              alt={user.name || user.email}
+                                  : `https://unavatar.io/${user.email}?fallback=false`}
+                                alt={user.name || user.email}
+                              />
+                              <AvatarFallback>
+                                {getInitialsFromName(user.name || user.email)}
+                              </AvatarFallback>
+                            </Avatar>
+                          </TableCell>
+                          <TableCell className="max-w-0">
+                            <span className="truncate font-medium">
+                              {user.name || "-"}
+                            </span>
+                          </TableCell>
+                          <TableCell className="max-w-0">
+                            <div className="truncate text-sm">{user.email}</div>
+                          </TableCell>
+                          <TableCell>
+                            {user.githubUsername
+                              ? (
+                                <Link
+                                  href={`https://github.com/${user.githubUsername}`}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="text-primary"
+                                >
+                                  @{user.githubUsername}
+                                </Link>
+                              )
+                              : (
+                                "-"
+                              )}
+                          </TableCell>
+                          <TableCell className="w-24 min-w-24">
+                            <AdminTimeAgo
+                              label={formatTimeAgoLabel(user.createdAt, nowMs)}
+                              fullDate={formatDateTime(user.createdAt)}
                             />
-                            <AvatarFallback>
-                              {getInitialsFromName(user.name || user.email)}
-                            </AvatarFallback>
-                          </Avatar>
-                        </TableCell>
-                        <TableCell className="max-w-0">
-                          <span className="truncate font-medium">{user.name || "-"}</span>
-                        </TableCell>
-                        <TableCell className="max-w-0">
-                          <div className="truncate text-sm">{user.email}</div>
-                        </TableCell>
-                        <TableCell>
-                          {user.githubUsername ? (
-                            <Link
-                              href={`https://github.com/${user.githubUsername}`}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="text-primary"
-                            >
-                              @{user.githubUsername}
-                            </Link>
-                          ) : (
-                            "-"
-                          )}
-                        </TableCell>
-                        <TableCell className="w-24 min-w-24">
-                          <AdminTimeAgo
-                            label={formatTimeAgoLabel(user.createdAt, nowMs)}
-                            fullDate={formatDateTime(user.createdAt)}
-                          />
-                        </TableCell>
-                        <TableCell className="w-24 min-w-24">
-                          <AdminTimeAgo
-                            label={formatTimeAgoLabel(user.updatedAt, nowMs)}
-                            fullDate={formatDateTime(user.updatedAt)}
-                          />
-                        </TableCell>
-                        <TableCell className="w-12 min-w-12 text-right">
-                          <AdminUserRowActions
-                            name={user.name || user.email}
-                            action={logoutUserSessions.bind(null, user.id)}
-                          />
+                          </TableCell>
+                          <TableCell className="w-24 min-w-24">
+                            <AdminTimeAgo
+                              label={formatTimeAgoLabel(user.updatedAt, nowMs)}
+                              fullDate={formatDateTime(user.updatedAt)}
+                            />
+                          </TableCell>
+                          <TableCell className="w-12 min-w-12 text-right">
+                            <AdminUserRowActions
+                              name={user.name || user.email}
+                              action={logoutUserSessions.bind(null, user.id)}
+                            />
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )
+                    : (
+                      <TableRow>
+                        <TableCell
+                          colSpan={7}
+                          className="text-center text-muted-foreground"
+                        >
+                          No users found.
                         </TableCell>
                       </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={7} className="text-center text-muted-foreground">
-                        No users found.
-                      </TableCell>
-                    </TableRow>
-                  )}
+                    )}
                 </TableBody>
               </Table>
               <div className="mt-4 flex items-center justify-between gap-4 text-sm text-muted-foreground">
                 <div>
-                  Showing {users.length} of {filteredUserCount?.count ?? 0} users
+                  Showing {users.length} of {filteredUserCount?.count ?? 0}{" "}
+                  users
                 </div>
                 <Pagination className="mx-0 w-auto justify-end">
                   <PaginationContent>
                     <PaginationItem>
                       <PaginationPrevious
-                        href={buildAdminUrl(query, Math.max(1, safeCurrentPage - 1))}
+                        href={buildAdminUrl(
+                          query,
+                          Math.max(1, safeCurrentPage - 1),
+                        )}
                         iconOnly
                         aria-disabled={safeCurrentPage <= 1}
-                        className={safeCurrentPage <= 1 ? "pointer-events-none opacity-50" : ""}
+                        className={safeCurrentPage <= 1
+                          ? "pointer-events-none opacity-50"
+                          : ""}
                       />
                     </PaginationItem>
                     <PaginationItem>
@@ -356,12 +403,15 @@ export default async function Page({
                     </PaginationItem>
                     <PaginationItem>
                       <PaginationNext
-                        href={buildAdminUrl(query, Math.min(totalUserPages, safeCurrentPage + 1))}
+                        href={buildAdminUrl(
+                          query,
+                          Math.min(totalUserPages, safeCurrentPage + 1),
+                        )}
                         iconOnly
                         aria-disabled={safeCurrentPage >= totalUserPages}
-                        className={
-                          safeCurrentPage >= totalUserPages ? "pointer-events-none opacity-50" : ""
-                        }
+                        className={safeCurrentPage >= totalUserPages
+                          ? "pointer-events-none opacity-50"
+                          : ""}
                       />
                     </PaginationItem>
                   </PaginationContent>
@@ -374,34 +424,55 @@ export default async function Page({
             <CardHeader>
               <CardTitle>Cache</CardTitle>
               <CardDescription>
-                Global cache state across files, config, metadata, and permission checks.
+                Global cache state across files, config, metadata, and
+                permission checks.
               </CardDescription>
             </CardHeader>
             <CardContent className="text-sm flex-1">
               <div className="grid rounded-md border md:grid-cols-2">
                 <div className="flex items-center justify-between gap-3 px-3 py-2 md:border-r md:border-b">
                   <span className="text-muted-foreground">Cached files</span>
-                  <span className="font-medium">{cacheFileCount?.count ?? 0}</span>
+                  <span className="font-medium">
+                    {cacheFileCount?.count ?? 0}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between gap-3 border-t px-3 py-2 md:border-r md:border-t-0 md:border-b">
-                  <span className="text-muted-foreground">Cache metadata rows</span>
-                  <span className="font-medium">{cacheMetaCount?.count ?? 0}</span>
+                  <span className="text-muted-foreground">
+                    Cache metadata rows
+                  </span>
+                  <span className="font-medium">
+                    {cacheMetaCount?.count ?? 0}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between gap-3 border-t px-3 py-2 md:border-r md:border-t-0 md:border-b">
-                  <span className="text-muted-foreground">Permission cache rows</span>
-                  <span className="font-medium">{cachePermissionCount?.count ?? 0}</span>
+                  <span className="text-muted-foreground">
+                    Permission cache rows
+                  </span>
+                  <span className="font-medium">
+                    {cachePermissionCount?.count ?? 0}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between gap-3 border-t px-3 py-2 md:border-t-0 md:border-b">
-                  <span className="text-muted-foreground">Collaborator rows</span>
-                  <span className="font-medium">{collaboratorCount?.count ?? 0}</span>
+                  <span className="text-muted-foreground">
+                    Collaborator rows
+                  </span>
+                  <span className="font-medium">
+                    {collaboratorCount?.count ?? 0}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between gap-3 border-t px-3 py-2 md:border-r md:border-t-0">
                   <span className="text-muted-foreground">Verified users</span>
-                  <span className="font-medium">{verifiedUserCount?.count ?? 0}</span>
+                  <span className="font-medium">
+                    {verifiedUserCount?.count ?? 0}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between gap-3 border-t px-3 py-2 md:border-t-0">
-                  <span className="text-muted-foreground">GitHub identities</span>
-                  <span className="font-medium">{githubUserCount?.count ?? 0}</span>
+                  <span className="text-muted-foreground">
+                    GitHub identities
+                  </span>
+                  <span className="font-medium">
+                    {githubUserCount?.count ?? 0}
+                  </span>
                 </div>
               </div>
             </CardContent>

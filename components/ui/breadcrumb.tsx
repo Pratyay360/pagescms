@@ -62,7 +62,9 @@ function BreadcrumbPage({ className, ...props }: React.ComponentProps<"span">) {
   );
 }
 
-function BreadcrumbSeparator({ children, className, ...props }: React.ComponentProps<"li">) {
+function BreadcrumbSeparator(
+  { children, className, ...props }: React.ComponentProps<"li">,
+) {
   return (
     <li
       data-slot="breadcrumb-separator"
@@ -76,7 +78,9 @@ function BreadcrumbSeparator({ children, className, ...props }: React.ComponentP
   );
 }
 
-function BreadcrumbEllipsis({ className, ...props }: React.ComponentProps<"span">) {
+function BreadcrumbEllipsis(
+  { className, ...props }: React.ComponentProps<"span">,
+) {
   return (
     <span
       data-slot="breadcrumb-ellipsis"

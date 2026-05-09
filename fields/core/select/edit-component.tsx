@@ -37,11 +37,14 @@ const EditComponent = (props: any) => {
   const { value, field, onChange } = props;
   const isReadonly = Boolean(field?.readonly);
   const multiple = Boolean(field.options?.multiple);
-  const storeAsObject = field?.type === "reference" && field.options?.store === "object";
+  const storeAsObject = field?.type === "reference" &&
+    field.options?.store === "object";
   const anchor = useComboboxAnchor();
 
   const options = useMemo(
-    () => (Array.isArray(field.options?.values) ? field.options.values.map(normalizeOption) : []),
+    () => (Array.isArray(field.options?.values)
+      ? field.options.values.map(normalizeOption)
+      : []),
     [field.options?.values],
   );
 
@@ -49,12 +52,16 @@ const EditComponent = (props: any) => {
     if (multiple) {
       const values = Array.isArray(value) ? value : [];
       return values.map((item) => {
-        const option = typeof item === "object" && item !== null ? normalizeOption(item) : null;
+        const option = typeof item === "object" && item !== null
+          ? normalizeOption(item)
+          : null;
         const optionValue = option?.value ?? String(item);
         return (
-          options.find((candidate: Option) => candidate.value === optionValue) ??
-          option ??
-          normalizeOption(item)
+          options.find((candidate: Option) =>
+            candidate.value === optionValue
+          ) ??
+            option ??
+            normalizeOption(item)
         );
       });
     }
@@ -63,20 +70,26 @@ const EditComponent = (props: any) => {
       return null;
     }
 
-    const option = typeof value === "object" && value !== null ? normalizeOption(value) : null;
+    const option = typeof value === "object" && value !== null
+      ? normalizeOption(value)
+      : null;
     const optionValue = option?.value ?? String(value);
     return (
       options.find((candidate: Option) => candidate.value === optionValue) ??
-      option ??
-      normalizeOption(value)
+        option ??
+        normalizeOption(value)
     );
   }, [multiple, options, value]);
 
-  const placeholder = isReadonly ? undefined : field.options?.placeholder || "Select...";
+  const placeholder = isReadonly
+    ? undefined
+    : field.options?.placeholder || "Select...";
 
   const handleValueChange = (nextValue: Option[] | Option | null) => {
     if (isReadonly) return;
-    const toOutput = (option: Option) => (storeAsObject ? option : option.value);
+    const toOutput = (
+      option: Option,
+    ) => (storeAsObject ? option : option.value);
 
     if (multiple) {
       onChange(Array.isArray(nextValue) ? nextValue.map(toOutput) : []);
@@ -96,63 +109,67 @@ const EditComponent = (props: any) => {
       isItemEqualToValue={(item, selected) => item.value === selected?.value}
       autoHighlight
     >
-      {multiple ? (
-        <>
-          <ComboboxChips
-            ref={anchor}
-            className={cn(isReadonly && "focus-within:border-input focus-within:ring-0")}
-          >
-            <ComboboxValue>
-              {(values: Option[]) => (
-                <>
-                  {values.map((option) => (
-                    <ComboboxChip key={option.value} showRemove={!isReadonly}>
-                      {option.label}
-                    </ComboboxChip>
-                  ))}
-                  <ComboboxChipsInput
-                    placeholder={placeholder}
-                    readOnly={isReadonly}
-                    className={cn(isReadonly && "cursor-default")}
-                  />
-                </>
+      {multiple
+        ? (
+          <>
+            <ComboboxChips
+              ref={anchor}
+              className={cn(
+                isReadonly && "focus-within:border-input focus-within:ring-0",
               )}
-            </ComboboxValue>
-          </ComboboxChips>
-          <ComboboxContent anchor={anchor}>
-            <ComboboxEmpty>No options found.</ComboboxEmpty>
-            <ComboboxList>
-              {(option: Option) => (
-                <ComboboxItem key={option.value} value={option}>
-                  {option.label}
-                </ComboboxItem>
+            >
+              <ComboboxValue>
+                {(values: Option[]) => (
+                  <>
+                    {values.map((option) => (
+                      <ComboboxChip key={option.value} showRemove={!isReadonly}>
+                        {option.label}
+                      </ComboboxChip>
+                    ))}
+                    <ComboboxChipsInput
+                      placeholder={placeholder}
+                      readOnly={isReadonly}
+                      className={cn(isReadonly && "cursor-default")}
+                    />
+                  </>
+                )}
+              </ComboboxValue>
+            </ComboboxChips>
+            <ComboboxContent anchor={anchor}>
+              <ComboboxEmpty>No options found.</ComboboxEmpty>
+              <ComboboxList>
+                {(option: Option) => (
+                  <ComboboxItem key={option.value} value={option}>
+                    {option.label}
+                  </ComboboxItem>
+                )}
+              </ComboboxList>
+            </ComboboxContent>
+          </>
+        )
+        : (
+          <>
+            <ComboboxInput
+              placeholder={placeholder}
+              className={cn(
+                isReadonly &&
+                  "has-[[data-slot=input-group-control]:focus-visible]:border-input has-[[data-slot=input-group-control]:focus-visible]:ring-0",
               )}
-            </ComboboxList>
-          </ComboboxContent>
-        </>
-      ) : (
-        <>
-          <ComboboxInput
-            placeholder={placeholder}
-            className={cn(
-              isReadonly &&
-                "has-[[data-slot=input-group-control]:focus-visible]:border-input has-[[data-slot=input-group-control]:focus-visible]:ring-0",
-            )}
-            showTrigger={!isReadonly}
-            readOnly={isReadonly}
-          />
-          <ComboboxContent>
-            <ComboboxEmpty>No options found.</ComboboxEmpty>
-            <ComboboxList>
-              {(option: Option) => (
-                <ComboboxItem key={option.value} value={option}>
-                  {option.label}
-                </ComboboxItem>
-              )}
-            </ComboboxList>
-          </ComboboxContent>
-        </>
-      )}
+              showTrigger={!isReadonly}
+              readOnly={isReadonly}
+            />
+            <ComboboxContent>
+              <ComboboxEmpty>No options found.</ComboboxEmpty>
+              <ComboboxList>
+                {(option: Option) => (
+                  <ComboboxItem key={option.value} value={option}>
+                    {option.label}
+                  </ComboboxItem>
+                )}
+              </ComboboxList>
+            </ComboboxContent>
+          </>
+        )}
     </Combobox>
   );
 };

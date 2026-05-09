@@ -2,18 +2,24 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { signIn } from "../../lib/auth-client";
+import { signIn } from "../../lib/auth-client.ts";
 import { toast } from "sonner";
-import { Button } from "../ui/button";
+import { Button } from "../ui/button.tsx";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
-import { cn } from "../../lib/utils";
-import { ArrowUpRight, EllipsisVertical, Loader, Mail } from "lucide-react";
+} from "../ui/dropdown-menu.tsx";
+import { cn } from "../../lib/utils.ts";
+import {
+  ArrowUpRight,
+  EllipsisVertical,
+  GitBranch,
+  Loader,
+  Mail,
+} from "lucide-react";
 
 type IdentitiesProps = {
   email: string;
@@ -29,7 +35,9 @@ export function Identities({
   githubManageUrl,
 }: IdentitiesProps) {
   const router = useRouter();
-  const [pendingAction, setPendingAction] = useState<"connect" | "disconnect" | null>(null);
+  const [pendingAction, setPendingAction] = useState<
+    "connect" | "disconnect" | null
+  >(null);
 
   const handleConnectGithub = async () => {
     setPendingAction("connect");
@@ -56,15 +64,17 @@ export function Identities({
 
       const payload = await response.json().catch(() => null);
       if (!response.ok || !payload?.status) {
-        const message = payload?.message || "Failed to disconnect GitHub account.";
+        const message = payload?.message ||
+          "Failed to disconnect GitHub account.";
         throw new Error(message);
       }
 
       toast.success("GitHub account disconnected.");
       router.refresh();
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Failed to disconnect GitHub account.";
+      const message = error instanceof Error
+        ? error.message
+        : "Failed to disconnect GitHub account.";
       toast.error(message);
     } finally {
       setPendingAction(null);
@@ -82,9 +92,12 @@ export function Identities({
       </li>
       <li className="flex items-center gap-x-3 border first:rounded-t-md last:rounded-b-md px-3 py-2 text-sm">
         <div
-          className={cn("flex items-center gap-x-2", !githubConnected && "text-muted-foreground")}
+          className={cn(
+            "flex items-center gap-x-2",
+            !githubConnected && "text-muted-foreground",
+          )}
         >
-          <Github className="h-4 w-4" />
+          <GitBranch className="h-4 w-4" />
           <span className="font-medium">GitHub</span>
         </div>
         {githubConnected && (
@@ -92,56 +105,62 @@ export function Identities({
             {githubUsername ? `@${githubUsername}` : "Connected"}
           </div>
         )}
-        {!githubConnected ? (
-          <Button
-            size="sm"
-            variant="outline"
-            className="ml-auto h-8"
-            onClick={handleConnectGithub}
-            disabled={pendingAction !== null}
-          >
-            Connect
-            {pendingAction === "connect" && <Loader className="h-4 w-4 animate-spin" />}
-          </Button>
-        ) : (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                size="icon-xs"
-                variant="outline"
-                className="ml-auto"
-                disabled={pendingAction !== null}
-              >
-                {pendingAction === "disconnect" ? (
-                  <Loader className="h-4 w-4 animate-spin" />
-                ) : (
-                  <EllipsisVertical className="h-4 w-4" />
-                )}
-                <span className="sr-only">GitHub actions</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {githubManageUrl && (
-                <>
-                  <DropdownMenuItem asChild>
-                    <a href={githubManageUrl} target="_blank" rel="noreferrer">
-                      Manage on GitHub
-                      <ArrowUpRight className="size-3 text-muted-foreground ml-auto" />
-                    </a>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                </>
+        {!githubConnected
+          ? (
+            <Button
+              size="sm"
+              variant="outline"
+              className="ml-auto h-8"
+              onClick={handleConnectGithub}
+              disabled={pendingAction !== null}
+            >
+              Connect
+              {pendingAction === "connect" && (
+                <Loader className="h-4 w-4 animate-spin" />
               )}
-              <DropdownMenuItem
-                variant="destructive"
-                onClick={handleDisconnectGithub}
-                disabled={pendingAction !== null}
-              >
-                Disconnect
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
+            </Button>
+          )
+          : (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  size="icon-xs"
+                  variant="outline"
+                  className="ml-auto"
+                  disabled={pendingAction !== null}
+                >
+                  {pendingAction === "disconnect"
+                    ? <Loader className="h-4 w-4 animate-spin" />
+                    : <EllipsisVertical className="h-4 w-4" />}
+                  <span className="sr-only">GitHub actions</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {githubManageUrl && (
+                  <>
+                    <DropdownMenuItem asChild>
+                      <a
+                        href={githubManageUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        Manage on GitHub
+                        <ArrowUpRight className="size-3 text-muted-foreground ml-auto" />
+                      </a>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                  </>
+                )}
+                <DropdownMenuItem
+                  variant="destructive"
+                  onClick={handleDisconnectGithub}
+                  disabled={pendingAction !== null}
+                >
+                  Disconnect
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
       </li>
     </ul>
   );

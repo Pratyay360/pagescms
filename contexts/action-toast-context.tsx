@@ -12,7 +12,11 @@ import {
 import { toast } from "sonner";
 import { requireApiSuccess } from "../lib/api-client.ts";
 import { buttonVariants } from "../components/ui/button.tsx";
-import { type ActionRunSummary, formatActionRunState, isActionRunActive } from "../lib/actions.ts";
+import {
+  type ActionRunSummary,
+  formatActionRunState,
+  isActionRunActive,
+} from "../lib/actions.ts";
 
 type TrackedActionToast = {
   runId: number;
@@ -34,9 +38,14 @@ type ActionToastContextValue = {
 const STORAGE_KEY = "pages-cms-action-toasts";
 const TRACKING_TIMEOUT_MS = 12 * 60 * 60 * 1000;
 
-const ActionToastContext = createContext<ActionToastContextValue | undefined>(undefined);
+const ActionToastContext = createContext<ActionToastContextValue | undefined>(
+  undefined,
+);
 
-const getToastMessage = (actionLabel: string, run?: ActionRunSummary | null) => {
+const getToastMessage = (
+  actionLabel: string,
+  run?: ActionRunSummary | null,
+) => {
   if (!run) return `Starting "${actionLabel}"…`;
 
   if (run.status !== "completed") {
@@ -63,8 +72,12 @@ const getToastMessage = (actionLabel: string, run?: ActionRunSummary | null) => 
   }
 };
 
-export function ActionToastProvider({ children }: { children: React.ReactNode }) {
-  const [trackedRuns, setTrackedRuns] = useState<Record<number, TrackedActionToast>>({});
+export function ActionToastProvider(
+  { children }: { children: React.ReactNode },
+) {
+  const [trackedRuns, setTrackedRuns] = useState<
+    Record<number, TrackedActionToast>
+  >({});
   const refreshErrorToastIdRef = useRef<string | number | null>(null);
 
   useEffect(() => {
@@ -74,7 +87,9 @@ export function ActionToastProvider({ children }: { children: React.ReactNode })
     if (!stored) return;
 
     try {
-      const parsed = JSON.parse(stored) as Array<Omit<TrackedActionToast, "toastId" | "state">>;
+      const parsed = JSON.parse(stored) as Array<
+        Omit<TrackedActionToast, "toastId" | "state">
+      >;
       const nextTrackedRuns = parsed.reduce<Record<number, TrackedActionToast>>(
         (accumulator, item) => {
           if (Date.now() - item.trackedAt > TRACKING_TIMEOUT_MS) {
@@ -112,7 +127,10 @@ export function ActionToastProvider({ children }: { children: React.ReactNode })
       return;
     }
 
-    globalThis.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(serializable));
+    globalThis.sessionStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify(serializable),
+    );
   }, [trackedRuns]);
 
   useEffect(() => {
@@ -121,9 +139,11 @@ export function ActionToastProvider({ children }: { children: React.ReactNode })
     const cancelTrackedRun = async (trackedRun: TrackedActionToast) => {
       try {
         const response = await fetch(
-          `/api/${trackedRun.owner}/${trackedRun.repo}/${encodeURIComponent(
-            trackedRun.refName,
-          )}/actions/${trackedRun.runId}`,
+          `/api/${trackedRun.owner}/${trackedRun.repo}/${
+            encodeURIComponent(
+              trackedRun.refName,
+            )
+          }/actions/${trackedRun.runId}`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -133,9 +153,14 @@ export function ActionToastProvider({ children }: { children: React.ReactNode })
         await requireApiSuccess(response, "Failed to cancel action run");
         toast.success("Run cancelled.", { id: trackedRun.toastId });
       } catch (error) {
-        toast.error(error instanceof Error ? error.message : "Failed to cancel action run.", {
-          id: trackedRun.toastId,
-        });
+        toast.error(
+          error instanceof Error
+            ? error.message
+            : "Failed to cancel action run.",
+          {
+            id: trackedRun.toastId,
+          },
+        );
       }
     };
 
@@ -147,11 +172,14 @@ export function ActionToastProvider({ children }: { children: React.ReactNode })
 
       if (expiredEntries.length > 0) {
         expiredEntries.forEach((trackedRun) => {
-          toast.error(`Stopped tracking "${trackedRun.actionLabel}" after 12 hours.`, {
-            id: trackedRun.toastId,
-            action: undefined,
-            classNames: undefined,
-          });
+          toast.error(
+            `Stopped tracking "${trackedRun.actionLabel}" after 12 hours.`,
+            {
+              id: trackedRun.toastId,
+              action: undefined,
+              classNames: undefined,
+            },
+          );
         });
 
         setTrackedRuns((current) => {
@@ -168,9 +196,11 @@ export function ActionToastProvider({ children }: { children: React.ReactNode })
       const results = await Promise.all(
         entries.map(async (trackedRun) => {
           const response = await fetch(
-            `/api/${trackedRun.owner}/${trackedRun.repo}/${encodeURIComponent(
-              trackedRun.refName,
-            )}/actions/${trackedRun.runId}`,
+            `/api/${trackedRun.owner}/${trackedRun.repo}/${
+              encodeURIComponent(
+                trackedRun.refName,
+              )
+            }/actions/${trackedRun.runId}`,
           );
           const payload = await requireApiSuccess<{ data: ActionRunSummary }>(
             response,
@@ -189,7 +219,9 @@ export function ActionToastProvider({ children }: { children: React.ReactNode })
       const nextStateUpdates: Array<{ runId: number; state: string }> = [];
 
       results.forEach(({ trackedRun, run }) => {
-        const nextToastState = `${run.status}:${run.conclusion ?? ""}:${run.workflowRunId ?? ""}`;
+        const nextToastState = `${run.status}:${run.conclusion ?? ""}:${
+          run.workflowRunId ?? ""
+        }`;
         if (trackedRun.state === nextToastState) return;
 
         nextStateUpdates.push({
@@ -202,19 +234,19 @@ export function ActionToastProvider({ children }: { children: React.ReactNode })
             id: trackedRun.toastId,
             action: run.canCancel
               ? {
-                  label: "Cancel",
-                  onClick: () => {
-                    void cancelTrackedRun(trackedRun);
-                  },
-                }
+                label: "Cancel",
+                onClick: () => {
+                  void cancelTrackedRun(trackedRun);
+                },
+              }
               : undefined,
             classNames: run.canCancel
               ? {
-                  actionButton: buttonVariants({
-                    variant: "outline",
-                    size: "sm",
-                  }),
-                }
+                actionButton: buttonVariants({
+                  variant: "outline",
+                  size: "sm",
+                }),
+              }
               : undefined,
           });
           return;
@@ -283,13 +315,19 @@ export function ActionToastProvider({ children }: { children: React.ReactNode })
     [trackActionRun],
   );
 
-  return <ActionToastContext.Provider value={value}>{children}</ActionToastContext.Provider>;
+  return (
+    <ActionToastContext.Provider value={value}>
+      {children}
+    </ActionToastContext.Provider>
+  );
 }
 
 export const useActionToasts = () => {
   const context = useContext(ActionToastContext);
   if (!context) {
-    throw new Error("useActionToasts must be used within an ActionToastProvider");
+    throw new Error(
+      "useActionToasts must be used within an ActionToastProvider",
+    );
   }
   return context;
 };

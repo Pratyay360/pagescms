@@ -27,7 +27,9 @@ export default function Page() {
       <Empty className="absolute inset-0 border-0 rounded-none">
         <EmptyHeader>
           <EmptyTitle>Access denied</EmptyTitle>
-          <EmptyDescription>Only GitHub users can manage the cache.</EmptyDescription>
+          <EmptyDescription>
+            Only GitHub users can manage the cache.
+          </EmptyDescription>
         </EmptyHeader>
       </Empty>
     );
@@ -39,7 +41,8 @@ export default function Page() {
         <EmptyHeader>
           <EmptyTitle>Cache disabled</EmptyTitle>
           <EmptyDescription>
-            Enable the cache in &quot;.pages.yml&quot; by setting &quot;settings.cache: true&quot;.
+            Enable the cache in &quot;.pages.yml&quot; by setting
+            &quot;settings.cache: true&quot;.
           </EmptyDescription>
         </EmptyHeader>
       </Empty>
@@ -49,9 +52,18 @@ export default function Page() {
   return (
     <>
       <DocumentTitle
-        title={formatRepoBranchTitle("Cache", config.owner, config.repo, config.branch)}
+        title={formatRepoBranchTitle(
+          "Cache",
+          config.owner,
+          config.repo,
+          config.branch,
+        )}
       />
-      <CachePage owner={config.owner} repo={config.repo} branch={config.branch} />
+      <CachePage
+        owner={config.owner}
+        repo={config.repo}
+        branch={config.branch}
+      />
     </>
   );
 }

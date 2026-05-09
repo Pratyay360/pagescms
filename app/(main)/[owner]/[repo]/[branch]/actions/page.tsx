@@ -14,7 +14,10 @@ import {
   EmptyHeader,
   EmptyTitle,
 } from "../../../../../../components/ui/empty.tsx";
-import { getRootActions, getSchemaActions } from "../../../../../../lib/actions.ts";
+import {
+  getRootActions,
+  getSchemaActions,
+} from "../../../../../../lib/actions.ts";
 
 export default function Page() {
   const { config } = useConfig();
@@ -27,7 +30,9 @@ export default function Page() {
       <Empty className="absolute inset-0 border-0 rounded-none">
         <EmptyHeader>
           <EmptyTitle>Access denied</EmptyTitle>
-          <EmptyDescription>Only GitHub users can view action history.</EmptyDescription>
+          <EmptyDescription>
+            Only GitHub users can view action history.
+          </EmptyDescription>
         </EmptyHeader>
       </Empty>
     );
@@ -35,20 +40,25 @@ export default function Page() {
 
   const actionLabels = {
     ...Object.fromEntries(
-      getRootActions(config.object).map((action) => [action.name, action.label]),
+      getRootActions(config.object).map((
+        action,
+      ) => [action.name, action.label]),
     ),
     ...Object.fromEntries(
       ((config.object as any).content ?? []).flatMap((item: any) =>
         getSchemaActions(item)
-          .concat(getSchemaActions(item, "collection"), getSchemaActions(item, "entry"))
-          .map((action) => [action.name, action.label] as const),
+          .concat(
+            getSchemaActions(item, "collection"),
+            getSchemaActions(item, "entry"),
+          )
+          .map((action) => [action.name, action.label] as const)
       ),
     ),
     ...Object.fromEntries(
       ((config.object as any).media ?? []).flatMap((item: any) =>
         ((item.actions ?? []) as Array<{ name: string; label: string }>).map(
           (action) => [action.name, action.label] as const,
-        ),
+        )
       ),
     ),
   };
@@ -78,7 +88,12 @@ export default function Page() {
   return (
     <>
       <DocumentTitle
-        title={formatRepoBranchTitle("Actions", config.owner, config.repo, config.branch)}
+        title={formatRepoBranchTitle(
+          "Actions",
+          config.owner,
+          config.repo,
+          config.branch,
+        )}
       />
       <div className="flex w-full flex-1 flex-col">
         <ActionsPage

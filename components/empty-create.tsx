@@ -30,7 +30,9 @@ const EmptyCreate = ({
   let path = "";
   let content: string | Record<string, any> = "";
   let toCreate = "";
-  let redirectTo = `/${config.owner}/${config.repo}/${encodeURIComponent(config.branch)}`;
+  let redirectTo = `/${config.owner}/${config.repo}/${
+    encodeURIComponent(config.branch)
+  }`;
 
   if (type === "settings") {
     path = ".pages.yml";
@@ -73,9 +75,11 @@ const EmptyCreate = ({
 
     try {
       const response = await fetch(
-        `/api/${config.owner}/${config.repo}/${encodeURIComponent(
-          config.branch,
-        )}/files/${encodeURIComponent(normalizePath(path))}`,
+        `/api/${config.owner}/${config.repo}/${
+          encodeURIComponent(
+            config.branch,
+          )
+        }/files/${encodeURIComponent(normalizePath(path))}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -97,22 +101,27 @@ const EmptyCreate = ({
       toast.success(`Created ${toCreate}. Opening...`, { id: toastId });
     } catch (error) {
       setIsCreating(false);
-      toast.error(error instanceof Error ? error.message : `Failed to create ${toCreate}.`, {
-        id: toastId,
-      });
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : `Failed to create ${toCreate}.`,
+        {
+          id: toastId,
+        },
+      );
     }
   };
 
   return (
     <Button type="button" onClick={handleCreate} disabled={isCreating}>
-      {isCreating ? (
-        <span className="inline-flex items-center gap-x-2">
-          Creating...
-          <LucideLoader className="h-4 w-4 animate-spin" />
-        </span>
-      ) : (
-        children
-      )}
+      {isCreating
+        ? (
+          <span className="inline-flex items-center gap-x-2">
+            Creating...
+            <LucideLoader className="h-4 w-4 animate-spin" />
+          </span>
+        )
+        : children}
     </Button>
   );
 };

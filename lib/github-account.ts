@@ -7,7 +7,10 @@ import { createOctokitInstance } from "./utils/octokit.ts";
 // Read the linked GitHub OAuth account for a user.
 const getGithubAccount = cache(async (userId: string) => {
   return db.query.accountTable.findFirst({
-    where: and(eq(accountTable.userId, userId), eq(accountTable.providerId, "github")),
+    where: and(
+      eq(accountTable.userId, userId),
+      eq(accountTable.providerId, "github"),
+    ),
   });
 });
 

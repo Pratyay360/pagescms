@@ -3,7 +3,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { formatDistanceToNowStrict } from "date-fns";
-import { CircleCheck, CirclePlay, CircleX, EllipsisVertical, Loader } from "lucide-react";
+import {
+  CircleCheck,
+  CirclePlay,
+  CircleX,
+  EllipsisVertical,
+  Loader,
+} from "lucide-react";
 import { toast } from "sonner";
 import { useActionToasts } from "../../contexts/action-toast-context.tsx";
 import { useUser } from "../../contexts/user-context.tsx";
@@ -43,7 +49,13 @@ import {
 import { Input } from "../ui/input.tsx";
 import { Label } from "../ui/label.tsx";
 import { Textarea } from "../ui/textarea.tsx";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select.tsx";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select.tsx";
 
 type RepoActionButtonsProps = {
   actions: RepoActionConfig[];
@@ -62,13 +74,17 @@ const getRunIcon = (run: ActionRunSummary | null | undefined) => {
     return <Loader className="size-4 animate-spin" />;
   }
   if (run.conclusion === "success") {
-    return <CircleCheck className="size-4 text-green-600 dark:text-green-400" />;
+    return (
+      <CircleCheck className="size-4 text-green-600 dark:text-green-400" />
+    );
   }
   return <CircleX className="size-4 text-destructive" />;
 };
 
 const getPrimaryIcon = (isBusy: boolean) =>
-  isBusy ? <Loader className="size-4 animate-spin" /> : <CirclePlay className="size-4" />;
+  isBusy
+    ? <Loader className="size-4 animate-spin" />
+    : <CirclePlay className="size-4" />;
 
 const formatRunLine = (run: ActionRunSummary) => {
   const createdAt = run.createdAt ? new Date(run.createdAt) : null;
@@ -77,7 +93,11 @@ const formatRunLine = (run: ActionRunSummary) => {
     return (
       <span className="flex min-w-0 flex-col">
         <span className="truncate">Unknown time</span>
-        {secondary && <span className="truncate text-xs text-muted-foreground">{secondary}</span>}
+        {secondary && (
+          <span className="truncate text-xs text-muted-foreground">
+            {secondary}
+          </span>
+        )}
       </span>
     );
   }
@@ -87,20 +107,27 @@ const formatRunLine = (run: ActionRunSummary) => {
   return (
     <span className="flex min-w-0 flex-col">
       <span className="truncate">{relative}</span>
-      {secondary && <span className="truncate text-xs text-muted-foreground">{secondary}</span>}
+      {secondary && (
+        <span className="truncate text-xs text-muted-foreground">
+          {secondary}
+        </span>
+      )}
     </span>
   );
 };
 
 const getDefaultFieldValues = (fields: RepoActionField[] | undefined) => {
-  return (fields ?? []).reduce<Record<string, string | number | boolean>>((accumulator, field) => {
-    if (field.default != null) {
-      accumulator[field.name] = field.default;
+  return (fields ?? []).reduce<Record<string, string | number | boolean>>(
+    (accumulator, field) => {
+      if (field.default != null) {
+        accumulator[field.name] = field.default;
+        return accumulator;
+      }
+      accumulator[field.name] = field.type === "checkbox" ? false : "";
       return accumulator;
-    }
-    accumulator[field.name] = field.type === "checkbox" ? false : "";
-    return accumulator;
-  }, {});
+    },
+    {},
+  );
 };
 
 const isFieldValueValid = (
@@ -127,13 +154,21 @@ export function RepoActionButtons({
   const { user } = useUser();
   const { trackActionRun } = useActionToasts();
   const isGithubUser = hasGithubIdentity(user);
-  const [runsByAction, setRunsByAction] = useState<Record<string, ActionRunSummary[]>>({});
+  const [runsByAction, setRunsByAction] = useState<
+    Record<string, ActionRunSummary[]>
+  >({});
   const [dispatching, setDispatching] = useState<Record<string, boolean>>({});
-  const [dialogAction, setDialogAction] = useState<RepoActionConfig | null>(null);
-  const [dialogValues, setDialogValues] = useState<Record<string, string | number | boolean>>({});
+  const [dialogAction, setDialogAction] = useState<RepoActionConfig | null>(
+    null,
+  );
+  const [dialogValues, setDialogValues] = useState<
+    Record<string, string | number | boolean>
+  >({});
   const refreshErrorToastIdRef = useRef<string | number | null>(null);
 
-  const actionNames = useMemo(() => actions.map((action) => action.name), [actions]);
+  const actionNames = useMemo(() => actions.map((action) => action.name), [
+    actions,
+  ]);
 
   const loadRuns = useCallback(async () => {
     if (actions.length === 0) return;
@@ -146,15 +181,28 @@ export function RepoActionButtons({
     if (contextPath) params.set("contextPath", contextPath);
 
     const response = await fetch(
-      `/api/${owner}/${repo}/${encodeURIComponent(refName)}/actions?${params.toString()}`,
+      `/api/${owner}/${repo}/${
+        encodeURIComponent(refName)
+      }/actions?${params.toString()}`,
     );
-    const payload = await requireApiSuccess<{ data: Record<string, ActionRunSummary[]> }>(
+    const payload = await requireApiSuccess<
+      { data: Record<string, ActionRunSummary[]> }
+    >(
       response,
       "Failed to fetch action runs",
     );
     setRunsByAction(payload.data);
     return payload.data;
-  }, [actionNames, actions.length, contextName, contextPath, contextType, owner, refName, repo]);
+  }, [
+    actionNames,
+    actions.length,
+    contextName,
+    contextPath,
+    contextType,
+    owner,
+    refName,
+    repo,
+  ]);
 
   useEffect(() => {
     void loadRuns();
@@ -174,7 +222,9 @@ export function RepoActionButtons({
       } catch (error) {
         console.error(error);
         if (refreshErrorToastIdRef.current == null) {
-          refreshErrorToastIdRef.current = toast.error("Couldn’t refresh action status. Retrying…");
+          refreshErrorToastIdRef.current = toast.error(
+            "Couldn’t refresh action status. Retrying…",
+          );
         }
       }
     }, 4000);
@@ -222,14 +272,26 @@ export function RepoActionButtons({
           toastId,
         });
       } catch (error) {
-        toast.error(error instanceof Error ? error.message : "Failed to dispatch action.", {
-          id: toastId,
-        });
+        toast.error(
+          error instanceof Error ? error.message : "Failed to dispatch action.",
+          {
+            id: toastId,
+          },
+        );
       } finally {
         setDispatching((current) => ({ ...current, [action.name]: false }));
       }
     },
-    [contextData, contextName, contextPath, contextType, owner, refName, repo, trackActionRun],
+    [
+      contextData,
+      contextName,
+      contextPath,
+      contextType,
+      owner,
+      refName,
+      repo,
+      trackActionRun,
+    ],
   );
 
   const handleActionClick = useCallback(
@@ -249,7 +311,9 @@ export function RepoActionButtons({
 
   const isDialogSubmitDisabled = useMemo(() => {
     if (!dialogAction?.fields?.length) return false;
-    return dialogAction.fields.some((field) => !isFieldValueValid(field, dialogValues[field.name]));
+    return dialogAction.fields.some((field) =>
+      !isFieldValueValid(field, dialogValues[field.name])
+    );
   }, [dialogAction, dialogValues]);
 
   const handleDialogSubmit = useCallback(() => {
@@ -272,8 +336,7 @@ export function RepoActionButtons({
             setDialogValues((current) => ({
               ...current,
               [field.name]: event.target.value,
-            }))
-          }
+            }))}
         />
       );
     }
@@ -286,8 +349,7 @@ export function RepoActionButtons({
             setDialogValues((current) => ({
               ...current,
               [field.name]: nextValue,
-            }))
-          }
+            }))}
         >
           <SelectTrigger className="w-full">
             <SelectValue placeholder={field.label} />
@@ -313,8 +375,7 @@ export function RepoActionButtons({
               setDialogValues((current) => ({
                 ...current,
                 [field.name]: checked === true,
-              }))
-            }
+              }))}
           />
           <Label htmlFor={fieldId}>{field.label}</Label>
         </div>
@@ -325,64 +386,78 @@ export function RepoActionButtons({
       <Input
         id={fieldId}
         type={field.type === "number" ? "number" : "text"}
-        value={typeof value === "string" || typeof value === "number" ? value : ""}
+        value={typeof value === "string" || typeof value === "number"
+          ? value
+          : ""}
         onChange={(event) =>
           setDialogValues((current) => ({
             ...current,
-            [field.name]:
-              field.type === "number"
-                ? Number.isNaN(event.target.valueAsNumber)
-                  ? ""
-                  : event.target.valueAsNumber
-                : event.target.value,
-          }))
-        }
+            [field.name]: field.type === "number"
+              ? Number.isNaN(event.target.valueAsNumber)
+                ? ""
+                : event.target.valueAsNumber
+              : event.target.value,
+          }))}
       />
     );
   };
 
-  const renderRunHistory = (action: RepoActionConfig, runs: ActionRunSummary[]) => {
+  const renderRunHistory = (
+    action: RepoActionConfig,
+    runs: ActionRunSummary[],
+  ) => {
     if (runs.length === 0) return null;
 
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          {layout === "sidebar" ? (
-            <SidebarMenuAction showOnHover>
-              <EllipsisVertical />
-            </SidebarMenuAction>
-          ) : (
-            <Button type="button" variant="outline" size="icon">
-              <EllipsisVertical />
-            </Button>
-          )}
+          {layout === "sidebar"
+            ? (
+              <SidebarMenuAction showOnHover>
+                <EllipsisVertical />
+              </SidebarMenuAction>
+            )
+            : (
+              <Button type="button" variant="outline" size="icon">
+                <EllipsisVertical />
+              </Button>
+            )}
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="max-w-64">
           {runs.map((run) =>
-            isGithubUser && run.htmlUrl ? (
-              <DropdownMenuItem key={run.id} asChild>
-                <Link
-                  href={run.htmlUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex w-full items-center gap-3"
+            isGithubUser && run.htmlUrl
+              ? (
+                <DropdownMenuItem key={run.id} asChild>
+                  <Link
+                    href={run.htmlUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex w-full items-center gap-3"
+                  >
+                    {getRunIcon(run)}
+                    <span className="min-w-0 flex-1">{formatRunLine(run)}</span>
+                  </Link>
+                </DropdownMenuItem>
+              )
+              : (
+                <div
+                  key={run.id}
+                  className="flex items-center gap-3 rounded-sm px-2 py-1.5 text-sm"
                 >
                   {getRunIcon(run)}
                   <span className="min-w-0 flex-1">{formatRunLine(run)}</span>
-                </Link>
-              </DropdownMenuItem>
-            ) : (
-              <div key={run.id} className="flex items-center gap-3 rounded-sm px-2 py-1.5 text-sm">
-                {getRunIcon(run)}
-                <span className="min-w-0 flex-1">{formatRunLine(run)}</span>
-              </div>
-            ),
+                </div>
+              )
           )}
           {isGithubUser && (
             <>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
-                <Link href={`/${owner}/${repo}/${encodeURIComponent(refName)}/actions`}>
+                <Link
+                  href={`/${owner}/${repo}/${
+                    encodeURIComponent(refName)
+                  }/actions`}
+                >
                   View all actions
                 </Link>
               </DropdownMenuItem>
@@ -406,30 +481,37 @@ export function RepoActionButtons({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            {typeof dialogAction?.confirm === "object" && dialogAction.confirm.title
+            {typeof dialogAction?.confirm === "object" &&
+                dialogAction.confirm.title
               ? dialogAction.confirm.title
               : dialogAction?.label}
           </DialogTitle>
           <DialogDescription>
-            {typeof dialogAction?.confirm === "object" && dialogAction.confirm.message
+            {typeof dialogAction?.confirm === "object" &&
+                dialogAction.confirm.message
               ? dialogAction.confirm.message
               : "This will trigger a GitHub Action."}
           </DialogDescription>
         </DialogHeader>
-        {dialogAction?.fields?.length ? (
-          <div className="grid gap-4">
-            {dialogAction.fields.map((field) => (
-              <div key={field.name} className="grid gap-2">
-                {field.type !== "checkbox" && (
-                  <label className="text-sm font-medium" htmlFor={`action-field-${field.name}`}>
-                    {field.label}
-                  </label>
-                )}
-                {renderDialogField(field)}
-              </div>
-            ))}
-          </div>
-        ) : null}
+        {dialogAction?.fields?.length
+          ? (
+            <div className="grid gap-4">
+              {dialogAction.fields.map((field) => (
+                <div key={field.name} className="grid gap-2">
+                  {field.type !== "checkbox" && (
+                    <label
+                      className="text-sm font-medium"
+                      htmlFor={`action-field-${field.name}`}
+                    >
+                      {field.label}
+                    </label>
+                  )}
+                  {renderDialogField(field)}
+                </div>
+              ))}
+            </div>
+          )
+          : null}
         <DialogFooter>
           <Button
             variant="outline"
@@ -440,8 +522,12 @@ export function RepoActionButtons({
           >
             Cancel
           </Button>
-          <Button onClick={handleDialogSubmit} disabled={isDialogSubmitDisabled}>
-            {typeof dialogAction?.confirm === "object" && dialogAction.confirm.button
+          <Button
+            onClick={handleDialogSubmit}
+            disabled={isDialogSubmitDisabled}
+          >
+            {typeof dialogAction?.confirm === "object" &&
+                dialogAction.confirm.button
               ? dialogAction.confirm.button
               : (dialogAction?.label ?? "Run action")}
           </Button>

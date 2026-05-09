@@ -38,7 +38,10 @@ export default function Error({
         <Link className={buttonVariants({ variant: "default" })} href="/">
           Go home
         </Link>
-        <button className={buttonVariants({ variant: "outline" })} onClick={reset}>
+        <button
+          className={buttonVariants({ variant: "outline" })}
+          onClick={reset}
+        >
           Try again
         </button>
       </EmptyContent>

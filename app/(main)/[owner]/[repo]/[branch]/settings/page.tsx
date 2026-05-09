@@ -6,5 +6,9 @@ export default async function Page(
   }>,
 ) {
   const params = await props.params;
-  redirect(`/${params.owner}/${params.repo}/${encodeURIComponent(params.branch)}/configuration`);
+  redirect(
+    `/${params.owner}/${params.repo}/${
+      encodeURIComponent(params.branch)
+    }/configuration`,
+  );
 }

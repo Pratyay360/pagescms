@@ -49,7 +49,10 @@ const FolderCreate = ({
       return;
     }
 
-    const fullNewPath = joinPathSegments([normalizePath(path), normalizedFolderInput]);
+    const fullNewPath = joinPathSegments([
+      normalizePath(path),
+      normalizedFolderInput,
+    ]);
 
     setIsSubmitting(true);
     try {
@@ -58,9 +61,11 @@ const FolderCreate = ({
         message?: string;
         data: FolderCreateResult;
       }> = fetch(
-        `/api/${config.owner}/${config.repo}/${encodeURIComponent(
-          config.branch,
-        )}/files/${encodeURIComponent(fullNewPath + "/.gitkeep")}`,
+        `/api/${config.owner}/${config.repo}/${
+          encodeURIComponent(
+            config.branch,
+          )
+        }/files/${encodeURIComponent(fullNewPath + "/.gitkeep")}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -121,7 +126,9 @@ const FolderCreate = ({
         <DialogHeader>
           <DialogTitle>Create a folder</DialogTitle>
           <DialogDescription>
-            Choose a name for the folder to create{path ? ` under "${normalizePath(path)}"` : null}.
+            Choose a name for the folder to create{path
+              ? ` under "${normalizePath(path)}"`
+              : null}.
           </DialogDescription>
         </DialogHeader>
         <form
@@ -131,7 +138,11 @@ const FolderCreate = ({
           }}
           className="space-y-4"
         >
-          <Input autoFocus value={folderPath} onChange={(e) => setFolderPath(e.target.value)} />
+          <Input
+            autoFocus
+            value={folderPath}
+            onChange={(e) => setFolderPath(e.target.value)}
+          />
           <DialogFooter>
             <DialogClose asChild>
               <Button type="button" variant="secondary" disabled={isSubmitting}>

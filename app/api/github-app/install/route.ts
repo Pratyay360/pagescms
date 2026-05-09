@@ -11,5 +11,7 @@ export const GET = async () => {
     );
   }
 
-  return NextResponse.redirect(`https://github.com/apps/${appName}/installations/new`);
+  return NextResponse.redirect(
+    `https://github.com/apps/${appName}/installations/new`,
+  );
 };

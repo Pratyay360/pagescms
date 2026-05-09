@@ -2,16 +2,23 @@
 
 import { useEffect } from "react";
 import { RepoSidebar } from "./repo-sidebar.tsx";
-import { SidebarInset, SidebarProvider, SidebarTrigger } from "../ui/sidebar.tsx";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "../ui/sidebar.tsx";
 import { useConfig } from "../../contexts/config-context.tsx";
 import { useRepo } from "../../contexts/repo-context.tsx";
 import { trackVisit } from "../../lib/tracker.ts";
-import { RepoHeaderProvider, useRepoHeaderState } from "./repo-header-context.tsx";
+import {
+  RepoHeaderProvider,
+  useRepoHeaderState,
+} from "./repo-header-context.tsx";
 
 function RepoHeader() {
   const { header } = useRepoHeaderState();
-  const hasHeaderContent =
-    header !== null && header !== undefined && header !== false && header !== "";
+  const hasHeaderContent = header !== null && header !== undefined &&
+    header !== false && header !== "";
 
   if (!hasHeaderContent) return null;
 

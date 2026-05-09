@@ -63,7 +63,9 @@ const accountTable = pgTable(
   },
   (table) => ({
     idx_account_userId: index("idx_account_userId").on(table.userId),
-    idx_account_providerId: index("idx_account_providerId").on(table.providerId),
+    idx_account_providerId: index("idx_account_providerId").on(
+      table.providerId,
+    ),
   }),
 );
 
@@ -78,7 +80,9 @@ const verificationTable = pgTable(
     updatedAt: timestamp("updated_at").notNull().defaultNow(),
   },
   (table) => ({
-    idx_verification_identifier: index("idx_verification_identifier").on(table.identifier),
+    idx_verification_identifier: index("idx_verification_identifier").on(
+      table.identifier,
+    ),
   }),
 );
 
@@ -114,13 +118,17 @@ const collaboratorTable = pgTable(
     invitedBy: text("invited_by").references(() => userTable.id),
   },
   (table) => ({
-    idx_collaborator_owner_repo_email: index("idx_collaborator_owner_repo_email").on(
+    idx_collaborator_owner_repo_email: index(
+      "idx_collaborator_owner_repo_email",
+    ).on(
       table.owner,
       table.repo,
       table.email,
     ),
     idx_collaborator_userId: index("idx_collaborator_userId").on(table.userId),
-    uq_collaborator_owner_repo_email_ci: uniqueIndex("uq_collaborator_owner_repo_email_ci").on(
+    uq_collaborator_owner_repo_email_ci: uniqueIndex(
+      "uq_collaborator_owner_repo_email_ci",
+    ).on(
       sql`lower(${table.owner})`,
       sql`lower(${table.repo})`,
       sql`lower(${table.email})`,
@@ -141,11 +149,12 @@ const configTable = pgTable(
     lastCheckedAt: timestamp("last_checked_at").notNull().defaultNow(),
   },
   (table) => ({
-    idx_config_owner_repo_branch: uniqueIndex("idx_config_owner_repo_branch").on(
-      table.owner,
-      table.repo,
-      table.branch,
-    ),
+    idx_config_owner_repo_branch: uniqueIndex("idx_config_owner_repo_branch")
+      .on(
+        table.owner,
+        table.repo,
+        table.branch,
+      ),
   }),
 );
 
@@ -173,7 +182,9 @@ const cacheFileTable = pgTable(
     idx_cache_file_owner_repo_branch_parentPath: index(
       "idx_cache_file_owner_repo_branch_parentPath",
     ).on(table.owner, table.repo, table.branch, table.parentPath),
-    idx_cache_file_owner_repo_branch_path: uniqueIndex("idx_cache_file_owner_repo_branch_path").on(
+    idx_cache_file_owner_repo_branch_path: uniqueIndex(
+      "idx_cache_file_owner_repo_branch_path",
+    ).on(
       table.owner,
       table.repo,
       table.branch,
@@ -247,21 +258,26 @@ const actionRunTable = pgTable(
     completedAt: timestamp("completed_at"),
   },
   (table) => ({
-    idx_action_run_owner_repo_createdAt: index("idx_action_run_owner_repo_createdAt").on(
+    idx_action_run_owner_repo_createdAt: index(
+      "idx_action_run_owner_repo_createdAt",
+    ).on(
       table.owner,
       table.repo,
       table.createdAt,
     ),
-    idx_action_run_owner_repo_actionName: index("idx_action_run_owner_repo_actionName").on(
+    idx_action_run_owner_repo_actionName: index(
+      "idx_action_run_owner_repo_actionName",
+    ).on(
       table.owner,
       table.repo,
       table.actionName,
     ),
-    idx_action_run_owner_repo_status: index("idx_action_run_owner_repo_status").on(
-      table.owner,
-      table.repo,
-      table.status,
-    ),
+    idx_action_run_owner_repo_status: index("idx_action_run_owner_repo_status")
+      .on(
+        table.owner,
+        table.repo,
+        table.status,
+      ),
     idx_action_run_context: index("idx_action_run_context").on(
       table.owner,
       table.repo,
@@ -269,9 +285,10 @@ const actionRunTable = pgTable(
       table.contextName,
       table.contextPath,
     ),
-    idx_action_run_workflowRunId: uniqueIndex("idx_action_run_workflowRunId").on(
-      table.workflowRunId,
-    ),
+    idx_action_run_workflowRunId: uniqueIndex("idx_action_run_workflowRunId")
+      .on(
+        table.workflowRunId,
+      ),
   }),
 );
 

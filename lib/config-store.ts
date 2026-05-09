@@ -88,7 +88,11 @@ const updateConfig = async (config: Config): Promise<Config> => {
   return config;
 };
 
-const touchConfigCheck = async (owner: string, repo: string, branch: string) => {
+const touchConfigCheck = async (
+  owner: string,
+  repo: string,
+  branch: string,
+) => {
   await db
     .update(configTable)
     .set({
@@ -111,18 +115,20 @@ type GetConfigOptions = {
   backgroundRefreshWhenStale?: boolean;
 };
 
-const DEFAULT_CONFIG_CHECK_TTL_MS =
-  parseInt(
-    process.env.CONFIG_CHECK_MIN ||
-      process.env.CFG_CHECK_MIN ||
-      process.env.CONFIG_CHECK_TTL ||
-      "5",
-    10,
-  ) *
+const DEFAULT_CONFIG_CHECK_TTL_MS = parseInt(
+  process.env.CONFIG_CHECK_MIN ||
+    process.env.CFG_CHECK_MIN ||
+    process.env.CONFIG_CHECK_TTL ||
+    "5",
+  10,
+) *
   60 *
   1000;
 
-const isConfigCheckDue = (lastCheckedAt?: Date, ttlMs = DEFAULT_CONFIG_CHECK_TTL_MS) => {
+const isConfigCheckDue = (
+  lastCheckedAt?: Date,
+  ttlMs = DEFAULT_CONFIG_CHECK_TTL_MS,
+) => {
   if (!lastCheckedAt) return true;
   return Date.now() - new Date(lastCheckedAt).getTime() > ttlMs;
 };
@@ -148,7 +154,9 @@ const fetchConfigFromGithub = async (
     });
 
     if (Array.isArray(response.data)) {
-      throw new Error("Expected .pages.yml to be a file but found a directory.");
+      throw new Error(
+        "Expected .pages.yml to be a file but found a directory.",
+      );
     }
     if (response.data.type !== "file") {
       throw new Error("Invalid .pages.yml response type.");
@@ -163,7 +171,9 @@ const fetchConfigFromGithub = async (
       object: configObject,
     };
   } catch (error: any) {
-    if (error?.status === 404 && error?.response?.data?.message === "Not Found") {
+    if (
+      error?.status === 404 && error?.response?.data?.message === "Not Found"
+    ) {
       return null;
     }
     throw error;
@@ -192,7 +202,11 @@ const getConfig = async (
   if (existing) return existing;
 
   const run = (async (): Promise<Config | null> => {
-    const cachedConfig = await getConfigFromDb(normalizedOwner, normalizedRepo, branch);
+    const cachedConfig = await getConfigFromDb(
+      normalizedOwner,
+      normalizedRepo,
+      branch,
+    );
     if (!sync) {
       if (cachedConfig?.version === configVersion) return cachedConfig;
       if (!resolveToken || !bootstrapOnMiss) return cachedConfig;
@@ -216,7 +230,8 @@ const getConfig = async (
     }
 
     const ttlMs = options?.ttlMs ?? DEFAULT_CONFIG_CHECK_TTL_MS;
-    const backgroundRefreshWhenStale = options?.backgroundRefreshWhenStale ?? false;
+    const backgroundRefreshWhenStale = options?.backgroundRefreshWhenStale ??
+      false;
 
     if (
       cachedConfig &&
@@ -226,13 +241,21 @@ const getConfig = async (
       return cachedConfig;
     }
 
-    if (cachedConfig && cachedConfig.version === configVersion && backgroundRefreshWhenStale) {
+    if (
+      cachedConfig && cachedConfig.version === configVersion &&
+      backgroundRefreshWhenStale
+    ) {
       // Return stale cache immediately and refresh async to reduce branch-layout blocking.
       void (async () => {
         try {
           const token = await requireToken();
           if (!token) return;
-          const latest = await fetchConfigFromGithub(owner, repo, branch, token);
+          const latest = await fetchConfigFromGithub(
+            owner,
+            repo,
+            branch,
+            token,
+          );
           if (!latest) {
             await db
               .delete(configTable)
@@ -285,7 +308,10 @@ const getConfig = async (
       return null;
     }
 
-    if (cachedConfig && cachedConfig.version === configVersion && cachedConfig.sha === latest.sha) {
+    if (
+      cachedConfig && cachedConfig.version === configVersion &&
+      cachedConfig.sha === latest.sha
+    ) {
       await touchConfigCheck(normalizedOwner, normalizedRepo, branch);
       return {
         ...cachedConfig,

@@ -34,15 +34,28 @@ export function FilePath({
               <ChevronRight className="h-4 w-4 shrink-0" />
             </>
           )}
-          {pathSegments.slice(pathSegments.length > 3 ? -2 : 0).map((segment, index, array) => (
+          {pathSegments.slice(pathSegments.length > 3 ? -2 : 0).map((
+            segment,
+            index,
+            array,
+          ) => (
             <Fragment key={index}>
               <div className="flex items-center gap-x-1.5 truncate">
-                {index !== array.length - 1 && <Folder className="h-4 w-4 shrink-0" />}
-                <span className={cn("truncate", index === array.length - 1 && "text-foreground")}>
+                {index !== array.length - 1 && (
+                  <Folder className="h-4 w-4 shrink-0" />
+                )}
+                <span
+                  className={cn(
+                    "truncate",
+                    index === array.length - 1 && "text-foreground",
+                  )}
+                >
                   {segment}
                 </span>
               </div>
-              {index !== array.length - 1 && <ChevronRight className="h-4 w-4 shrink-0" />}
+              {index !== array.length - 1 && (
+                <ChevronRight className="h-4 w-4 shrink-0" />
+              )}
             </Fragment>
           ))}
         </div>

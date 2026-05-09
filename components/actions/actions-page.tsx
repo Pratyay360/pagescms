@@ -35,10 +35,27 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu.tsx";
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "../ui/hover-card.tsx";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "../ui/hover-card.tsx";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover.tsx";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select.tsx";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table.tsx";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select.tsx";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "../ui/table.tsx";
 import {
   Pagination,
   PaginationContent,
@@ -55,7 +72,9 @@ const PAGE_BUTTON_COUNT = 5;
 const getRunIcon = (run: ActionRunSummary) => {
   if (isActionRunActive(run)) return <Loader className="size-4 animate-spin" />;
   if (run.conclusion === "success") {
-    return <CircleCheck className="size-4 text-green-600 dark:text-green-400" />;
+    return (
+      <CircleCheck className="size-4 text-green-600 dark:text-green-400" />
+    );
   }
   return <CircleX className="size-4 text-destructive" />;
 };
@@ -68,11 +87,14 @@ const getStatusFilterValue = (run: ActionRunSummary) => {
   return "failed";
 };
 
-const formatContext = (run: ActionRunSummary, contextLabels: Record<string, string>) => {
-  const contextLabel =
-    run.contextType && run.contextName
-      ? (contextLabels[`${run.contextType}:${run.contextName}`] ?? run.contextName)
-      : null;
+const formatContext = (
+  run: ActionRunSummary,
+  contextLabels: Record<string, string>,
+) => {
+  const contextLabel = run.contextType && run.contextName
+    ? (contextLabels[`${run.contextType}:${run.contextName}`] ??
+      run.contextName)
+    : null;
 
   switch (run.contextType) {
     case "collection":
@@ -99,7 +121,10 @@ const getShaUrl = (owner: string, repo: string, sha: string | null) => {
   return `https://github.com/${owner}/${repo}/commit/${sha}`;
 };
 
-const UnderlinedTrigger = forwardRef<HTMLButtonElement, React.ComponentPropsWithoutRef<"button">>(
+const UnderlinedTrigger = forwardRef<
+  HTMLButtonElement,
+  React.ComponentPropsWithoutRef<"button">
+>(
   function UnderlinedTrigger({ children, className, ...props }, ref) {
     return (
       <button
@@ -153,14 +178,14 @@ function ActionsPagination({
                 event.preventDefault();
                 onPrevious();
               }}
-              className={pageIndex === 0 ? "pointer-events-none opacity-50" : undefined}
+              className={pageIndex === 0
+                ? "pointer-events-none opacity-50"
+                : undefined}
             />
           </PaginationItem>
           {paginationItems.map((item, index) => (
             <PaginationItem key={`${item}-${index}`}>
-              {item === "ellipsis" ? (
-                <PaginationEllipsis />
-              ) : (
+              {item === "ellipsis" ? <PaginationEllipsis /> : (
                 <PaginationLink
                   href="#"
                   isActive={item === pageIndex}
@@ -182,7 +207,9 @@ function ActionsPagination({
                 event.preventDefault();
                 onNext();
               }}
-              className={pageIndex >= pageCount - 1 ? "pointer-events-none opacity-50" : undefined}
+              className={pageIndex >= pageCount - 1
+                ? "pointer-events-none opacity-50"
+                : undefined}
             />
           </PaginationItem>
         </PaginationContent>
@@ -299,14 +326,18 @@ export function ActionsPage({
     async (run: ActionRunSummary, intent: "cancel" | "rerun") => {
       try {
         const response = await fetch(
-          `/api/${owner}/${repo}/${encodeURIComponent(branch)}/actions/${run.id}`,
+          `/api/${owner}/${repo}/${
+            encodeURIComponent(branch)
+          }/actions/${run.id}`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ intent }),
           },
         );
-        const payload = await requireApiSuccess<{ data?: ActionRunSummary | { id: number } }>(
+        const payload = await requireApiSuccess<
+          { data?: ActionRunSummary | { id: number } }
+        >(
           response,
           `Failed to ${intent === "cancel" ? "cancel" : "run"} action`,
         );
@@ -384,11 +415,20 @@ export function ActionsPage({
       if (actionFilter !== "all" && run.actionName !== actionFilter) {
         return false;
       }
-      if (triggeredByFilter !== "all" && run.triggeredByName !== triggeredByFilter) return false;
+      if (
+        triggeredByFilter !== "all" && run.triggeredByName !== triggeredByFilter
+      ) return false;
       if (search && !haystack.includes(search.toLowerCase())) return false;
       return true;
     });
-  }, [actionFilter, actionLabels, runs, search, statusFilter, triggeredByFilter]);
+  }, [
+    actionFilter,
+    actionLabels,
+    runs,
+    search,
+    statusFilter,
+    triggeredByFilter,
+  ]);
 
   useEffect(() => {
     setPageIndex(0);
@@ -429,8 +469,7 @@ export function ActionsPage({
     return filteredRuns.slice(start, start + PAGE_SIZE);
   }, [filteredRuns, pageIndex]);
 
-  const hasActiveFilters =
-    search !== "" ||
+  const hasActiveFilters = search !== "" ||
     statusFilter !== "all" ||
     actionFilter !== "all" ||
     triggeredByFilter !== "all";
@@ -507,7 +546,10 @@ export function ActionsPage({
                       ))}
                     </SelectContent>
                   </Select>
-                  <Select value={triggeredByFilter} onValueChange={setTriggeredByFilter}>
+                  <Select
+                    value={triggeredByFilter}
+                    onValueChange={setTriggeredByFilter}
+                  >
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Triggered by" />
                     </SelectTrigger>
@@ -580,145 +622,178 @@ export function ActionsPage({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {filteredRuns.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={7} className="py-8 text-center text-muted-foreground">
-                {runs.length === 0 ? "No actions yet." : "No matching actions."}
-              </TableCell>
-            </TableRow>
-          ) : (
-            pagedRuns.map((run) => (
-              <TableRow key={run.id}>
-                <TableCell>
-                  <Tooltip>
-                    <TooltipTrigger asChild>{getRunIcon(run)}</TooltipTrigger>
-                    <TooltipContent>{getStatusLabel(run)}</TooltipContent>
-                  </Tooltip>
-                </TableCell>
-                <TableCell className="font-mono font-medium">{run.actionName}</TableCell>
-                <TableCell>
-                  <HoverCard>
-                    <HoverCardTrigger asChild>
-                      <UnderlinedTrigger>{formatContext(run, contextLabels)}</UnderlinedTrigger>
-                    </HoverCardTrigger>
-                    <HoverCardContent align="start">
-                      <ul className="space-y-2 text-sm">
-                        {formatDetails(run).map((item) => (
-                          <li key={item.label}>
-                            <span className="font-medium">{item.label}:</span>
-                            <DetailValue value={item.value} />
-                          </li>
-                        ))}
-                      </ul>
-                    </HoverCardContent>
-                  </HoverCard>
-                </TableCell>
-                <TableCell>
-                  {run.createdAt
-                    ? formatDistanceToNowStrict(new Date(run.createdAt), {
-                        addSuffix: true,
-                      })
-                    : "-"}
-                </TableCell>
-                <TableCell>
-                  {run.triggeredByName ? (
-                    <HoverCard>
-                      <HoverCardTrigger asChild>
-                        <UnderlinedTrigger>{run.triggeredByName}</UnderlinedTrigger>
-                      </HoverCardTrigger>
-                      <HoverCardContent align="start">
-                        <div className="flex items-start gap-3">
-                          <Avatar className="size-10">
-                            <AvatarImage
-                              src={
-                                run.triggeredByGithubUsername
-                                  ? `https://github.com/${run.triggeredByGithubUsername}.png`
-                                  : run.triggeredByEmail
-                                    ? `https://unavatar.io/${run.triggeredByEmail}?fallback=false`
-                                    : (run.triggeredByImage ?? undefined)
-                              }
-                              alt={run.triggeredByName}
-                            />
-                            <AvatarFallback>
-                              {getInitialsFromName(run.triggeredByName ?? undefined)}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="grid gap-1 text-sm">
-                            <div className="font-medium">{run.triggeredByName}</div>
-                            {run.triggeredByGithubUsername ? (
-                              <Link
-                                href={`https://github.com/${run.triggeredByGithubUsername}`}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="text-muted-foreground hover:text-foreground"
-                              >
-                                @{run.triggeredByGithubUsername}
-                              </Link>
-                            ) : null}
-                            {run.triggeredByEmail ? (
-                              <div className="text-muted-foreground">{run.triggeredByEmail}</div>
-                            ) : (
-                              <div className="text-muted-foreground">-</div>
-                            )}
-                          </div>
-                        </div>
-                      </HoverCardContent>
-                    </HoverCard>
-                  ) : (
-                    "-"
-                  )}
-                </TableCell>
-                <TableCell>
-                  {run.sha ? (
-                    <Link
-                      href={getShaUrl(owner, repo, run.sha)!}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="font-mono text-[13px] hover:underline"
-                    >
-                      {run.workflowRef
-                        ? `${run.workflowRef}@${run.sha.slice(0, 7)}`
-                        : run.sha.slice(0, 7)}
-                    </Link>
-                  ) : (
-                    <span className="font-mono text-[13px]">{run.workflowRef ?? "-"}</span>
-                  )}
-                </TableCell>
-                <TableCell className="text-right">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="icon-sm">
-                        <EllipsisVertical className="size-4" />
-                        <span className="sr-only">Run actions</span>
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem asChild disabled={!run.htmlUrl}>
-                        <Link href={run.htmlUrl ?? "#"} target="_blank" rel="noreferrer">
-                          View on GitHub
-                          <ArrowUpRight className="ml-auto size-3 text-muted-foreground" />
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        disabled={!run.canRerun}
-                        onClick={() => void handleRunAction(run, "rerun")}
-                      >
-                        Run again
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        variant="destructive"
-                        disabled={!run.canCancel}
-                        onClick={() => void handleRunAction(run, "cancel")}
-                      >
-                        Cancel run
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+          {filteredRuns.length === 0
+            ? (
+              <TableRow>
+                <TableCell
+                  colSpan={7}
+                  className="py-8 text-center text-muted-foreground"
+                >
+                  {runs.length === 0
+                    ? "No actions yet."
+                    : "No matching actions."}
                 </TableCell>
               </TableRow>
-            ))
-          )}
+            )
+            : (
+              pagedRuns.map((run) => (
+                <TableRow key={run.id}>
+                  <TableCell>
+                    <Tooltip>
+                      <TooltipTrigger asChild>{getRunIcon(run)}</TooltipTrigger>
+                      <TooltipContent>{getStatusLabel(run)}</TooltipContent>
+                    </Tooltip>
+                  </TableCell>
+                  <TableCell className="font-mono font-medium">
+                    {run.actionName}
+                  </TableCell>
+                  <TableCell>
+                    <HoverCard>
+                      <HoverCardTrigger asChild>
+                        <UnderlinedTrigger>
+                          {formatContext(run, contextLabels)}
+                        </UnderlinedTrigger>
+                      </HoverCardTrigger>
+                      <HoverCardContent align="start">
+                        <ul className="space-y-2 text-sm">
+                          {formatDetails(run).map((item) => (
+                            <li key={item.label}>
+                              <span className="font-medium">{item.label}:</span>
+                              <DetailValue value={item.value} />
+                            </li>
+                          ))}
+                        </ul>
+                      </HoverCardContent>
+                    </HoverCard>
+                  </TableCell>
+                  <TableCell>
+                    {run.createdAt
+                      ? formatDistanceToNowStrict(new Date(run.createdAt), {
+                        addSuffix: true,
+                      })
+                      : "-"}
+                  </TableCell>
+                  <TableCell>
+                    {run.triggeredByName
+                      ? (
+                        <HoverCard>
+                          <HoverCardTrigger asChild>
+                            <UnderlinedTrigger>
+                              {run.triggeredByName}
+                            </UnderlinedTrigger>
+                          </HoverCardTrigger>
+                          <HoverCardContent align="start">
+                            <div className="flex items-start gap-3">
+                              <Avatar className="size-10">
+                                <AvatarImage
+                                  src={run.triggeredByGithubUsername
+                                    ? `https://github.com/${run.triggeredByGithubUsername}.png`
+                                    : run.triggeredByEmail
+                                    ? `https://unavatar.io/${run.triggeredByEmail}?fallback=false`
+                                    : (run.triggeredByImage ?? undefined)}
+                                  alt={run.triggeredByName}
+                                />
+                                <AvatarFallback>
+                                  {getInitialsFromName(
+                                    run.triggeredByName ?? undefined,
+                                  )}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div className="grid gap-1 text-sm">
+                                <div className="font-medium">
+                                  {run.triggeredByName}
+                                </div>
+                                {run.triggeredByGithubUsername
+                                  ? (
+                                    <Link
+                                      href={`https://github.com/${run.triggeredByGithubUsername}`}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      className="text-muted-foreground hover:text-foreground"
+                                    >
+                                      @{run.triggeredByGithubUsername}
+                                    </Link>
+                                  )
+                                  : null}
+                                {run.triggeredByEmail
+                                  ? (
+                                    <div className="text-muted-foreground">
+                                      {run.triggeredByEmail}
+                                    </div>
+                                  )
+                                  : (
+                                    <div className="text-muted-foreground">
+                                      -
+                                    </div>
+                                  )}
+                              </div>
+                            </div>
+                          </HoverCardContent>
+                        </HoverCard>
+                      )
+                      : (
+                        "-"
+                      )}
+                  </TableCell>
+                  <TableCell>
+                    {run.sha
+                      ? (
+                        <Link
+                          href={getShaUrl(owner, repo, run.sha)!}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="font-mono text-[13px] hover:underline"
+                        >
+                          {run.workflowRef
+                            ? `${run.workflowRef}@${run.sha.slice(0, 7)}`
+                            : run.sha.slice(0, 7)}
+                        </Link>
+                      )
+                      : (
+                        <span className="font-mono text-[13px]">
+                          {run.workflowRef ?? "-"}
+                        </span>
+                      )}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="icon-sm">
+                          <EllipsisVertical className="size-4" />
+                          <span className="sr-only">Run actions</span>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem asChild disabled={!run.htmlUrl}>
+                          <Link
+                            href={run.htmlUrl ?? "#"}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            View on GitHub
+                            <ArrowUpRight className="ml-auto size-3 text-muted-foreground" />
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          disabled={!run.canRerun}
+                          onClick={() => void handleRunAction(run, "rerun")}
+                        >
+                          Run again
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          variant="destructive"
+                          disabled={!run.canCancel}
+                          onClick={() => void handleRunAction(run, "cancel")}
+                        >
+                          Cancel run
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
         </TableBody>
       </Table>
       <ActionsPagination

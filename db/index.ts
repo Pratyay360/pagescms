@@ -9,8 +9,7 @@ declare global {
   var __pagesCmsPostgresClient: ReturnType<typeof postgres> | undefined;
 }
 
-const client =
-  globalThis.__pagesCmsPostgresClient ??
+const client = globalThis.__pagesCmsPostgresClient ??
   postgres(process.env.DATABASE_URL!, {
     // Keep conservative pool size in dev to avoid local connection spikes.
     max: parseInt(process.env.POSTGRES_MAX_CONNECTIONS || "5", 10),
