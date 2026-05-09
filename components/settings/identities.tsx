@@ -2,18 +2,18 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { signIn } from "../../lib/auth-client.ts";
+import { signIn } from "../../lib/auth-client";
 import { toast } from "sonner";
-import { Button } from "../ui/button.tsx";
+import { Button } from "../ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "../ui/dropdown-menu.tsx";
-import { cn } from "../../lib/utils.ts";
-import { ArrowUpRight, EllipsisVertical, Github, Loader, Mail } from "lucide-react";
+} from "../ui/dropdown-menu";
+import { cn } from "../../lib/utils";
+import { ArrowUpRight, EllipsisVertical, Loader, Mail } from "lucide-react";
 
 type IdentitiesProps = {
   email: string;
