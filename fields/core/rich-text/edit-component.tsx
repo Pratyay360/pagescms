@@ -590,7 +590,9 @@ const EditComponent = forwardRef((props: EditProps, ref: React.Ref<HTMLDivElemen
     if (pendingUploads > 0) {
       return;
     }
-    if (mode === "source") return;
+    if (mode === "source") {
+      return;
+    }
     const currentSeq = ++transformSeqRef.current;
     setIsTransforming(true);
     try {
