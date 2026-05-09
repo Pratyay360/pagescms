@@ -11,11 +11,7 @@ type InstallationAccount = {
 };
 
 // Get all GitHub App installations for the authenticated user.
-const getInstallations = async (
-  token: string,
-  owners?: string[],
-  filterById: boolean = false,
-) => {
+const getInstallations = async (token: string, owners?: string[], filterById: boolean = false) => {
   let installations: any[] = [];
   const matchedInstallations: any[] = [];
 
@@ -26,11 +22,10 @@ const getInstallations = async (
   const perPage = 100;
 
   while (hasMore) {
-    const response = await octokit.rest.apps
-      .listInstallationsForAuthenticatedUser({
-        page,
-        per_page: perPage,
-      });
+    const response = await octokit.rest.apps.listInstallationsForAuthenticatedUser({
+      page,
+      per_page: perPage,
+    });
 
     if (response.data.installations.length === 0) break;
 
@@ -43,10 +38,7 @@ const getInstallations = async (
           ? owners.includes(installation.account.id.toString()) // Match by ID
           : lowercaseOwners.includes(installation.account.login.toLowerCase()); // Match by name
 
-        if (
-          matches &&
-          !matchedInstallations.find((m: any) => m.id === installation.id)
-        ) {
+        if (matches && !matchedInstallations.find((m: any) => m.id === installation.id)) {
           matchedInstallations.push(installation);
         }
       }
@@ -81,12 +73,11 @@ const getInstallationRepos = async (
   const perPage = 100;
 
   while (hasMore) {
-    const response = await octokit.rest.apps
-      .listInstallationReposForAuthenticatedUser({
-        installation_id: installationId,
-        per_page: perPage,
-        page,
-      });
+    const response = await octokit.rest.apps.listInstallationReposForAuthenticatedUser({
+      installation_id: installationId,
+      per_page: perPage,
+      page,
+    });
 
     if (response.data.repositories.length === 0) break;
 
@@ -124,9 +115,7 @@ const getGithubInstallationUrl = (account: InstallationAccount) => {
     }`;
   }
 
-  return `https://github.com/settings/installations/${
-    account.installationId ?? ""
-  }`;
+  return `https://github.com/settings/installations/${account.installationId ?? ""}`;
 };
 
 export { getGithubInstallationUrl, getInstallationRepos, getInstallations };

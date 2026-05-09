@@ -29,9 +29,7 @@ const EditComponent = forwardRef((props: any, ref: any) => {
         exts.push(StreamLanguage.define(yaml));
         break;
       case "mdx":
-        exts.push(
-          markdown({ base: markdownLanguage, codeLanguages: languages }),
-        );
+        exts.push(markdown({ base: markdownLanguage, codeLanguages: languages }));
         break;
       case "javascript":
       case "js":
@@ -49,9 +47,7 @@ const EditComponent = forwardRef((props: any, ref: any) => {
         exts.push(html());
         break;
       default:
-        exts.push(
-          markdown({ base: markdownLanguage, codeLanguages: languages }),
-        );
+        exts.push(markdown({ base: markdownLanguage, codeLanguages: languages }));
         break;
     }
 

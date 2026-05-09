@@ -3,14 +3,8 @@ import { configTable } from "../db/schema.ts";
 import { and, eq, sql } from "drizzle-orm";
 import { configVersion, normalizeConfig, parseConfig } from "./config.ts";
 import { saveConfig, updateConfig } from "./config-store.ts";
-import {
-  clearFileCache,
-  updateMultipleFilesCache,
-} from "./github-cache-file.ts";
-import {
-  deleteCacheFileMeta,
-  upsertCacheFileMeta,
-} from "./github-cache-meta.ts";
+import { clearFileCache, updateMultipleFilesCache } from "./github-cache-file.ts";
+import { deleteCacheFileMeta, upsertCacheFileMeta } from "./github-cache-meta.ts";
 import { clearScopedFileCache } from "./github-webhook-installation.ts";
 import { getInstallationToken } from "./token.ts";
 import { normalizePath } from "./utils/file.ts";
@@ -27,11 +21,7 @@ const WEBHOOK_PUSH_SCOPED_INVALIDATION_MAX_FILES = Number.parseInt(
   10,
 );
 
-const deleteConfigCacheForBranch = async (
-  owner: string,
-  repo: string,
-  branch: string,
-) => {
+const deleteConfigCacheForBranch = async (owner: string, repo: string, branch: string) => {
   await db
     .delete(configTable)
     .where(
@@ -98,9 +88,7 @@ const handlePushWebhookEvent = async (event: string | null, data: any) => {
   const changedCount = uniqueChangedPaths.length;
   const configFilePath = ".pages.yml";
   const configChanged = uniqueChangedPaths.includes(configFilePath);
-  const configRemoved = removedFiles.some((file) =>
-    file.path === configFilePath
-  );
+  const configRemoved = removedFiles.some((file) => file.path === configFilePath);
 
   const commitTimestamp = Date.parse(data.head_commit?.timestamp ?? "");
   const commit = {
@@ -108,22 +96,20 @@ const handlePushWebhookEvent = async (event: string | null, data: any) => {
     timestamp: Number.isNaN(commitTimestamp) ? Date.now() : commitTimestamp,
   };
 
-  const largePush = WEBHOOK_PUSH_INCREMENTAL_MAX_FILES > 0 &&
-    changedCount > WEBHOOK_PUSH_INCREMENTAL_MAX_FILES;
-  const hugePush = WEBHOOK_PUSH_SCOPED_INVALIDATION_MAX_FILES > 0 &&
+  const largePush =
+    WEBHOOK_PUSH_INCREMENTAL_MAX_FILES > 0 && changedCount > WEBHOOK_PUSH_INCREMENTAL_MAX_FILES;
+  const hugePush =
+    WEBHOOK_PUSH_SCOPED_INVALIDATION_MAX_FILES > 0 &&
     changedCount > WEBHOOK_PUSH_SCOPED_INVALIDATION_MAX_FILES;
 
   if (hugePush) {
-    console.warn(
-      "Push webhook exceeded scoped threshold. Falling back to branch cache clear.",
-      {
-        owner: pushOwner,
-        repo: pushRepo,
-        branch: pushBranch,
-        changedCount,
-        threshold: WEBHOOK_PUSH_SCOPED_INVALIDATION_MAX_FILES,
-      },
-    );
+    console.warn("Push webhook exceeded scoped threshold. Falling back to branch cache clear.", {
+      owner: pushOwner,
+      repo: pushRepo,
+      branch: pushBranch,
+      changedCount,
+      threshold: WEBHOOK_PUSH_SCOPED_INVALIDATION_MAX_FILES,
+    });
 
     await clearFileCache(pushOwner, pushRepo, pushBranch);
     await deleteCacheFileMeta(pushOwner, pushRepo, pushBranch);
@@ -151,12 +137,7 @@ const handlePushWebhookEvent = async (event: string | null, data: any) => {
       },
     );
 
-    await clearScopedFileCache(
-      pushOwner,
-      pushRepo,
-      pushBranch,
-      uniqueChangedPaths,
-    );
+    await clearScopedFileCache(pushOwner, pushRepo, pushBranch, uniqueChangedPaths);
     await deleteCacheFileMeta(pushOwner, pushRepo, pushBranch);
     await upsertCacheFileMeta(pushOwner, pushRepo, pushBranch, {
       commitSha: commit.sha,
@@ -182,9 +163,9 @@ const handlePushWebhookEvent = async (event: string | null, data: any) => {
     installationToken,
     commit.sha
       ? {
-        sha: commit.sha,
-        timestamp: commit.timestamp,
-      }
+          sha: commit.sha,
+          timestamp: commit.timestamp,
+        }
       : undefined,
   );
 
@@ -214,19 +195,14 @@ const handlePushWebhookEvent = async (event: string | null, data: any) => {
     throw new Error("Expected .pages.yml to be a file but found a directory.");
   }
   if (configFileResponse.data.type !== "file") {
-    throw new Error(
-      `Invalid .pages.yml response type: ${configFileResponse.data.type}`,
-    );
+    throw new Error(`Invalid .pages.yml response type: ${configFileResponse.data.type}`);
   }
 
-  const configFile = Buffer.from(configFileResponse.data.content, "base64")
-    .toString();
+  const configFile = Buffer.from(configFileResponse.data.content, "base64").toString();
   const parsed = parseConfig(configFile);
   if (parsed.errors.length > 0) {
     throw new Error(
-      `Failed to parse .pages.yml: ${
-        parsed.errors[0]?.message || "Unknown parse error"
-      }`,
+      `Failed to parse .pages.yml: ${parsed.errors[0]?.message || "Unknown parse error"}`,
     );
   }
   const configObject = normalizeConfig(parsed.document.toJSON());

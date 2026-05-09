@@ -30,8 +30,7 @@ export function Profile({ name, email, githubUsername }: ProfileProps) {
   const [isSaving, setIsSaving] = useState(false);
 
   const initialName = name?.trim() || "";
-  const canSave = displayName.trim().length > 0 &&
-    displayName.trim() !== initialName && !isSaving;
+  const canSave = displayName.trim().length > 0 && displayName.trim() !== initialName && !isSaving;
   const avatarLabel = displayName.trim() || email;
 
   const handleSave = async () => {
@@ -53,9 +52,7 @@ export function Profile({ name, email, githubUsername }: ProfileProps) {
       toast.success("Profile updated.");
       router.refresh();
     } catch (error) {
-      const message = error instanceof Error
-        ? error.message
-        : "Failed to update profile.";
+      const message = error instanceof Error ? error.message : "Failed to update profile.";
       toast.error(message);
     } finally {
       setIsSaving(false);
@@ -66,9 +63,7 @@ export function Profile({ name, email, githubUsername }: ProfileProps) {
     <Card>
       <CardHeader>
         <CardTitle>Profile</CardTitle>
-        <CardDescription>
-          Manage the information displayed to other users.
-        </CardDescription>
+        <CardDescription>Manage the information displayed to other users.</CardDescription>
       </CardHeader>
       <CardContent>
         <form
@@ -101,9 +96,11 @@ export function Profile({ name, email, githubUsername }: ProfileProps) {
               <div className="col-span-3">
                 <Avatar className="h-24 w-24 rounded-md">
                   <AvatarImage
-                    src={githubUsername
-                      ? `https://github.com/${githubUsername}.png`
-                      : `https://unavatar.io/${email}?fallback=false`}
+                    src={
+                      githubUsername
+                        ? `https://github.com/${githubUsername}.png`
+                        : `https://unavatar.io/${email}?fallback=false`
+                    }
                     alt={avatarLabel}
                   />
                   <AvatarFallback className="rounded-md">
@@ -116,12 +113,7 @@ export function Profile({ name, email, githubUsername }: ProfileProps) {
         </form>
       </CardContent>
       <CardFooter>
-        <Button
-          size="sm"
-          className="ml-auto"
-          onClick={() => void handleSave()}
-          disabled={!canSave}
-        >
+        <Button size="sm" className="ml-auto" onClick={() => void handleSave()} disabled={!canSave}>
           Save profile
           {isSaving && <Loader className="ml-2 h-4 w-4 animate-spin" />}
         </Button>

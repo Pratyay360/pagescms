@@ -1,10 +1,7 @@
 import { ReactRenderer } from "@tiptap/react";
 import type { Editor } from "@tiptap/core";
 import tippy, { type Instance as TippyInstance } from "tippy.js";
-import CommandsList, {
-  type CommandsListHandle,
-  type SlashItem,
-} from "./commands-list.tsx";
+import CommandsList, { type CommandsListHandle, type SlashItem } from "./commands-list.tsx";
 import {
   Code,
   Heading1,
@@ -49,9 +46,7 @@ export type SlashImageFallback = "prompt-url" | "none";
 type SuggestionOptions = {
   onRequestImage?: ImagePickerHandler | null;
   onInsertLocalImageFile?:
-    | ((
-      context: ImagePickerContext & Omit<ImagePickerFileResult, "kind">,
-    ) => void | Promise<void>)
+    | ((context: ImagePickerContext & Omit<ImagePickerFileResult, "kind">) => void | Promise<void>)
     | null;
   enableImages?: boolean;
   imageSlashFallback?: SlashImageFallback;
@@ -62,9 +57,7 @@ const TABLE_SAFE_COMMANDS = new Set(["Image"]);
 type RequestImageAndInsertArgs = ImagePickerContext & {
   onRequestImage: ImagePickerHandler | null;
   onInsertLocalImageFile:
-    | ((
-      context: ImagePickerContext & Omit<ImagePickerFileResult, "kind">,
-    ) => void | Promise<void>)
+    | ((context: ImagePickerContext & Omit<ImagePickerFileResult, "kind">) => void | Promise<void>)
     | null;
   imageSlashFallback: SlashImageFallback;
 };
@@ -90,15 +83,13 @@ const requestImageAndInsert = async ({
 
   if (result.kind === "file") {
     if (!onInsertLocalImageFile) return;
-    const fileInsertContext:
-      & ImagePickerContext
-      & Omit<ImagePickerFileResult, "kind"> = {
-        editor,
-        range,
-        file: result.file,
-        ...(result.alt ? { alt: result.alt } : {}),
-        ...(result.title ? { title: result.title } : {}),
-      };
+    const fileInsertContext: ImagePickerContext & Omit<ImagePickerFileResult, "kind"> = {
+      editor,
+      range,
+      file: result.file,
+      ...(result.alt ? { alt: result.alt } : {}),
+      ...(result.title ? { title: result.title } : {}),
+    };
     await onInsertLocalImageFile(fileInsertContext);
     return;
   }
@@ -116,8 +107,7 @@ const getAllItems = (options: SuggestionOptions): SlashItem[] => [
   {
     title: "Text",
     icon: Pilcrow,
-    command: ({ editor, range }) =>
-      editor.chain().focus().deleteRange(range).setParagraph().run(),
+    command: ({ editor, range }) => editor.chain().focus().deleteRange(range).setParagraph().run(),
   },
   {
     title: "Heading 1",
@@ -188,24 +178,15 @@ const getAllItems = (options: SuggestionOptions): SlashItem[] => [
 ];
 
 type SlashSuggestion = Pick<TiptapSuggestionOptions, "items" | "render">;
-type SuggestionRenderLifecycle = NonNullable<
-  ReturnType<NonNullable<SlashSuggestion["render"]>>
->;
-type SuggestionKeyDownProps = Parameters<
-  NonNullable<SuggestionRenderLifecycle["onKeyDown"]>
->[0];
+type SuggestionRenderLifecycle = NonNullable<ReturnType<NonNullable<SlashSuggestion["render"]>>>;
+type SuggestionKeyDownProps = Parameters<NonNullable<SuggestionRenderLifecycle["onKeyDown"]>>[0];
 
-const createSuggestion = (
-  options: SuggestionOptions = {},
-): SlashSuggestion => ({
+const createSuggestion = (options: SuggestionOptions = {}): SlashSuggestion => ({
   items: ({ query, editor }: { query: string; editor: Editor }) => {
-    const isInTableCell = editor.isActive("tableCell") ||
-      editor.isActive("tableHeader");
+    const isInTableCell = editor.isActive("tableCell") || editor.isActive("tableHeader");
     return getAllItems(options)
       .filter((item) => !isInTableCell || TABLE_SAFE_COMMANDS.has(item.title))
-      .filter((item) =>
-        options.enableImages !== false || item.title !== "Image"
-      )
+      .filter((item) => options.enableImages !== false || item.title !== "Image")
       .filter((item) => item.title.toLowerCase().includes(query.toLowerCase()))
       .slice(0, 10);
   },
@@ -222,8 +203,7 @@ const createSuggestion = (
         });
 
         if (!props.clientRect) return;
-        const referenceRect = () =>
-          props.clientRect?.() ?? new DOMRect(0, 0, 0, 0);
+        const referenceRect = () => props.clientRect?.() ?? new DOMRect(0, 0, 0, 0);
 
         popup = tippy(document.body, {
           getReferenceClientRect: referenceRect,
@@ -240,8 +220,7 @@ const createSuggestion = (
         if (!component) return;
         component.updateProps(props);
         if (!props.clientRect || !popup) return;
-        const referenceRect = () =>
-          props.clientRect?.() ?? new DOMRect(0, 0, 0, 0);
+        const referenceRect = () => props.clientRect?.() ?? new DOMRect(0, 0, 0, 0);
         popup.setProps({ getReferenceClientRect: referenceRect });
       },
 

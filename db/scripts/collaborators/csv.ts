@@ -70,10 +70,7 @@ const parseCsv = (input: string): Record<string, string>[] => {
   return rows;
 };
 
-const stringifyCsv = (
-  rows: Record<string, unknown>[],
-  columns: string[],
-): string => {
+const stringifyCsv = (rows: Record<string, unknown>[], columns: string[]): string => {
   const lines: string[] = [columns.map(escapeCsv).join(",")];
 
   rows.forEach((row) => {

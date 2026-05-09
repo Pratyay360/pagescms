@@ -3,10 +3,7 @@ import { db } from "../../../../../../db/index.ts";
 import { actionRunTable } from "../../../../../../db/schema.ts";
 import { createOctokitInstance } from "../../../../../../lib/utils/octokit.ts";
 import { getToken } from "../../../../../../lib/token.ts";
-import {
-  createHttpError,
-  toErrorResponse,
-} from "../../../../../../lib/api-error.ts";
+import { createHttpError, toErrorResponse } from "../../../../../../lib/api-error.ts";
 import { requireApiUserSession } from "../../../../../../lib/session-server.ts";
 import { resolveActionRef } from "../../../../../../lib/actions.ts";
 import { hasGithubIdentity } from "../../../../../../lib/authz-shared.ts";
@@ -72,12 +69,9 @@ const findWorkflowRun = async (
     const run = response.data.workflow_runs
       .filter(
         (item) =>
-          Date.parse(item.created_at) >= startedAtMs - 30_000 &&
-          !claimedRunIdsSet.has(item.id),
+          Date.parse(item.created_at) >= startedAtMs - 30_000 && !claimedRunIdsSet.has(item.id),
       )
-      .sort((left, right) =>
-        Date.parse(right.created_at) - Date.parse(left.created_at)
-      )[0];
+      .sort((left, right) => Date.parse(right.created_at) - Date.parse(left.created_at))[0];
 
     if (run) return run;
     await sleep(1500);
@@ -178,9 +172,7 @@ const syncActionRun = async (
           conclusion: workflowRun.conclusion,
           htmlUrl: workflowRun.html_url,
           updatedAt: new Date(),
-          completedAt: workflowRun.status === "completed"
-            ? new Date(workflowRun.updated_at)
-            : null,
+          completedAt: workflowRun.status === "completed" ? new Date(workflowRun.updated_at) : null,
         })
         .where(eq(actionRunTable.id, row.id))
         .returning();
@@ -208,9 +200,10 @@ const syncActionRun = async (
       conclusion: workflowRunResponse.data.conclusion,
       htmlUrl: workflowRunResponse.data.html_url,
       updatedAt: new Date(),
-      completedAt: workflowRunResponse.data.status === "completed"
-        ? new Date(workflowRunResponse.data.updated_at)
-        : null,
+      completedAt:
+        workflowRunResponse.data.status === "completed"
+          ? new Date(workflowRunResponse.data.updated_at)
+          : null,
     })
     .where(eq(actionRunTable.id, row.id))
     .returning();
@@ -252,27 +245,25 @@ export async function GET(
       .where(
         listAll
           ? and(
-            eq(actionRunTable.owner, params.owner),
-            eq(actionRunTable.repo, params.repo),
-            eq(actionRunTable.ref, params.branch),
-          )
+              eq(actionRunTable.owner, params.owner),
+              eq(actionRunTable.repo, params.repo),
+              eq(actionRunTable.ref, params.branch),
+            )
           : buildContextWhere({
-            owner: params.owner,
-            repo: params.repo,
-            ref: params.branch,
-            actionNames,
-            contextType,
-            contextName,
-            contextPath,
-          }),
+              owner: params.owner,
+              repo: params.repo,
+              ref: params.branch,
+              actionNames,
+              contextType,
+              contextName,
+              contextPath,
+            }),
       )
       .orderBy(desc(actionRunTable.createdAt));
 
     if (listAll) {
       const topRows = rows.slice(0, 100);
-      const syncedRows = await Promise.all(
-        topRows.map((row) => syncActionRun(octokit, row)),
-      );
+      const syncedRows = await Promise.all(topRows.map((row) => syncActionRun(octokit, row)));
 
       return Response.json({
         status: "success",
@@ -289,44 +280,33 @@ export async function GET(
           conclusion: row.conclusion,
           htmlUrl: row.htmlUrl,
           workflowRunId: row.workflowRunId,
-          triggeredByName:
-            (row.triggeredBy as { name?: string | null } | null)?.name ?? null,
-          triggeredByEmail:
-            (row.triggeredBy as { email?: string | null } | null)?.email ??
-              null,
+          triggeredByName: (row.triggeredBy as { name?: string | null } | null)?.name ?? null,
+          triggeredByEmail: (row.triggeredBy as { email?: string | null } | null)?.email ?? null,
           triggeredByGithubUsername:
-            (row.triggeredBy as { githubUsername?: string | null } | null)
-              ?.githubUsername ?? null,
-          triggeredByImage:
-            (row.triggeredBy as { image?: string | null } | null)?.image ??
-              null,
+            (row.triggeredBy as { githubUsername?: string | null } | null)?.githubUsername ?? null,
+          triggeredByImage: (row.triggeredBy as { image?: string | null } | null)?.image ?? null,
           createdAt: row.createdAt?.toISOString() ?? null,
           updatedAt: row.updatedAt?.toISOString() ?? null,
           completedAt: row.completedAt?.toISOString() ?? null,
           canCancel: Boolean(
             (isGithubUser ||
-              (row.triggeredBy as { userId?: string | null } | null)?.userId ===
-                user.id) &&
-              row.status !== "completed" &&
-              row.workflowRunId &&
-              ((row.payload as { action?: { cancelable?: boolean } } | null)
-                ?.action?.cancelable ??
-                true),
+              (row.triggeredBy as { userId?: string | null } | null)?.userId === user.id) &&
+            row.status !== "completed" &&
+            row.workflowRunId &&
+            ((row.payload as { action?: { cancelable?: boolean } } | null)?.action?.cancelable ??
+              true),
           ),
           canRerun: isGithubUser,
           cancelable:
-            (row.payload as { action?: { cancelable?: boolean } } | null)
-              ?.action?.cancelable ??
-              true,
+            (row.payload as { action?: { cancelable?: boolean } } | null)?.action?.cancelable ??
+            true,
         })),
       });
     }
 
     const topRowsByAction = actionNames.reduce<Record<string, typeof rows>>(
       (accumulator, actionName) => {
-        accumulator[actionName] = rows.filter((row) =>
-          row.actionName === actionName
-        ).slice(0, 3);
+        accumulator[actionName] = rows.filter((row) => row.actionName === actionName).slice(0, 3);
         return accumulator;
       },
       {},
@@ -334,70 +314,54 @@ export async function GET(
 
     const syncedTopRowsByAction = Object.fromEntries(
       await Promise.all(
-        Object.entries(topRowsByAction).map(
-          async ([actionName, actionRows]) => {
-            const syncedRows = await Promise.all(
-              actionRows.map((row) => syncActionRun(octokit, row)),
-            );
-            return [actionName, syncedRows] as const;
-          },
-        ),
+        Object.entries(topRowsByAction).map(async ([actionName, actionRows]) => {
+          const syncedRows = await Promise.all(
+            actionRows.map((row) => syncActionRun(octokit, row)),
+          );
+          return [actionName, syncedRows] as const;
+        }),
       ),
     ) as Record<string, typeof rows>;
 
     return Response.json({
       status: "success",
       message: "Action runs fetched successfully.",
-      data: actionNames.reduce<Record<string, any[]>>(
-        (accumulator, actionName) => {
-          accumulator[actionName] = (syncedTopRowsByAction[actionName] || [])
-            .map((row) => ({
-              id: row.id,
-              actionName: row.actionName,
-              contextType: row.contextType,
-              contextName: row.contextName,
-              contextPath: row.contextPath,
-              workflowRef: row.workflowRef,
-              sha: row.sha,
-              status: row.status,
-              conclusion: row.conclusion,
-              htmlUrl: row.htmlUrl,
-              workflowRunId: row.workflowRunId,
-              triggeredByName:
-                (row.triggeredBy as { name?: string | null } | null)?.name ??
-                  null,
-              triggeredByEmail:
-                (row.triggeredBy as { email?: string | null } | null)?.email ??
-                  null,
-              triggeredByGithubUsername:
-                (row.triggeredBy as { githubUsername?: string | null } | null)
-                  ?.githubUsername ?? null,
-              triggeredByImage:
-                (row.triggeredBy as { image?: string | null } | null)?.image ??
-                  null,
-              createdAt: row.createdAt?.toISOString() ?? null,
-              updatedAt: row.updatedAt?.toISOString() ?? null,
-              completedAt: row.completedAt?.toISOString() ?? null,
-              canCancel: Boolean(
-                (isGithubUser ||
-                  (row.triggeredBy as { userId?: string | null } | null)
-                      ?.userId === user.id) &&
-                  row.status !== "completed" &&
-                  row.workflowRunId &&
-                  ((row.payload as { action?: { cancelable?: boolean } } | null)
-                    ?.action?.cancelable ??
-                    true),
-              ),
-              canRerun: isGithubUser,
-              cancelable:
-                (row.payload as { action?: { cancelable?: boolean } } | null)
-                  ?.action?.cancelable ??
-                  true,
-            }));
-          return accumulator;
-        },
-        {},
-      ),
+      data: actionNames.reduce<Record<string, any[]>>((accumulator, actionName) => {
+        accumulator[actionName] = (syncedTopRowsByAction[actionName] || []).map((row) => ({
+          id: row.id,
+          actionName: row.actionName,
+          contextType: row.contextType,
+          contextName: row.contextName,
+          contextPath: row.contextPath,
+          workflowRef: row.workflowRef,
+          sha: row.sha,
+          status: row.status,
+          conclusion: row.conclusion,
+          htmlUrl: row.htmlUrl,
+          workflowRunId: row.workflowRunId,
+          triggeredByName: (row.triggeredBy as { name?: string | null } | null)?.name ?? null,
+          triggeredByEmail: (row.triggeredBy as { email?: string | null } | null)?.email ?? null,
+          triggeredByGithubUsername:
+            (row.triggeredBy as { githubUsername?: string | null } | null)?.githubUsername ?? null,
+          triggeredByImage: (row.triggeredBy as { image?: string | null } | null)?.image ?? null,
+          createdAt: row.createdAt?.toISOString() ?? null,
+          updatedAt: row.updatedAt?.toISOString() ?? null,
+          completedAt: row.completedAt?.toISOString() ?? null,
+          canCancel: Boolean(
+            (isGithubUser ||
+              (row.triggeredBy as { userId?: string | null } | null)?.userId === user.id) &&
+            row.status !== "completed" &&
+            row.workflowRunId &&
+            ((row.payload as { action?: { cancelable?: boolean } } | null)?.action?.cancelable ??
+              true),
+          ),
+          canRerun: isGithubUser,
+          cancelable:
+            (row.payload as { action?: { cancelable?: boolean } } | null)?.action?.cancelable ??
+            true,
+        }));
+        return accumulator;
+      }, {}),
     });
   } catch (error) {
     console.error(error);
@@ -438,22 +402,14 @@ export async function POST(
     const action = body.action;
     const actionContext = body.context;
     if (!action?.name || !action?.label || !action?.workflow) {
-      throw createHttpError(
-        "Action name, label, and workflow are required.",
-        400,
-      );
+      throw createHttpError("Action name, label, and workflow are required.", 400);
     }
     if (!actionContext?.kind) {
       throw createHttpError("Action context kind is required.", 400);
     }
 
     const workflowRef = resolveActionRef(action.ref, params.branch);
-    const sha = await resolveWorkflowSha(
-      octokit,
-      params.owner,
-      params.repo,
-      workflowRef,
-    );
+    const sha = await resolveWorkflowSha(octokit, params.owner, params.repo, workflowRef);
     const timestamp = new Date();
     const payload = {
       source: "pages-cms",
@@ -543,9 +499,8 @@ export async function POST(
             conclusion: workflowRun.conclusion,
             htmlUrl: workflowRun.html_url,
             updatedAt: new Date(),
-            completedAt: workflowRun.status === "completed"
-              ? new Date(workflowRun.updated_at)
-              : null,
+            completedAt:
+              workflowRun.status === "completed" ? new Date(workflowRun.updated_at) : null,
           })
           .where(eq(actionRunTable.id, createdRun.id));
       } catch {

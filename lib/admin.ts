@@ -41,9 +41,4 @@ const requireAdminSession = async () => {
   return { session, user };
 };
 
-export {
-  getAdminEmails,
-  hasAdminAccess,
-  isBootstrapAdminEmail,
-  requireAdminSession,
-};
+export { getAdminEmails, hasAdminAccess, isBootstrapAdminEmail, requireAdminSession };

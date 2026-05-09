@@ -4,18 +4,14 @@ import { Field } from "../../../types/field.ts";
 import { CalendarIcon } from "lucide-react";
 import { Badge } from "../../../components/ui/badge.tsx";
 
-const ViewComponent = (
-  { value, field }: { value: string | string[]; field: Field },
-) => {
+const ViewComponent = ({ value, field }: { value: string | string[]; field: Field }) => {
   if (!value) return null;
 
   const firstValue = Array.isArray(value) ? value[0] : value;
   if (firstValue == null) return null;
   const extraValuesCount = Array.isArray(value) ? value.length - 1 : 0;
   const inputFormat = field.options?.time ? "yyyy-MM-dd'T'HH:mm" : "yyyy-MM-dd";
-  const outputFormat = field.options?.time
-    ? "MMM d, yyyy - HH:mm"
-    : "MMM d, yyyy";
+  const outputFormat = field.options?.time ? "MMM d, yyyy - HH:mm" : "MMM d, yyyy";
 
   const formatDate = (date: string) => {
     const parsedDate = parse(date, inputFormat, new Date());

@@ -57,9 +57,7 @@ export const auth = betterAuth({
           console.warn("[auth] github getUserInfo failed", {
             status: profileResponse.status,
             githubRequestId: profileResponse.headers.get("x-github-request-id"),
-            rateLimitRemaining: profileResponse.headers.get(
-              "x-ratelimit-remaining",
-            ),
+            rateLimitRemaining: profileResponse.headers.get("x-ratelimit-remaining"),
           });
           return null;
         }
@@ -68,34 +66,29 @@ export const auth = betterAuth({
 
         let emails:
           | Array<{
-            email: string;
-            primary: boolean;
-            verified: boolean;
-            visibility: "public" | "private";
-          }>
+              email: string;
+              primary: boolean;
+              verified: boolean;
+              visibility: "public" | "private";
+            }>
           | undefined;
         try {
-          const emailsResponse = await fetch(
-            "https://api.github.com/user/emails",
-            {
-              headers: {
-                Authorization: `Bearer ${token.accessToken}`,
-                "User-Agent": "better-auth",
-              },
+          const emailsResponse = await fetch("https://api.github.com/user/emails", {
+            headers: {
+              Authorization: `Bearer ${token.accessToken}`,
+              "User-Agent": "better-auth",
             },
-          );
+          });
           if (emailsResponse.ok) {
             emails = await emailsResponse.json();
           }
         } catch {}
 
         if (!profile.email && emails) {
-          profile.email = (emails.find((entry) => entry.primary) ?? emails[0])
-            ?.email as string;
+          profile.email = (emails.find((entry) => entry.primary) ?? emails[0])?.email as string;
         }
-        const emailVerified = emails?.find((entry) =>
-          entry.email === profile.email
-        )?.verified ?? false;
+        const emailVerified =
+          emails?.find((entry) => entry.email === profile.email)?.verified ?? false;
 
         const userMap = {
           name: profile.name ?? profile.login,

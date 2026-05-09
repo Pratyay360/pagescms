@@ -25,10 +25,7 @@ export default function Page({
   if (!config) throw new Error(`Configuration not found.`);
 
   const schemaName = decodeURIComponent(resolvedParams.name);
-  const schema = useMemo(() => getSchemaByName(config.object, schemaName), [
-    config,
-    schemaName,
-  ]);
+  const schema = useMemo(() => getSchemaByName(config.object, schemaName), [config, schemaName]);
   if (!schema) throw new Error(`Schema not found for ${schemaName}.`);
   const decodedPath = decodeURIComponent(resolvedParams.path);
   const filename = decodedPath.split("/").pop() || decodedPath;

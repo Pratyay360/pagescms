@@ -2,11 +2,7 @@ import { type NextRequest } from "next/server";
 import { createOctokitInstance } from "../../../../../../../lib/utils/octokit.ts";
 import { isContentOperationAllowed } from "../../../../../../../lib/operations.ts";
 import { writeFns } from "../../../../../../../fields/registry.ts";
-import {
-  configVersion,
-  normalizeConfig,
-  parseConfig,
-} from "../../../../../../../lib/config.ts";
+import { configVersion, normalizeConfig, parseConfig } from "../../../../../../../lib/config.ts";
 import { parse, stringify } from "../../../../../../../lib/serialization.ts";
 import {
   deepMap,
@@ -14,10 +10,7 @@ import {
   getSchemaByName,
   sanitizeObject,
 } from "../../../../../../../lib/schema.ts";
-import {
-  getConfig,
-  updateConfig,
-} from "../../../../../../../lib/config-store.ts";
+import { getConfig, updateConfig } from "../../../../../../../lib/config-store.ts";
 import {
   getFileExtension,
   getFileName,
@@ -28,10 +21,7 @@ import {
 import { assertGithubIdentity } from "../../../../../../../lib/authz-shared.ts";
 import { getToken } from "../../../../../../../lib/token.ts";
 import { updateFileCache } from "../../../../../../../lib/github-cache-file.ts";
-import {
-  createHttpError,
-  toErrorResponse,
-} from "../../../../../../../lib/api-error.ts";
+import { createHttpError, toErrorResponse } from "../../../../../../../lib/api-error.ts";
 import mergeWith from "lodash.mergewith";
 import {
   buildCommitTokens,
@@ -53,9 +43,7 @@ import { Buffer } from "node:buffer";
 export async function POST(
   request: Request,
   context: {
-    params: Promise<
-      { owner: string; repo: string; branch: string; path: string }
-    >;
+    params: Promise<{ owner: string; repo: string; branch: string; path: string }>;
   },
 ) {
   try {
@@ -95,27 +83,17 @@ export async function POST(
           throw new Error(`Content schema not found for ${data.name}.`);
         }
         if (!data.sha && !isContentOperationAllowed("create", { schema })) {
-          throw createHttpError(
-            `Creating entries isn't allowed for "${data.name}".`,
-            403,
-          );
+          throw createHttpError(`Creating entries isn't allowed for "${data.name}".`, 403);
         }
         schemaCommitTemplates = schema?.commit?.templates;
         schemaCommitIdentity = schema?.commit?.identity;
 
         if (!normalizedPath.startsWith(schema.path)) {
-          throw new Error(
-            `Invalid path "${params.path}" for ${data.type} "${data.name}".`,
-          );
+          throw new Error(`Invalid path "${params.path}" for ${data.type} "${data.name}".`);
         }
 
-        if (
-          schema.subfolders === false &&
-          getParentPath(normalizedPath) !== schema.path
-        ) {
-          throw new Error(
-            `Subfolders are not allowed for collection "${data.name}".`,
-          );
+        if (schema.subfolders === false && getParentPath(normalizedPath) !== schema.path) {
+          throw new Error(`Subfolders are not allowed for collection "${data.name}".`);
         }
 
         if (getFileName(normalizedPath) === ".gitkeep") {
@@ -124,11 +102,9 @@ export async function POST(
         } else {
           if (getFileExtension(normalizedPath) !== (schema.extension ?? "")) {
             throw new Error(
-              `Invalid extension "${
-                getFileExtension(
-                  normalizedPath,
-                )
-              }" for ${data.type} "${data.name}".`,
+              `Invalid extension "${getFileExtension(
+                normalizedPath,
+              )}" for ${data.type} "${data.name}".`,
             );
           }
 
@@ -157,18 +133,14 @@ export async function POST(
             const zodValidation = zodSchema.safeParse(contentObject);
 
             if (zodValidation.success === false) {
-              const errorMessages = zodValidation.error.errors.map(
-                (error: any) => {
-                  let message = error.message;
-                  if (error.path.length > 0) {
-                    message = `${message} at ${error.path.join(".")}`;
-                  }
-                  return message;
-                },
-              );
-              throw new Error(
-                `Content validation failed: ${errorMessages.join(", ")}`,
-              );
+              const errorMessages = zodValidation.error.errors.map((error: any) => {
+                let message = error.message;
+                if (error.path.length > 0) {
+                  message = `${message} at ${error.path.join(".")}`;
+                }
+                return message;
+              });
+              throw new Error(`Content validation failed: ${errorMessages.join(", ")}`);
             }
 
             const validatedContentObject = deepMap(
@@ -186,14 +158,9 @@ export async function POST(
               ? validatedContentObject.listWrapper
               : validatedContentObject;
 
-            let finalContentObject = JSON.parse(
-              JSON.stringify(unwrappedContentObject),
-            );
+            let finalContentObject = JSON.parse(JSON.stringify(unwrappedContentObject));
 
-            if (
-              config?.object?.settings?.content?.merge && data.sha &&
-              !schema.list
-            ) {
+            if (config?.object?.settings?.content?.merge && data.sha && !schema.list) {
               const octokit = createOctokitInstance(token);
               const response = await octokit.rest.repos.getContent({
                 owner: params.owner,
@@ -208,10 +175,7 @@ export async function POST(
                 throw new Error("Invalid response type");
               }
 
-              const existingContent = Buffer.from(
-                response.data.content,
-                "base64",
-              ).toString();
+              const existingContent = Buffer.from(response.data.content, "base64").toString();
               const existingContentObject = parse(existingContent, {
                 format: schema.format,
                 delimiters: schema.delimiters,
@@ -229,20 +193,13 @@ export async function POST(
               );
             }
 
-            const stringifiedContentObject = stringify(
-              sanitizeObject(finalContentObject),
-              {
-                format: schema.format,
-                delimiters: schema.delimiters,
-              },
-            );
-            contentBase64 = Buffer.from(stringifiedContentObject).toString(
-              "base64",
-            );
+            const stringifiedContentObject = stringify(sanitizeObject(finalContentObject), {
+              format: schema.format,
+              delimiters: schema.delimiters,
+            });
+            contentBase64 = Buffer.from(stringifiedContentObject).toString("base64");
           } else {
-            contentBase64 = Buffer.from(data.content.body ?? "").toString(
-              "base64",
-            );
+            contentBase64 = Buffer.from(data.content.body ?? "").toString("base64");
           }
         }
         break;
@@ -257,9 +214,7 @@ export async function POST(
         schemaCommitIdentity = schema?.commit?.identity;
 
         if (!normalizedPath.startsWith(schema.input)) {
-          throw new Error(
-            `Invalid path "${params.path}" for media "${data.name}".`,
-          );
+          throw new Error(`Invalid path "${params.path}" for media "${data.name}".`);
         }
 
         if (getFileName(normalizedPath) === ".gitkeep") {
@@ -270,11 +225,7 @@ export async function POST(
             schema.extensions?.length > 0 &&
             !schema.extensions.includes(getFileExtension(normalizedPath))
           ) {
-            throw new Error(
-              `Invalid extension "${
-                getFileExtension(normalizedPath)
-              }" for media.`,
-            );
+            throw new Error(`Invalid extension "${getFileExtension(normalizedPath)}" for media.`);
           }
 
           contentBase64 = data.content;
@@ -285,14 +236,8 @@ export async function POST(
         if (normalizedPath !== ".pages.yml") {
           throw new Error(`Invalid path "${params.path}" for settings.`);
         }
-        if (
-          !data.sha &&
-          !isContentOperationAllowed("create", { scope: "settings" })
-        ) {
-          throw createHttpError(
-            `Creating the settings file isn't allowed.`,
-            403,
-          );
+        if (!data.sha && !isContentOperationAllowed("create", { scope: "settings" })) {
+          throw createHttpError(`Creating the settings file isn't allowed.`, 403);
         }
 
         contentBase64 = Buffer.from(data.content.body ?? "").toString("base64");
@@ -305,12 +250,13 @@ export async function POST(
       configObject: config?.object,
       identityOverride: schemaCommitIdentity,
     });
-    const committer = commitIdentity === "user" && user.email
-      ? {
-        name: user.name?.trim() || user.email,
-        email: user.email,
-      }
-      : undefined;
+    const committer =
+      commitIdentity === "user" && user.email
+        ? {
+            name: user.name?.trim() || user.email,
+            email: user.email,
+          }
+        : undefined;
 
     const response = await githubSaveFile(
       token,
@@ -374,9 +320,10 @@ export async function POST(
 
     return Response.json({
       status: "success",
-      message: savedPath !== normalizedPath
-        ? `File "${normalizedPath}" saved successfully but renamed to "${savedPath}" to avoid naming conflict.`
-        : `File "${normalizedPath}" saved successfully.`,
+      message:
+        savedPath !== normalizedPath
+          ? `File "${normalizedPath}" saved successfully but renamed to "${savedPath}" to avoid naming conflict.`
+          : `File "${normalizedPath}" saved successfully.`,
       data: {
         type: response?.data.content?.type,
         sha: response?.data.content?.sha,
@@ -452,9 +399,8 @@ const githubSaveFile = async (
     }
     throw new Error("Invalid response structure");
   } catch (error: any) {
-    const githubMessage = typeof error?.response?.data?.message === "string"
-      ? error.response.data.message
-      : undefined;
+    const githubMessage =
+      typeof error?.response?.data?.message === "string" ? error.response.data.message : undefined;
 
     if (error.status === 409) {
       if (githubMessage?.includes("Repository rule violations found")) {
@@ -493,14 +439,9 @@ const githubSaveFile = async (
 
       const basename = path.split("/").pop() || "";
       const lastDotIndex = basename.lastIndexOf(".");
-      const filename = lastDotIndex > 0
-        ? basename.slice(0, lastDotIndex)
-        : basename;
-      const extension = lastDotIndex > 0
-        ? basename.slice(lastDotIndex + 1)
-        : "";
-      const escapeRegExp = (value: string) =>
-        value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const filename = lastDotIndex > 0 ? basename.slice(0, lastDotIndex) : basename;
+      const extension = lastDotIndex > 0 ? basename.slice(lastDotIndex + 1) : "";
+      const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
       const escapedFilename = escapeRegExp(filename);
       const escapedExtension = escapeRegExp(extension);
       const pattern = extension
@@ -519,9 +460,7 @@ const githubSaveFile = async (
         const candidateFilename = extension
           ? `${filename}-${maxNumber + i}.${extension}`
           : `${filename}-${maxNumber + i}`;
-        const newPath = `${
-          parentDir ? parentDir + "/" : ""
-        }${candidateFilename}`;
+        const newPath = `${parentDir ? parentDir + "/" : ""}${candidateFilename}`;
         const fallbackMessage = resolveCommitMessage({
           configObject: options?.configObject,
           templatesOverride: options?.templatesOverride,
@@ -565,9 +504,7 @@ const githubSaveFile = async (
 export async function DELETE(
   request: NextRequest,
   context: {
-    params: Promise<
-      { owner: string; repo: string; branch: string; path: string }
-    >;
+    params: Promise<{ owner: string; repo: string; branch: string; path: string }>;
   },
 ) {
   try {
@@ -592,9 +529,7 @@ export async function DELETE(
     const name = searchParams.get("name");
 
     if (!type || !["content", "media"].includes(type)) {
-      throw new Error(
-        `"type" is required and must be set to "content" or "media".`,
-      );
+      throw new Error(`"type" is required and must be set to "content" or "media".`);
     }
     if (!name && type === "content") throw new Error(`"name" is required.`);
     if (!sha) throw new Error(`"sha" is required.`);
@@ -620,34 +555,22 @@ export async function DELETE(
         schema = getSchemaByName(config.object, name);
         if (!schema) throw new Error(`Content schema not found for ${name}.`);
         if (!isContentOperationAllowed("delete", { schema })) {
-          throw createHttpError(
-            `Deleting entries isn't allowed for "${name}".`,
-            403,
-          );
+          throw createHttpError(`Deleting entries isn't allowed for "${name}".`, 403);
         }
         schemaCommitTemplates = schema?.commit?.templates;
         schemaCommitIdentity = schema?.commit?.identity;
 
         if (!normalizedPath.startsWith(schema.path)) {
-          throw new Error(
-            `Invalid path "${params.path}" for ${type} "${name}".`,
-          );
+          throw new Error(`Invalid path "${params.path}" for ${type} "${name}".`);
         }
 
-        if (
-          schema.subfolders === false &&
-          getParentPath(normalizedPath) !== schema.path
-        ) {
-          throw new Error(
-            `Subfolders are not allowed for collection "${name}".`,
-          );
+        if (schema.subfolders === false && getParentPath(normalizedPath) !== schema.path) {
+          throw new Error(`Subfolders are not allowed for collection "${name}".`);
         }
 
         if (getFileExtension(normalizedPath) !== (schema.extension ?? "")) {
           throw new Error(
-            `Invalid extension "${
-              getFileExtension(normalizedPath)
-            }" for ${type} "${name}".`,
+            `Invalid extension "${getFileExtension(normalizedPath)}" for ${type} "${name}".`,
           );
         }
         break;
@@ -667,11 +590,7 @@ export async function DELETE(
           schema.extensions?.length > 0 &&
           !schema.extensions.includes(getFileExtension(normalizedPath))
         ) {
-          throw new Error(
-            `Invalid extension "${
-              getFileExtension(normalizedPath)
-            }" for media.`,
-          );
+          throw new Error(`Invalid extension "${getFileExtension(normalizedPath)}" for media.`);
         }
         break;
     }
@@ -680,12 +599,13 @@ export async function DELETE(
       configObject: config.object,
       identityOverride: schemaCommitIdentity,
     });
-    const committer = commitIdentity === "user" && user.email
-      ? {
-        name: user.name?.trim() || user.email,
-        email: user.email,
-      }
-      : undefined;
+    const committer =
+      commitIdentity === "user" && user.email
+        ? {
+            name: user.name?.trim() || user.email,
+            email: user.email,
+          }
+        : undefined;
 
     const octokit = createOctokitInstance(token);
     const response = await octokit.rest.repos.deleteFile({
@@ -724,11 +644,11 @@ export async function DELETE(
         path: normalizedPath,
         commit: response?.data.commit?.sha
           ? {
-            sha: response.data.commit.sha,
-            timestamp: new Date(
-              response.data.commit.committer?.date ?? new Date().toISOString(),
-            ).getTime(),
-          }
+              sha: response.data.commit.sha,
+              timestamp: new Date(
+                response.data.commit.committer?.date ?? new Date().toISOString(),
+              ).getTime(),
+            }
           : undefined,
       },
     );

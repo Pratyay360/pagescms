@@ -24,9 +24,7 @@ const handleCopyTemplate = async (prevState: any, formData: FormData) => {
       "You must be signed in with GitHub to copy a template.",
     );
 
-    const templateRepos = templates.map((template) =>
-      template.repository
-    ) as string[];
+    const templateRepos = templates.map((template) => template.repository) as string[];
     const templateRepoValidation = z
       .enum(templateRepos as [string, ...string[]])
       .safeParse(formData.get("template"));
@@ -52,14 +50,10 @@ const handleCopyTemplate = async (prevState: any, formData: FormData) => {
 
     const installations = await getInstallations(token, [owner]);
     if (installations.length !== 1) {
-      throw new Error(
-        `"${owner}" is not part of your GitHub App installations`,
-      );
+      throw new Error(`"${owner}" is not part of your GitHub App installations`);
     }
 
-    const [template_owner, template_repo] = templateRepoValidation.data.split(
-      "/",
-    );
+    const [template_owner, template_repo] = templateRepoValidation.data.split("/");
 
     const octokit = createOctokitInstance(token);
     const response = await octokit.rest.repos.createUsingTemplate({
@@ -70,8 +64,7 @@ const handleCopyTemplate = async (prevState: any, formData: FormData) => {
     });
 
     return {
-      message:
-        `"${templateRepoValidation.data}" successfully copied as "${response.data.full_name}".`,
+      message: `"${templateRepoValidation.data}" successfully copied as "${response.data.full_name}".`,
       data: {
         template: templateRepoValidation.data,
         owner,

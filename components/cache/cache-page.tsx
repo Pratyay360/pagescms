@@ -26,12 +26,7 @@ import {
   CardTitle,
 } from "../ui/card.tsx";
 import { Skeleton } from "../ui/skeleton.tsx";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "../ui/tooltip.tsx";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip.tsx";
 import { toast } from "sonner";
 import { requireApiSuccess } from "../../lib/api-client.ts";
 
@@ -117,37 +112,30 @@ function ConfirmActionButton({
 
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
-      {iconOnly
-        ? (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <AlertDialogTrigger asChild>
-                <Button
-                  size={size}
-                  variant={variant}
-                  className={className}
-                  disabled={disabled}
-                  aria-label={label}
-                >
-                  {icon ?? <Trash2 className="size-4" />}
-                </Button>
-              </AlertDialogTrigger>
-            </TooltipTrigger>
-            <TooltipContent sideOffset={6}>{tooltip || label}</TooltipContent>
-          </Tooltip>
-        )
-        : (
-          <AlertDialogTrigger asChild>
-            <Button
-              size={size}
-              variant={variant}
-              className={className}
-              disabled={disabled}
-            >
-              {label}
-            </Button>
-          </AlertDialogTrigger>
-        )}
+      {iconOnly ? (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <AlertDialogTrigger asChild>
+              <Button
+                size={size}
+                variant={variant}
+                className={className}
+                disabled={disabled}
+                aria-label={label}
+              >
+                {icon ?? <Trash2 className="size-4" />}
+              </Button>
+            </AlertDialogTrigger>
+          </TooltipTrigger>
+          <TooltipContent sideOffset={6}>{tooltip || label}</TooltipContent>
+        </Tooltip>
+      ) : (
+        <AlertDialogTrigger asChild>
+          <Button size={size} variant={variant} className={className} disabled={disabled}>
+            {label}
+          </Button>
+        </AlertDialogTrigger>
+      )}
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>{title}</AlertDialogTitle>
@@ -185,9 +173,7 @@ export function CachePage({
   const fetchStatus = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await fetch(
-        `/api/${owner}/${repo}/${encodeURIComponent(branch)}/cache`,
-      );
+      const response = await fetch(`/api/${owner}/${repo}/${encodeURIComponent(branch)}/cache`);
       const payload = await requireApiSuccess<{
         status: string;
         data: CacheStatusPayload;
@@ -209,14 +195,11 @@ export function CachePage({
       setActionLoading(action);
       const loadingId = toast.loading("Updating cache...");
       try {
-        const response = await fetch(
-          `/api/${owner}/${repo}/${encodeURIComponent(branch)}/cache`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ action }),
-          },
-        );
+        const response = await fetch(`/api/${owner}/${repo}/${encodeURIComponent(branch)}/cache`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action }),
+        });
         await requireApiSuccess(response, "Failed cache action");
         toast.success(successMessage, { id: loadingId });
         await fetchStatus();
@@ -263,8 +246,7 @@ export function CachePage({
           variant="default"
           size="default"
           disabled={loading || actionLoading != null}
-          onConfirm={async () =>
-            runAction("clear-all-cache", "All cache cleared")}
+          onConfirm={async () => runAction("clear-all-cache", "All cache cleared")}
         />
       </div>
     ),
@@ -277,9 +259,7 @@ export function CachePage({
   const localSha = data?.fileMeta?.commitSha ?? null;
   const isOutOfSync = !!remoteSha && !!localSha && remoteSha !== localSha;
   const canReconcile = !!data && isOutOfSync;
-  const shortSha = (
-    sha: string | null | undefined,
-  ) => (sha ? sha.slice(0, 8) : "-");
+  const shortSha = (sha: string | null | undefined) => (sha ? sha.slice(0, 8) : "-");
 
   if (loading || !data) {
     return (
@@ -288,9 +268,7 @@ export function CachePage({
           <Card className="h-full">
             <CardHeader>
               <CardTitle className="text-base">Content</CardTitle>
-              <CardDescription>
-                Cached content (files and collections).
-              </CardDescription>
+              <CardDescription>Cached content (files and collections).</CardDescription>
             </CardHeader>
             <CardContent className="text-sm flex-1">
               <div className="divide-y rounded-md border">
@@ -326,12 +304,7 @@ export function CachePage({
             </CardContent>
             <CardFooter className="flex justify-end">
               <div className="inline-flex items-center">
-                <Button
-                  variant="outline"
-                  size="icon-sm"
-                  className="rounded-r-none"
-                  disabled
-                >
+                <Button variant="outline" size="icon-sm" className="rounded-r-none" disabled>
                   <RefreshCcw className="size-4" />
                 </Button>
                 <Button
@@ -351,8 +324,7 @@ export function CachePage({
               <CardHeader>
                 <CardTitle className="text-base">Config</CardTitle>
                 <CardDescription>
-                  Cache of the configuration file
-                  (<code className="text-[13px]">.pages.yml</code>).
+                  Cache of the configuration file (<code className="text-[13px]">.pages.yml</code>).
                 </CardDescription>
               </CardHeader>
               <CardContent className="text-sm flex-1">
@@ -373,12 +345,7 @@ export function CachePage({
               </CardContent>
               <CardFooter className="flex justify-end">
                 <div className="inline-flex items-center">
-                  <Button
-                    variant="outline"
-                    size="icon-sm"
-                    className="rounded-r-none"
-                    disabled
-                  >
+                  <Button variant="outline" size="icon-sm" className="rounded-r-none" disabled>
                     <RefreshCcw className="size-4" />
                   </Button>
                   <Button
@@ -396,9 +363,7 @@ export function CachePage({
             <Card>
               <CardHeader>
                 <CardTitle className="text-base">Permissions</CardTitle>
-                <CardDescription>
-                  Cached repository permission checks.
-                </CardDescription>
+                <CardDescription>Cached repository permission checks.</CardDescription>
               </CardHeader>
               <CardContent className="text-sm flex-1">
                 <div className="divide-y rounded-md border">
@@ -427,9 +392,7 @@ export function CachePage({
           <Card className="h-full">
             <CardHeader>
               <CardTitle className="text-base">Content</CardTitle>
-              <CardDescription>
-                Cached content (files and collections).
-              </CardDescription>
+              <CardDescription>Cached content (files and collections).</CardDescription>
             </CardHeader>
             <CardContent className="text-sm flex-1">
               <div className="divide-y rounded-md border">
@@ -443,15 +406,11 @@ export function CachePage({
                 </div>
                 <div className="flex items-center justify-between gap-3 px-3 py-2">
                   <span className="text-muted-foreground">Cache SHA</span>
-                  <span className="font-mono font-medium">
-                    {shortSha(localSha)}
-                  </span>
+                  <span className="font-mono font-medium">{shortSha(localSha)}</span>
                 </div>
                 <div className="flex items-center justify-between gap-3 px-3 py-2">
                   <span className="text-muted-foreground">Remote SHA</span>
-                  <span className="font-mono font-medium">
-                    {shortSha(remoteSha)}
-                  </span>
+                  <span className="font-mono font-medium">{shortSha(remoteSha)}</span>
                 </div>
                 <div className="flex items-center justify-between gap-3 px-3 py-2">
                   <span className="text-muted-foreground">Updated</span>
@@ -470,12 +429,10 @@ export function CachePage({
               </div>
               {data.fileMeta?.status === "error" && (
                 <div className="mt-4 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-3 text-sm">
-                  <p className="font-medium text-destructive">
-                    Unknown cache error
-                  </p>
+                  <p className="font-medium text-destructive">Unknown cache error</p>
                   <p className="mt-1 text-muted-foreground">
-                    Try refreshing the cache first. If the issue persists, clear
-                    the cache and refresh it again.
+                    Try refreshing the cache first. If the issue persists, clear the cache and
+                    refresh it again.
                   </p>
                 </div>
               )}
@@ -494,8 +451,7 @@ export function CachePage({
                   icon={<RefreshCcw className="size-4" />}
                   className="rounded-r-none"
                   disabled={actionLoading != null || !canReconcile}
-                  onConfirm={async () =>
-                    runAction("reconcile-file-cache", "File cache refreshed")}
+                  onConfirm={async () => runAction("reconcile-file-cache", "File cache refreshed")}
                 />
                 <ConfirmActionButton
                   label="Clear cache"
@@ -509,8 +465,7 @@ export function CachePage({
                   icon={<Trash2 className="size-4" />}
                   className="rounded-l-none border-l-0"
                   disabled={actionLoading != null}
-                  onConfirm={async () =>
-                    runAction("clear-file-cache", "File cache cleared")}
+                  onConfirm={async () => runAction("clear-file-cache", "File cache cleared")}
                 />
               </div>
             </CardFooter>
@@ -521,23 +476,18 @@ export function CachePage({
               <CardHeader>
                 <CardTitle className="text-base">Config</CardTitle>
                 <CardDescription>
-                  Cache of the configuration file
-                  (<code className="text-[13px]">.pages.yml</code>).
+                  Cache of the configuration file (<code className="text-[13px]">.pages.yml</code>).
                 </CardDescription>
               </CardHeader>
               <CardContent className="text-sm flex-1">
                 <div className="divide-y rounded-md border">
                   <div className="flex items-center justify-between gap-3 px-3 py-2">
                     <span className="text-muted-foreground">Cache SHA</span>
-                    <span className="font-mono font-medium">
-                      {shortSha(data.config?.sha)}
-                    </span>
+                    <span className="font-mono font-medium">{shortSha(data.config?.sha)}</span>
                   </div>
                   <div className="flex items-center justify-between gap-3 px-3 py-2">
                     <span className="text-muted-foreground">Version</span>
-                    <span className="font-medium">
-                      {data.config?.version || "-"}
-                    </span>
+                    <span className="font-medium">{data.config?.version || "-"}</span>
                   </div>
                   <div className="flex items-center justify-between gap-3 px-3 py-2">
                     <span className="text-muted-foreground">Last checked</span>
@@ -559,8 +509,7 @@ export function CachePage({
                     icon={<RefreshCcw className="size-4" />}
                     className="rounded-r-none"
                     disabled={actionLoading != null}
-                    onConfirm={async () =>
-                      runAction("refresh-config", "Config cache refreshed")}
+                    onConfirm={async () => runAction("refresh-config", "Config cache refreshed")}
                   />
                   <ConfirmActionButton
                     label="Clear cache"
@@ -574,8 +523,7 @@ export function CachePage({
                     icon={<Trash2 className="size-4" />}
                     className="rounded-l-none border-l-0"
                     disabled={actionLoading != null}
-                    onConfirm={async () =>
-                      runAction("clear-config-cache", "Config cache cleared")}
+                    onConfirm={async () => runAction("clear-config-cache", "Config cache cleared")}
                   />
                 </div>
               </CardFooter>
@@ -584,9 +532,7 @@ export function CachePage({
             <Card>
               <CardHeader>
                 <CardTitle className="text-base">Permissions</CardTitle>
-                <CardDescription>
-                  Cached repository permission checks.
-                </CardDescription>
+                <CardDescription>Cached repository permission checks.</CardDescription>
               </CardHeader>
               <CardContent className="text-sm flex-1">
                 <div className="divide-y rounded-md border">
@@ -609,10 +555,8 @@ export function CachePage({
                   icon={<Trash2 className="size-4" />}
                   disabled={actionLoading != null}
                   onConfirm={async () =>
-                    runAction(
-                      "clear-permission-cache",
-                      "Permission cache cleared",
-                    )}
+                    runAction("clear-permission-cache", "Permission cache cleared")
+                  }
                 />
               </CardFooter>
             </Card>

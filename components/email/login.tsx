@@ -16,14 +16,12 @@ import {
 import { emailTheme } from "./theme.ts";
 import process from "node:process";
 
-export const LoginEmailTemplate = (
-  { url, email }: { url: string; email: string },
-) => {
+export const LoginEmailTemplate = ({ url, email }: { url: string; email: string }) => {
   const baseUrl = process.env.BASE_URL
     ? process.env.BASE_URL
     : process.env.VERCEL_PROJECT_PRODUCTION_URL
-    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-    : "";
+      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+      : "";
 
   return (
     <Html>
@@ -53,10 +51,7 @@ export const LoginEmailTemplate = (
             >
               Sign in to Pages CMS
             </Heading>
-            <Text
-              className="text-[16px] leading-[24px]"
-              style={{ color: emailTheme.foreground }}
-            >
+            <Text className="text-[16px] leading-[24px]" style={{ color: emailTheme.foreground }}>
               Click the button below to sign in to Pages CMS:
             </Text>
             <Section className="text-center mt-[24px] mb-[24px]">
@@ -72,21 +67,11 @@ export const LoginEmailTemplate = (
                 Sign in
               </Button>
             </Section>
-            <Text
-              className="text-[16px] leading-[24px]"
-              style={{ color: emailTheme.foreground }}
-            >
+            <Text className="text-[16px] leading-[24px]" style={{ color: emailTheme.foreground }}>
               or copy and paste this URL into your browser:{" "}
             </Text>
-            <Text
-              className="text-[16px] leading-[24px]"
-              style={{ color: emailTheme.foreground }}
-            >
-              <Link
-                href={url}
-                className="underline rounded-md"
-                style={{ color: emailTheme.link }}
-              >
+            <Text className="text-[16px] leading-[24px]" style={{ color: emailTheme.foreground }}>
+              <Link href={url} className="underline rounded-md" style={{ color: emailTheme.link }}>
                 {url}
               </Link>
             </Text>
@@ -102,8 +87,7 @@ export const LoginEmailTemplate = (
               >
                 {email}
               </Link>
-              . If you didn&apos;t try to sign in, you can safely ignore this
-              email.
+              . If you didn&apos;t try to sign in, you can safely ignore this email.
             </Text>
           </Container>
         </Body>

@@ -37,8 +37,7 @@ const trackVisit = (owner: string, repo: string, branch: string): void => {
       });
     }
 
-    const updatedVisits = visits.sort((a, b) => b.timestamp - a.timestamp)
-      .slice(0, MAX_VISITS);
+    const updatedVisits = visits.sort((a, b) => b.timestamp - a.timestamp).slice(0, MAX_VISITS);
 
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedVisits));
   } catch (error) {

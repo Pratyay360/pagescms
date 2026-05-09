@@ -17,9 +17,7 @@ export const useRepo = () => {
   return context;
 };
 
-export const RepoProvider = (
-  { repo, children }: { repo: Repo; children: React.ReactNode },
-) => {
+export const RepoProvider = ({ repo, children }: { repo: Repo; children: React.ReactNode }) => {
   const [branches, setBranches] = useState<string[]>(repo?.branches || []);
 
   return (

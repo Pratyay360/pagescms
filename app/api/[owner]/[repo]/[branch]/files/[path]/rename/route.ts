@@ -2,16 +2,10 @@ import { createOctokitInstance } from "../../../../../../../../lib/utils/octokit
 import { isContentOperationAllowed } from "../../../../../../../../lib/operations.ts";
 import { getSchemaByName } from "../../../../../../../../lib/schema.ts";
 import { getConfig } from "../../../../../../../../lib/config-store.ts";
-import {
-  getFileExtension,
-  normalizePath,
-} from "../../../../../../../../lib/utils/file.ts";
+import { getFileExtension, normalizePath } from "../../../../../../../../lib/utils/file.ts";
 import { getToken } from "../../../../../../../../lib/token.ts";
 import { updateFileCache } from "../../../../../../../../lib/github-cache-file.ts";
-import {
-  createHttpError,
-  toErrorResponse,
-} from "../../../../../../../../lib/api-error.ts";
+import { createHttpError, toErrorResponse } from "../../../../../../../../lib/api-error.ts";
 import {
   getBranchHeadSha,
   setBranchHeadSha,
@@ -34,9 +28,7 @@ import { requireApiUserSession } from "../../../../../../../../lib/session-serve
 export async function POST(
   request: Request,
   context: {
-    params: Promise<
-      { owner: string; repo: string; branch: string; path: string }
-    >;
+    params: Promise<{ owner: string; repo: string; branch: string; path: string }>;
   },
 ) {
   try {
@@ -67,9 +59,7 @@ export async function POST(
     const data: any = await request.json();
 
     if (!data.type || !["content", "media"].includes(data.type)) {
-      throw new Error(
-        `"type" is required and must be set to "content" or "media".`,
-      );
+      throw new Error(`"type" is required and must be set to "content" or "media".`);
     }
     if (!data.name && data.type === "content") {
       throw new Error(`"name" is required.`);
@@ -79,9 +69,7 @@ export async function POST(
     const normalizedPath = normalizePath(params.path);
     const normalizedNewPath = normalizePath(data.newPath);
     if (normalizedPath === normalizedNewPath) {
-      throw new Error(
-        `New path "${data.newPath}" is the same as the old path.`,
-      );
+      throw new Error(`New path "${data.newPath}" is the same as the old path.`);
     }
 
     let schema;
@@ -97,10 +85,7 @@ export async function POST(
           throw new Error(`Content schema not found for ${data.name}.`);
         }
         if (!isContentOperationAllowed("rename", { schema })) {
-          throw createHttpError(
-            `Renaming entries isn't allowed for "${data.name}".`,
-            403,
-          );
+          throw createHttpError(`Renaming entries isn't allowed for "${data.name}".`, 403);
         }
         schemaCommitTemplates = schema?.commit?.templates;
         schemaCommitIdentity = schema?.commit?.identity;
@@ -110,32 +95,24 @@ export async function POST(
         }
 
         if (!normalizedPath.startsWith(schema.path)) {
-          throw new Error(
-            `Invalid path "${params.path}" for ${data.type} "${data.name}".`,
-          );
+          throw new Error(`Invalid path "${params.path}" for ${data.type} "${data.name}".`);
         }
         if (!normalizedNewPath.startsWith(schema.path)) {
-          throw new Error(
-            `Invalid path "${data.newPath}" for ${data.type} "${data.name}".`,
-          );
+          throw new Error(`Invalid path "${data.newPath}" for ${data.type} "${data.name}".`);
         }
 
         if (getFileExtension(normalizedPath) !== (schema.extension ?? "")) {
           throw new Error(
-            `Invalid extension "${
-              getFileExtension(
-                normalizedPath,
-              )
-            }" for ${data.type} "${data.name}".`,
+            `Invalid extension "${getFileExtension(
+              normalizedPath,
+            )}" for ${data.type} "${data.name}".`,
           );
         }
         if (getFileExtension(normalizedNewPath) !== (schema.extension ?? "")) {
           throw new Error(
-            `Invalid extension "${
-              getFileExtension(
-                normalizedNewPath,
-              )
-            }" for ${data.type} "${data.name}".`,
+            `Invalid extension "${getFileExtension(
+              normalizedNewPath,
+            )}" for ${data.type} "${data.name}".`,
           );
         }
         break;
@@ -160,21 +137,13 @@ export async function POST(
           schema.extensions?.length > 0 &&
           !schema.extensions.includes(getFileExtension(normalizedPath))
         ) {
-          throw new Error(
-            `Invalid extension "${
-              getFileExtension(normalizedPath)
-            }" for media.`,
-          );
+          throw new Error(`Invalid extension "${getFileExtension(normalizedPath)}" for media.`);
         }
         if (
           schema.extensions?.length > 0 &&
           !schema.extensions.includes(getFileExtension(normalizedNewPath))
         ) {
-          throw new Error(
-            `Invalid extension "${
-              getFileExtension(normalizedNewPath)
-            }" for media.`,
-          );
+          throw new Error(`Invalid extension "${getFileExtension(normalizedNewPath)}" for media.`);
         }
         break;
     }
@@ -183,12 +152,13 @@ export async function POST(
       configObject: config.object,
       identityOverride: schemaCommitIdentity,
     });
-    const committer = commitIdentity === "user" && user.email
-      ? {
-        name: user.name?.trim() || user.email,
-        email: user.email,
-      }
-      : undefined;
+    const committer =
+      commitIdentity === "user" && user.email
+        ? {
+            name: user.name?.trim() || user.email,
+            email: user.email,
+          }
+        : undefined;
 
     const response = await githubRenameFile(
       token,

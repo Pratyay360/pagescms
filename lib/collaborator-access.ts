@@ -25,11 +25,7 @@ const collaboratorMatchesUserForRepo = (
     sql`lower(${collaboratorTable.repo}) = lower(${repo})`,
   );
 
-const collaboratorMatchesInvite = (
-  email: string,
-  owner: string,
-  repo: string,
-) =>
+const collaboratorMatchesInvite = (email: string, owner: string, repo: string) =>
   and(
     sql`lower(${collaboratorTable.email}) = lower(${email})`,
     sql`lower(${collaboratorTable.owner}) = lower(${owner})`,
@@ -56,9 +52,7 @@ const bindCollaboratorInvitesToUser = async (
     .where(
       and(
         isNull(collaboratorTable.userId),
-        sql`lower(${collaboratorTable.email}) = lower(${
-          normalizeEmail(user.email)
-        })`,
+        sql`lower(${collaboratorTable.email}) = lower(${normalizeEmail(user.email)})`,
       ),
     );
 };
