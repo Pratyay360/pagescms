@@ -186,7 +186,9 @@ const schema = (field: Field, configObject?: Record<string, any>) => {
           ctx.addIssue({
             code: ZodIssueCode.custom,
             message: `Invalid file extension '.${fileExtension}'. Allowed: ${
-              allowedExtensions.map((e: string) => `.${e}`).join(", ")
+              allowedExtensions
+                .map((e: string) => `.${e}`)
+                .join(", ")
             }`,
           });
         }

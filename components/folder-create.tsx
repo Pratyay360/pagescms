@@ -62,7 +62,9 @@ const FolderCreate = ({
         data: FolderCreateResult;
       }> = fetch(
         `/api/${config.owner}/${config.repo}/${
-          encodeURIComponent(config.branch)
+          encodeURIComponent(
+            config.branch,
+          )
         }/files/${encodeURIComponent(fullNewPath + "/.gitkeep")}`,
         {
           method: "POST",

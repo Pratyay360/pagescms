@@ -381,11 +381,15 @@ export function RepoSidebar() {
       if (!config) return "#";
       if (node.type === "media") {
         return `/${config.owner}/${config.repo}/${
-          encodeURIComponent(config.branch)
+          encodeURIComponent(
+            config.branch,
+          )
         }/media/${encodeURIComponent(node.name)}`;
       }
       return `/${config.owner}/${config.repo}/${
-        encodeURIComponent(config.branch)
+        encodeURIComponent(
+          config.branch,
+        )
       }/${node.type}/${encodeURIComponent(node.name)}`;
     },
     [config],

@@ -230,7 +230,9 @@ export function Entry({
     () =>
       path
         ? `/api/${config.owner}/${config.repo}/${
-          encodeURIComponent(config.branch)
+          encodeURIComponent(
+            config.branch,
+          )
         }/entries/${encodeURIComponent(path)}?name=${encodeURIComponent(name)}`
         : null,
     [config.branch, config.owner, config.repo, name, path],
@@ -302,7 +304,9 @@ export function Entry({
     () =>
       path
         ? `/api/${config.owner}/${config.repo}/${
-          encodeURIComponent(config.branch)
+          encodeURIComponent(
+            config.branch,
+          )
         }/entries/${encodeURIComponent(path)}/history?name=${
           encodeURIComponent(name)
         }`
@@ -395,7 +399,9 @@ export function Entry({
             ]);
             const renameResponse = await fetch(
               `/api/${config.owner}/${config.repo}/${
-                encodeURIComponent(config.branch)
+                encodeURIComponent(
+                  config.branch,
+                )
               }/files/${encodeURIComponent(savePath)}/rename`,
               {
                 method: "POST",
@@ -416,14 +422,18 @@ export function Entry({
             setIsFilenameUnlocked(false);
             router.replace(
               `/${config.owner}/${config.repo}/${
-                encodeURIComponent(config.branch)
+                encodeURIComponent(
+                  config.branch,
+                )
               }/collection/${encodeURIComponent(name)}/edit/${
                 encodeURIComponent(newPath)
               }`,
             );
 
             const collectionKeyPrefix = `/api/${config.owner}/${config.repo}/${
-              encodeURIComponent(config.branch)
+              encodeURIComponent(
+                config.branch,
+              )
             }/collections/${encodeURIComponent(name)}?`;
             void mutate((key) =>
               typeof key === "string" && key.startsWith(collectionKeyPrefix)
@@ -432,7 +442,9 @@ export function Entry({
 
           const response = await fetch(
             `/api/${config.owner}/${config.repo}/${
-              encodeURIComponent(config.branch)
+              encodeURIComponent(
+                config.branch,
+              )
             }/files/${encodeURIComponent(savePath)}`,
             {
               method: "POST",
@@ -460,7 +472,9 @@ export function Entry({
           if (!path && schemaType === "collection") {
             router.push(
               `/${config.owner}/${config.repo}/${
-                encodeURIComponent(config.branch)
+                encodeURIComponent(
+                  config.branch,
+                )
               }/collection/${encodeURIComponent(name)}/edit/${
                 encodeURIComponent(data.data.path)
               }`,
@@ -468,7 +482,9 @@ export function Entry({
           }
           if (schemaType === "collection") {
             const collectionKeyPrefix = `/api/${config.owner}/${config.repo}/${
-              encodeURIComponent(config.branch)
+              encodeURIComponent(
+                config.branch,
+              )
             }/collections/${encodeURIComponent(name)}?`;
             void mutate((key) =>
               typeof key === "string" && key.startsWith(collectionKeyPrefix)
@@ -535,7 +551,9 @@ export function Entry({
       // TODO: disable save button or freeze form while deleting?
       if (schemaType === "collection") {
         const collectionKeyPrefix = `/api/${config.owner}/${config.repo}/${
-          encodeURIComponent(config.branch)
+          encodeURIComponent(
+            config.branch,
+          )
         }/collections/${encodeURIComponent(name)}?`;
         void mutate((key) =>
           typeof key === "string" && key.startsWith(collectionKeyPrefix)
@@ -544,7 +562,9 @@ export function Entry({
       if (schemaType === "collection") {
         router.push(
           `/${config.owner}/${config.repo}/${
-            encodeURIComponent(config.branch)
+            encodeURIComponent(
+              config.branch,
+            )
           }/collection/${encodeURIComponent(name)}`,
         );
       } else {
@@ -571,7 +591,9 @@ export function Entry({
     (oldPath: string, newPath: string) => {
       if (schemaType === "collection") {
         const collectionKeyPrefix = `/api/${config.owner}/${config.repo}/${
-          encodeURIComponent(config.branch)
+          encodeURIComponent(
+            config.branch,
+          )
         }/collections/${encodeURIComponent(name)}?`;
         void mutate((key) =>
           typeof key === "string" && key.startsWith(collectionKeyPrefix)
@@ -583,7 +605,9 @@ export function Entry({
       setPath(newPath);
       router.replace(
         `/${config.owner}/${config.repo}/${
-          encodeURIComponent(config.branch)
+          encodeURIComponent(
+            config.branch,
+          )
         }/collection/${encodeURIComponent(name)}/edit/${
           encodeURIComponent(newPath)
         }`,
@@ -651,7 +675,9 @@ export function Entry({
             <BreadcrumbLink asChild>
               <Link
                 href={`/${config.owner}/${config.repo}/${
-                  encodeURIComponent(config.branch)
+                  encodeURIComponent(
+                    config.branch,
+                  )
                 }/collection/${encodeURIComponent(name)}`}
               >
                 {rootLabel}
@@ -704,7 +730,9 @@ export function Entry({
           <BreadcrumbLink asChild>
             <Link
               href={`/${config.owner}/${config.repo}/${
-                encodeURIComponent(config.branch)
+                encodeURIComponent(
+                  config.branch,
+                )
               }/collection/${encodeURIComponent(name)}`}
             >
               {rootLabel}
@@ -726,9 +754,13 @@ export function Entry({
                     <DropdownMenuItem key={entry.path} asChild>
                       <Link
                         href={`/${config.owner}/${config.repo}/${
-                          encodeURIComponent(config.branch)
+                          encodeURIComponent(
+                            config.branch,
+                          )
                         }/collection/${encodeURIComponent(name)}?path=${
-                          encodeURIComponent(entry.path)
+                          encodeURIComponent(
+                            entry.path,
+                          )
                         }`}
                       >
                         {entry.name}
@@ -748,9 +780,13 @@ export function Entry({
               <BreadcrumbLink asChild>
                 <Link
                   href={`/${config.owner}/${config.repo}/${
-                    encodeURIComponent(config.branch)
+                    encodeURIComponent(
+                      config.branch,
+                    )
                   }/collection/${encodeURIComponent(name)}?path=${
-                    encodeURIComponent(immediateParent.path)
+                    encodeURIComponent(
+                      immediateParent.path,
+                    )
                   }`}
                 >
                   {immediateParent.name}
@@ -1037,7 +1073,9 @@ export function Entry({
               <Link
                 className="inline-flex items-center justify-center rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground shadow-xs hover:bg-primary/90"
                 href={`/${config.owner}/${config.repo}/${
-                  encodeURIComponent(config.branch)
+                  encodeURIComponent(
+                    config.branch,
+                  )
                 }/configuration`}
               >
                 Go to configuration
@@ -1063,7 +1101,9 @@ export function Entry({
             <Link
               className="inline-flex items-center justify-center rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground shadow-xs hover:bg-primary/90"
               href={`/${config.owner}/${config.repo}/${
-                encodeURIComponent(config.branch)
+                encodeURIComponent(
+                  config.branch,
+                )
               }/collection/${encodeURIComponent(name)}`}
             >
               Back to collection

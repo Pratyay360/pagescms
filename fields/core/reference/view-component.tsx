@@ -64,7 +64,9 @@ const ViewComponent = ({ value, field }: { value: unknown; field: Field }) => {
   const { data } = useSWR(
     config && collection && selectedValues.length > 0
       ? `/api/${config.owner}/${config.repo}/${
-        encodeURIComponent(config.branch)
+        encodeURIComponent(
+          config.branch,
+        )
       }/references/${collectionName}?${params?.toString()}`
       : null,
     fetcher,

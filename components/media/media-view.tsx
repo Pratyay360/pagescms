@@ -336,7 +336,9 @@ const MediaView = ({
   const buildMediaApiUrl = useCallback(
     (targetPath: string): string =>
       `/api/${config.owner}/${config.repo}/${
-        encodeURIComponent(config.branch)
+        encodeURIComponent(
+          config.branch,
+        )
       }/media/${encodeURIComponent(mediaConfig.name)}/${
         encodeURIComponent(targetPath)
       }`,
@@ -802,7 +804,9 @@ const MediaView = ({
           <Link
             className={buttonVariants({ variant: "default" })}
             href={`/${config.owner}/${config.repo}/${
-              encodeURIComponent(config.branch)
+              encodeURIComponent(
+                config.branch,
+              )
             }/configuration`}
           >
             Open configuration

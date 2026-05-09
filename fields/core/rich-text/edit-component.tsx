@@ -603,7 +603,9 @@ const EditComponent = forwardRef(
     }, [canonicalValue]);
 
     useEffect(() => {
-      if (mode !== "editor") return;
+      if (mode !== "editor") {
+        return;
+      }
       if (skipNextSourceToEditorForCanonicalRef.current === canonicalValue) {
         skipNextSourceToEditorForCanonicalRef.current = null;
         return;
@@ -804,7 +806,9 @@ const EditComponent = forwardRef(
 
         const response = await fetch(
           `/api/${config.owner}/${config.repo}/${
-            encodeURIComponent(config.branch)
+            encodeURIComponent(
+              config.branch,
+            )
           }/files/${encodeURIComponent(targetPath)}`,
           {
             method: "POST",

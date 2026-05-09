@@ -40,5 +40,18 @@ local.db
 # Added by ggshield
 .cache_ggshield
 
-.env.*
+.env*
 !next*
+
+# OpenNext
+.open-next
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+
+!.env.example
+
+# Local Netlify folder
+.netlify

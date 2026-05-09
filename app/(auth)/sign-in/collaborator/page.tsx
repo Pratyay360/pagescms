@@ -202,7 +202,9 @@ export default async function Page({
     verifyUrl.searchParams.set(
       "errorCallbackURL",
       `/sign-in/collaborator?email=${encodeURIComponent(inviteEmail)}&owner=${
-        encodeURIComponent(owner)
+        encodeURIComponent(
+          owner,
+        )
       }&repo=${encodeURIComponent(repo)}&redirect=${
         encodeURIComponent(redirectTo)
       }`,

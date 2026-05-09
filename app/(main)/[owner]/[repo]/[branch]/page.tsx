@@ -32,7 +32,9 @@ export default function Page() {
     } else if (config?.object.media) {
       router.replace(
         `/${config.owner}/${config.repo}/${
-          encodeURIComponent(config.branch)
+          encodeURIComponent(
+            config.branch,
+          )
         }/media/${config.object.media[0].name}`,
       );
     } else if (hasGithubIdentity(user) && isConfigEnabled(config?.object)) {
@@ -63,7 +65,9 @@ export default function Page() {
               <Link
                 className={buttonVariants({ variant: "default" })}
                 href={`https://github.com/${config?.owner}/${config?.repo}/edit/${
-                  encodeURIComponent(config!.branch)
+                  encodeURIComponent(
+                    config!.branch,
+                  )
                 }/.pages.yml`}
               >
                 Edit configuration on GitHub

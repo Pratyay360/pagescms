@@ -93,7 +93,9 @@ export function FileOptions({
 
           const response = await fetch(
             `/api/${config.owner}/${config.repo}/${
-              encodeURIComponent(config.branch)
+              encodeURIComponent(
+                config.branch,
+              )
             }/files/${encodeURIComponent(normalizedPath)}?${params.toString()}`,
             {
               method: "DELETE",
@@ -133,7 +135,9 @@ export function FileOptions({
             <DropdownMenuItem asChild>
               <a
                 href={`https://github.com/${config.owner}/${config.repo}/blob/${
-                  encodeURIComponent(config.branch)
+                  encodeURIComponent(
+                    config.branch,
+                  )
                 }/${path}`}
                 target="_blank"
               >

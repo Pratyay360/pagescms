@@ -70,7 +70,9 @@ export function FileRename({
         try {
           const response = await fetch(
             `/api/${config.owner}/${config.repo}/${
-              encodeURIComponent(config.branch)
+              encodeURIComponent(
+                config.branch,
+              )
             }/files/${encodeURIComponent(normalizedPath)}/rename`,
             {
               method: "POST",

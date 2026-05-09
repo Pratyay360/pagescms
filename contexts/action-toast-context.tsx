@@ -140,7 +140,9 @@ export function ActionToastProvider(
       try {
         const response = await fetch(
           `/api/${trackedRun.owner}/${trackedRun.repo}/${
-            encodeURIComponent(trackedRun.refName)
+            encodeURIComponent(
+              trackedRun.refName,
+            )
           }/actions/${trackedRun.runId}`,
           {
             method: "POST",
@@ -195,7 +197,9 @@ export function ActionToastProvider(
         entries.map(async (trackedRun) => {
           const response = await fetch(
             `/api/${trackedRun.owner}/${trackedRun.repo}/${
-              encodeURIComponent(trackedRun.refName)
+              encodeURIComponent(
+                trackedRun.refName,
+              )
             }/actions/${trackedRun.runId}`,
           );
           const payload = await requireApiSuccess<{ data: ActionRunSummary }>(

@@ -123,14 +123,18 @@ export async function POST(
         if (getFileExtension(normalizedPath) !== (schema.extension ?? "")) {
           throw new Error(
             `Invalid extension "${
-              getFileExtension(normalizedPath)
+              getFileExtension(
+                normalizedPath,
+              )
             }" for ${data.type} "${data.name}".`,
           );
         }
         if (getFileExtension(normalizedNewPath) !== (schema.extension ?? "")) {
           throw new Error(
             `Invalid extension "${
-              getFileExtension(normalizedNewPath)
+              getFileExtension(
+                normalizedNewPath,
+              )
             }" for ${data.type} "${data.name}".`,
           );
         }

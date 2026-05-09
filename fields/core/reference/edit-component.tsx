@@ -96,7 +96,9 @@ const EditComponent = (props: any) => {
     : null;
   const url = config && collectionName
     ? `/api/${config.owner}/${config.repo}/${
-      encodeURIComponent(config.branch)
+      encodeURIComponent(
+        config.branch,
+      )
     }/references/${collectionName}`
     : null;
   const searchFields = typeof field.options?.search === "string"

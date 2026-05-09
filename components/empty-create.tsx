@@ -76,7 +76,9 @@ const EmptyCreate = ({
     try {
       const response = await fetch(
         `/api/${config.owner}/${config.repo}/${
-          encodeURIComponent(config.branch)
+          encodeURIComponent(
+            config.branch,
+          )
         }/files/${encodeURIComponent(normalizePath(path))}`,
         {
           method: "POST",

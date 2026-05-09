@@ -84,7 +84,9 @@ export function EntryHistoryBlock({
       {history.length > 3 && (
         <a
           href={`https://github.com/${config?.owner}/${config?.repo}/commits/${
-            encodeURIComponent(config!.branch)
+            encodeURIComponent(
+              config!.branch,
+            )
           }/${path}`}
           target="_blank"
           rel="noopener noreferrer"
@@ -137,7 +139,9 @@ export function EntryHistoryDropdown({
         <DropdownMenuItem asChild>
           <a
             href={`https://github.com/${config?.owner}/${config?.repo}/commits/${
-              encodeURIComponent(config!.branch)
+              encodeURIComponent(
+                config!.branch,
+              )
             }/${path}`}
             target="_blank"
             rel="noopener noreferrer"

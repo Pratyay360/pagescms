@@ -20,15 +20,13 @@ import {
 export async function GET(
   request: Request,
   context: {
-    params: Promise<
-      {
-        owner: string;
-        repo: string;
-        branch: string;
-        name: string;
-        path: string;
-      }
-    >;
+    params: Promise<{
+      owner: string;
+      repo: string;
+      branch: string;
+      name: string;
+      path: string;
+    }>;
   },
 ) {
   try {

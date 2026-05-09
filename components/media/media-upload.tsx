@@ -106,7 +106,9 @@ function MediaUploadRoot({
             const fullPath = joinPathSegments([path ?? "", uploadFilename]);
             const response = await fetch(
               `/api/${config.owner}/${config.repo}/${
-                encodeURIComponent(config.branch)
+                encodeURIComponent(
+                  config.branch,
+                )
               }/files/${encodeURIComponent(fullPath)}`,
               {
                 method: "POST",

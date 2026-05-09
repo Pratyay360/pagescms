@@ -271,7 +271,9 @@ export function Collection({ name, path }: { name: string; path?: string }) {
         fields: requestedFieldPaths.join(","),
       });
       return `/api/${config.owner}/${config.repo}/${
-        encodeURIComponent(config.branch)
+        encodeURIComponent(
+          config.branch,
+        )
       }/collections/${encodeURIComponent(name)}?${params.toString()}`;
     },
     [config.branch, config.owner, config.repo, name, requestedFieldPaths],
@@ -461,7 +463,9 @@ export function Collection({ name, path }: { name: string; path?: string }) {
           try {
             const response = await fetch(
               `/api/${config.owner}/${config.repo}/${
-                encodeURIComponent(config.branch)
+                encodeURIComponent(
+                  config.branch,
+                )
               }/files/${encodeURIComponent(normalizedPath)}/rename`,
               {
                 method: "POST",
@@ -489,9 +493,13 @@ export function Collection({ name, path }: { name: string; path?: string }) {
           success: (data: any) => {
             router.push(
               `/${config.owner}/${config.repo}/${
-                encodeURIComponent(config.branch)
+                encodeURIComponent(
+                  config.branch,
+                )
               }/collection/${encodeURIComponent(name)}/new?parent=${
-                encodeURIComponent(getParentPath(normalizedNewPath))
+                encodeURIComponent(
+                  getParentPath(normalizedNewPath),
+                )
               }`,
             );
             return data.message;
@@ -539,9 +547,13 @@ export function Collection({ name, path }: { name: string; path?: string }) {
                 <Link
                   className="font-medium truncate"
                   href={`/${config.owner}/${config.repo}/${
-                    encodeURIComponent(config.branch)
+                    encodeURIComponent(
+                      config.branch,
+                    )
                   }/collection/${encodeURIComponent(name)}/edit/${
-                    encodeURIComponent(row.original.path)
+                    encodeURIComponent(
+                      row.original.path,
+                    )
                   }`}
                 >
                   {CellView}
@@ -569,7 +581,9 @@ export function Collection({ name, path }: { name: string; path?: string }) {
                   buttonVariants({ variant: "outline", size: "sm" }),
                 )}
                 href={`/${config.owner}/${config.repo}/${
-                  encodeURIComponent(config.branch)
+                  encodeURIComponent(
+                    config.branch,
+                  )
                 }/collection/${name}/edit/${
                   encodeURIComponent(row.original.path)
                 }`}
@@ -662,20 +676,32 @@ export function Collection({ name, path }: { name: string; path?: string }) {
                       )}
                       href={row.original.isNode
                         ? `/${config.owner}/${config.repo}/${
-                          encodeURIComponent(config.branch)
+                          encodeURIComponent(
+                            config.branch,
+                          )
                         }/collection/${encodeURIComponent(name)}/new?parent=${
-                          encodeURIComponent(row.original.parentPath)
+                          encodeURIComponent(
+                            row.original.parentPath,
+                          )
                         }`
                         : row.original.type === "dir"
                         ? `/${config.owner}/${config.repo}/${
-                          encodeURIComponent(config.branch)
+                          encodeURIComponent(
+                            config.branch,
+                          )
                         }/collection/${encodeURIComponent(name)}/new?parent=${
-                          encodeURIComponent(row.original.path)
+                          encodeURIComponent(
+                            row.original.path,
+                          )
                         }`
                         : `/${config.owner}/${config.repo}/${
-                          encodeURIComponent(config.branch)
+                          encodeURIComponent(
+                            config.branch,
+                          )
                         }/collection/${encodeURIComponent(name)}/new?parent=${
-                          encodeURIComponent(row.original.path)
+                          encodeURIComponent(
+                            row.original.path,
+                          )
                         }`}
                     >
                       <Plus className="size-4" />
@@ -830,7 +856,9 @@ export function Collection({ name, path }: { name: string; path?: string }) {
   );
 
   const addEntryHref = `/${config.owner}/${config.repo}/${
-    encodeURIComponent(config.branch)
+    encodeURIComponent(
+      config.branch,
+    )
   }/collection/${encodeURIComponent(name)}/new${
     schema.view?.layout !== "tree" && path && path !== schema.path
       ? `?parent=${encodeURIComponent(path)}`

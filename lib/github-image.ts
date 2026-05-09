@@ -95,7 +95,9 @@ const getRawUrl = async (
       if (!requests[parentFullPath]) {
         requests[parentFullPath] = fetch(
           `/api/${owner}/${repo}/${encodeURIComponent(branch)}/media/${
-            encodeURIComponent(name)
+            encodeURIComponent(
+              name,
+            )
           }/${encodeURIComponent(parentPath)}?nocache=true`,
         )
           .then((response) =>
@@ -137,7 +139,9 @@ const getRawUrl = async (
     return cache[parentFullPath]?.files?.[filename];
   } else {
     return `https://raw.githubusercontent.com/${owner}/${repo}/${
-      encodeURIComponent(branch)
+      encodeURIComponent(
+        branch,
+      )
     }/${encodeURI(normalizedInputPath)}`;
   }
 };

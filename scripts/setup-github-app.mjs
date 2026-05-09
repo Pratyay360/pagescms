@@ -74,7 +74,9 @@ async function main() {
 
   const appCreationUrl = ownerType === "org"
     ? `https://github.com/organizations/${
-      encodeURIComponent(orgSlug)
+      encodeURIComponent(
+        orgSlug,
+      )
     }/settings/apps/new?state=${encodeURIComponent(state)}`
     : `https://github.com/settings/apps/new?state=${encodeURIComponent(state)}`;
 

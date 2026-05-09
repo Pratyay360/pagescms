@@ -414,7 +414,9 @@ const EditComponent = forwardRef(
           No media configuration found.{" "}
           <a
             href={`/${config.owner}/${config.repo}/${
-              encodeURIComponent(config.branch || "")
+              encodeURIComponent(
+                config.branch || "",
+              )
             }/settings`}
             className="underline hover:text-foreground"
           >

@@ -125,7 +125,9 @@ export async function POST(
           if (getFileExtension(normalizedPath) !== (schema.extension ?? "")) {
             throw new Error(
               `Invalid extension "${
-                getFileExtension(normalizedPath)
+                getFileExtension(
+                  normalizedPath,
+                )
               }" for ${data.type} "${data.name}".`,
             );
           }

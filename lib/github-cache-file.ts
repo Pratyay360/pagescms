@@ -564,7 +564,9 @@ const updateMultipleFilesCache = async (
       // Batch GraphQL Query
       const query = `
         query($owner: String!, $repo: String!, ${
-        chunk.map((_, i) => `$exp${i}: String!`).join(", ")
+        chunk
+          .map((_, i) => `$exp${i}: String!`)
+          .join(", ")
       }) {
           repository(owner: $owner, name: $repo) {
             ${
@@ -594,7 +596,9 @@ const updateMultipleFilesCache = async (
       } catch (error: any) {
         console.error(
           `GraphQL query failed for chunk [${
-            chunk.map((f) => f.path).join(", ")
+            chunk
+              .map((f) => f.path)
+              .join(", ")
           }]: ${error.message}`,
         );
         chunk.forEach((file) =>
@@ -1077,9 +1081,11 @@ const getCollectionCache = async (
         }));
         const queryNodeEntries = `
           query ($owner: String!, $repo: String!, ${
-          nodeEntryExpressions.map((nodeEntryExpression: any) =>
-            `$exp${nodeEntryExpression.alias}: String!`
-          ).join(", ")
+          nodeEntryExpressions
+            .map((nodeEntryExpression: any) =>
+              `$exp${nodeEntryExpression.alias}: String!`
+            )
+            .join(", ")
         }) {
             repository(owner: $owner, name: $repo) {
               ${
