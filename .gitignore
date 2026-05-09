@@ -40,7 +40,7 @@ local.db
 # Added by ggshield
 .cache_ggshield
 
-.env*
+!.env*
 !next*
 
 # OpenNext
